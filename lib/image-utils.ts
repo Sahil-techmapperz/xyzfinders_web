@@ -60,7 +60,23 @@ export function extractBase64FromDataUrl(dataUrl: string): string | null {
 }
 
 /**
- * Process uploaded image from FormData
+ * Convert image buffer to WebP format using sharp
+ */
+import sharp from 'sharp';
+
+export async function convertToWebP(buffer: Buffer): Promise<Buffer> {
+    try {
+        return await sharp(buffer)
+            .webp({ quality: 85 }) // High quality WebP
+            .toBuffer();
+    } catch (error) {
+        console.error('WebP conversion error:', error);
+        throw new Error('Failed to convert image to WebP');
+    }
+}
+
+/**
+ * Process uploaded image from FormData and convert to WebP
  */
 export async function processUploadedImage(file: File): Promise<{
     buffer: Buffer;
@@ -70,37 +86,42 @@ export async function processUploadedImage(file: File): Promise<{
     error?: string;
 }> {
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const mimeType = file.type;
-    const size = file.size;
+    let buffer: Buffer = Buffer.from(arrayBuffer);
+    const originalMimeType = file.type;
+    const originalSize = file.size;
 
-    // Validate
-    if (!isValidImageType(mimeType)) {
+    // Check original size limit (before conversion)
+    if (!isValidImageSize(originalSize)) {
         return {
             buffer,
-            mimeType,
-            size,
-            valid: false,
-            error: 'Invalid image type. Allowed: JPEG, PNG, GIF, WebP'
-        };
-    }
-
-    if (!isValidImageSize(size)) {
-        return {
-            buffer,
-            mimeType,
-            size,
+            mimeType: originalMimeType,
+            size: originalSize,
             valid: false,
             error: 'Image size exceeds 1GB limit'
         };
     }
 
-    return {
-        buffer,
-        mimeType,
-        size,
-        valid: true
-    };
+    // Convert to WebP for better compression and universal support
+    try {
+        buffer = await convertToWebP(buffer);
+        const mimeType = 'image/webp';
+        const size = buffer.length;
+
+        return {
+            buffer,
+            mimeType,
+            size,
+            valid: true
+        };
+    } catch (error) {
+        return {
+            buffer,
+            mimeType: originalMimeType,
+            size: originalSize,
+            valid: false,
+            error: 'Failed to process image. Please try another file.'
+        };
+    }
 }
 
 /**

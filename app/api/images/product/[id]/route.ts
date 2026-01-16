@@ -14,9 +14,16 @@ export async function GET(
             [imageId]
         );
 
-        if (!result.length || !result[0].image_data) {
+        console.log('Image query result:', {
+            imageId,
+            found: result.length > 0,
+            hasData: result.length > 0 && result[0].image_data ? true : false,
+            dataSize: result.length > 0 && result[0].image_data ? result[0].image_data.length : 0
+        });
+
+        if (!result.length || !result[0].image_data || result[0].image_data.length === 0) {
             return NextResponse.json(
-                { error: 'Product image not found' },
+                { error: 'Product image not found or empty' },
                 { status: 404 }
             );
         }
@@ -27,7 +34,7 @@ export async function GET(
         // Return as binary data with appropriate content type
         return new NextResponse(imageBuffer, {
             headers: {
-                'Content-Type': 'image/jpeg',
+                'Content-Type': 'image/webp',
                 'Cache-Control': 'public, max-age=31536000',
             },
         });
