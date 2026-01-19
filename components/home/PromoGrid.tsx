@@ -5,17 +5,17 @@ import Link from "next/link";
 const slides = [
     {
         id: 1,
-        image: "https://placehold.co/800x400/EAF2F5/005251?text=Furniture+Collection+Banner",
+        image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800&auto=format&fit=crop",
         alt: "Best Furniture Collection"
     },
     {
         id: 2,
-        image: "https://placehold.co/800x400/F4E9D8/A05842?text=Modern+Lighting+Banner",
+        image: "https://images.unsplash.com/photo-1540932239986-30128078f3c5?q=80&w=800&auto=format&fit=crop",
         alt: "Modern Lighting Setup"
     },
     {
         id: 3,
-        image: "https://placehold.co/800x400/FDF2F8/FF6B6B?text=Sofa+Collection+Banner",
+        image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=800&auto=format&fit=crop",
         alt: "Comfortable Sofa Sets"
     }
 ];
@@ -73,7 +73,7 @@ export default function PromoGrid() {
                 {/* Spans 1 column, 2 rows on large screens */}
                 <div className="lg:col-span-1 lg:row-span-2 relative group overflow-hidden rounded-xl h-full w-full">
                     <img
-                        src="https://placehold.co/400x600/F6E6D9/A05842?text=Stylish+Looks+Banner"
+                        src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop"
                         alt="Stylish Looks For Any Season"
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />
@@ -83,7 +83,7 @@ export default function PromoGrid() {
                 {/* Small Item 1: Stylish Men's Fashion */}
                 <div className="relative group overflow-hidden rounded-xl h-[240px]">
                     <img
-                        src="https://placehold.co/400x300/EBEFF4/333333?text=Men's+Fashion+Banner"
+                        src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=400&auto=format&fit=crop"
                         alt="Stylish Men's Fashion"
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />
@@ -93,7 +93,7 @@ export default function PromoGrid() {
                 {/* Small Item 2: Mid Summer Sale */}
                 <div className="relative group overflow-hidden rounded-xl h-[240px]">
                     <img
-                        src="https://placehold.co/400x300/FFF0F0/FF6B6B?text=Mid+Summer+Sale+Banner"
+                        src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=400&auto=format&fit=crop"
                         alt="Mid Summer Sale"
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />

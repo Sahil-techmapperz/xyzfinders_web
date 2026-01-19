@@ -24,8 +24,8 @@ const products: Product[] = [
         rating: 5,
         reviews: 450,
         price: '₹ 25,000',
-        image1: 'https://placehold.co/300x200/333/FFF?text=Laptop+Front',
-        image2: 'https://placehold.co/300x200/555/FFF?text=Laptop+Side'
+        image1: 'https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?auto=format&fit=crop&w=300&q=80',
+        image2: 'https://images.unsplash.com/photo-1588872657578-a3d2dd1ad6e8?auto=format&fit=crop&w=300&q=80'
     },
     {
         id: 2,
@@ -37,8 +37,8 @@ const products: Product[] = [
         rating: 5,
         reviews: 450,
         price: '₹ 105,565',
-        image1: 'https://placehold.co/200x200/FFF/333?text=iPhone+Front',
-        image2: 'https://placehold.co/200x200/EEE/333?text=iPhone+Back'
+        image1: 'https://images.unsplash.com/photo-1695504239663-c91836173428?auto=format&fit=crop&w=300&q=80',
+        image2: 'https://images.unsplash.com/photo-1696446700547-a859737f09f6?auto=format&fit=crop&w=300&q=80'
     },
     {
         id: 3,
@@ -49,8 +49,8 @@ const products: Product[] = [
         rating: 4.5,
         reviews: 320,
         price: '₹ 1,25,000',
-        image1: 'https://placehold.co/300x400/FFD700/333?text=Samsung+Front',
-        image2: 'https://placehold.co/300x400/FFA500/333?text=Samsung+Back'
+        image1: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?auto=format&fit=crop&w=300&q=80',
+        image2: 'https://images.unsplash.com/photo-1610945264803-c22b62d2a7b3?auto=format&fit=crop&w=300&q=80'
     },
     {
         id: 4,
@@ -61,8 +61,8 @@ const products: Product[] = [
         rating: 5,
         reviews: 450,
         price: '₹ 105,565',
-        image1: 'https://placehold.co/300x300/111/FFF?text=Foldable+Closed',
-        image2: 'https://placehold.co/300x300/333/FFF?text=Foldable+Open'
+        image1: 'https://images.unsplash.com/photo-1621330383348-1126f394f796?auto=format&fit=crop&w=300&q=80',
+        image2: 'https://images.unsplash.com/photo-1592434132770-bf2c844ae239?auto=format&fit=crop&w=300&q=80'
     },
     {
         id: 5,
@@ -73,8 +73,8 @@ const products: Product[] = [
         rating: 5,
         reviews: 450,
         price: '₹ 65,000',
-        image1: 'https://placehold.co/300x250/EEE/333?text=Honor+Front',
-        image2: 'https://placehold.co/300x250/CCC/333?text=Honor+Keyboard'
+        image1: 'https://images.unsplash.com/photo-1588702547923-a3a87954fa63?auto=format&fit=crop&w=300&q=80',
+        image2: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=300&q=80'
     }
 ];
 
@@ -159,13 +159,13 @@ export default function WeeklyDeals() {
                 {/* Bottom Banners Grid (Unchanged) */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="md:col-span-2 rounded-xl overflow-hidden relative h-64 bg-[#EAF2F5]">
-                        <img src="https://placehold.co/600x300/EAF2F5/005251?text=Fitness+Watch+Banner" alt="Fitness Header" className="w-full h-full object-cover" />
+                        <img src="https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=600&q=80" alt="Fitness Header" className="w-full h-full object-cover" />
                     </div>
                     <div className="md:col-span-1 rounded-xl overflow-hidden relative h-64 bg-[#FFF5E6]">
-                        <img src="https://placehold.co/300x400/FFF5E6/A05842?text=Mens+Fashion" alt="Men's Fashion" className="w-full h-full object-cover" />
+                        <img src="https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?auto=format&fit=crop&w=300&q=80" alt="Men's Fashion" className="w-full h-full object-cover" />
                     </div>
                     <div className="md:col-span-1 rounded-xl overflow-hidden relative h-64 bg-[#E0F2FE]">
-                        <img src="https://placehold.co/300x400/E0F2FE/005251?text=Fan+Offer" alt="Fan Offer" className="w-full h-full object-cover" />
+                        <img src="https://images.unsplash.com/photo-1627483297929-37f416fec7cd?auto=format&fit=crop&w=300&q=80" alt="Fan Offer" className="w-full h-full object-cover" />
                     </div>
                 </div>
             </div>

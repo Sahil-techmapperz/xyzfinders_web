@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function MobileBanner() {
     return (
         <section className="container mx-auto px-4 mb-12">
@@ -7,7 +9,7 @@ export default function MobileBanner() {
                     alt="Looking for Sale or Buy your Mobile & Tablet?"
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                 />
-                <a href="#" className="absolute inset-0 z-10"></a>
+                <Link href="/mobiles" className="absolute inset-0 z-10"></Link>
             </div>
         </section>
     );

@@ -25,7 +25,7 @@ export default function AutomobileCard({ auto }: { auto: Automobile }) {
         <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden group flex flex-col md:flex-row min-h-[280px]">
 
             {/* Image Section */}
-            <div className="relative w-full md:w-[45%] h-56 md:h-auto bg-gray-100 overflow-hidden cursor-pointer">
+            <Link href={`/automobiles/${auto.id}`} className="relative w-full md:w-[45%] h-56 md:h-auto bg-gray-100 overflow-hidden cursor-pointer block">
                 {/* Verified Badge */}
                 {auto.verified && (
                     <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold text-[#4CAF50] flex items-center gap-1 shadow-sm border border-green-100">
@@ -38,7 +38,7 @@ export default function AutomobileCard({ auto }: { auto: Automobile }) {
                     alt={auto.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-            </div>
+            </Link>
 
             {/* Content Section */}
             <div className="flex-1 p-5 lg:p-6 flex flex-col relative">
@@ -51,9 +51,11 @@ export default function AutomobileCard({ auto }: { auto: Automobile }) {
                 )}
 
                 <div className="mb-4 pr-16">
-                    <h3 className="font-bold text-lg md:text-xl text-gray-800 leading-tight mb-1">
-                        {auto.title}
-                    </h3>
+                    <Link href={`/automobiles/${auto.id}`}>
+                        <h3 className="font-bold text-lg md:text-xl text-gray-800 leading-tight mb-1 hover:text-brand-orange transition-colors">
+                            {auto.title}
+                        </h3>
+                    </Link>
                     <p className="text-gray-500 text-sm font-medium">{auto.category}</p>
                 </div>
 

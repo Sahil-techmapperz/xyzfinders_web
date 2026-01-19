@@ -13,7 +13,7 @@ export default function Gadgets() {
                 {/* Card 1 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/111/FFF?text=Gaming+PC" alt="Gaming PC" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&w=400&q=60" alt="Gaming PC" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                         <span className="absolute top-3 left-3 bg-white text-[#4CAF50] text-[10px] font-bold px-2 py-1 rounded shadow-sm border border-gray-100">Verified</span>
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Brand New PC Ryzen 9 9900X RTX ...</h3>
@@ -49,7 +49,7 @@ export default function Gadgets() {
                 {/* Card 2 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/EEE/555?text=Earbuds" alt="Samsung SE Earbuds" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1572569028738-411a0977d4aa?auto=format&fit=crop&w=400&q=60" alt="Samsung SE Earbuds" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Samsung SE Earbuds 21s</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
@@ -80,7 +80,7 @@ export default function Gadgets() {
                 {/* Card 3 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/0071c5/FFF?text=Intel+Processor" alt="Intel Processor" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=400&q=60" alt="Intel Processor" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Intel Core i5-13600KF Processor - Un....</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
@@ -111,7 +111,7 @@ export default function Gadgets() {
                 {/* Card 4 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/F5F5DC/333?text=iPhone+16" alt="iPhone 16 Pro" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1621330383348-1126f394f796?auto=format&fit=crop&w=400&q=60" alt="iPhone 16 Pro" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Apple iPhone 16 Pro 256GB Natural...</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">

@@ -1,10 +1,12 @@
-﻿export default function ResidentialRent() {
+﻿import Link from 'next/link';
+
+export default function ResidentialRent() {
   return (
     <section className="container mx-auto px-4 mb-12">
       {/* Residential Rent Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Popular in Residential for Rent</h2>
-        <a href="#" className="text-[#FF4D4D] font-bold text-sm md:text-base hover:underline">View All</a>
+        <Link href="/real-estate" className="text-[#FF4D4D] font-bold text-sm md:text-base hover:underline">View All</Link>
       </div>
 
       {/* Residential Grid */}
@@ -13,7 +15,7 @@
         {/* Card 1 */}
         <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
           <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-            <img src="https://placehold.co/400x300/EEE/999?text=Living+Room" alt="Apartment" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+            <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=60" alt="Apartment" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
             <span className="absolute top-3 left-3 bg-white text-[#4CAF50] text-[10px] font-bold px-2 py-1 rounded shadow-sm border border-gray-100">Verified</span>
           </div>
           <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Premium 4BHK Apartment for Rent.</h3>
@@ -51,7 +53,7 @@
         {/* Card 2 */}
         <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
           <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-            <img src="https://placehold.co/400x500/golden/333?text=Apartment+Exterior" alt="Apartment" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+            <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=60" alt="Apartment" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
             <span className="absolute top-3 left-3 bg-white text-[#4CAF50] text-[10px] font-bold px-2 py-1 rounded shadow-sm border border-gray-100">Verified</span>
           </div>
           <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Premium 3BHK Apartment for Rent.</h3>
@@ -85,7 +87,7 @@
         {/* Card 3 */}
         <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
           <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-            <img src="https://placehold.co/400x300/DDD/555?text=Pool+View" alt="Apartment" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+            <img src="https://images.unsplash.com/photo-1574362848149-11496d97a7bc?auto=format&fit=crop&w=400&q=60" alt="Apartment" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
             <span className="absolute top-3 left-3 bg-white text-[#4CAF50] text-[10px] font-bold px-2 py-1 rounded shadow-sm border border-gray-100">Verified</span>
           </div>
           <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Premium 2BHK Apartment for Rent.</h3>
@@ -119,7 +121,7 @@
         {/* Card 4 */}
         <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
           <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-            <img src="https://placehold.co/400x300/BBB/333?text=Empty+Room" alt="Apartment" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+            <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=400&q=60" alt="Apartment" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
             <span className="absolute top-3 left-3 bg-white text-[#4CAF50] text-[10px] font-bold px-2 py-1 rounded shadow-sm border border-gray-100">Verified</span>
           </div>
           <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Premium 6BHK Apartment for Rent.</h3>

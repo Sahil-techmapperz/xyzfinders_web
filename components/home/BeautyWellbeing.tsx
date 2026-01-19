@@ -13,7 +13,7 @@ export default function BeautyWellbeing() {
                 {/* Card 1 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/333/FFF?text=Analog+Watch" alt="Sonata Watch" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=400&q=60" alt="Sonata Watch" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                         <span className="absolute top-3 left-3 bg-white text-[#4CAF50] text-[10px] font-bold px-2 py-1 rounded shadow-sm border border-gray-100">Verified</span>
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Sonata Premium Analog Watch</h3>
@@ -49,7 +49,7 @@ export default function BeautyWellbeing() {
                 {/* Card 2 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/103E4C/FFF?text=ENVY+Pack" alt="ENVY Luxury Pack" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1615887023591-614d55c91439?auto=format&fit=crop&w=400&q=60" alt="ENVY Luxury Pack" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">ENVY Luxury Mans pack 3</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
@@ -80,7 +80,7 @@ export default function BeautyWellbeing() {
                 {/* Card 3 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/EEE/555?text=Cosmetics" alt="Cosmetics" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1596462502278-27bfdd403348?auto=format&fit=crop&w=400&q=60" alt="Cosmetics" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Premium Beauty Collection</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
@@ -111,7 +111,7 @@ export default function BeautyWellbeing() {
                 {/* Card 4 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/F5F5F5/333?text=Smart+Watch" alt="Android Watch" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=400&q=60" alt="Android Watch" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Premium Bolt Android Watch with Pas...</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">

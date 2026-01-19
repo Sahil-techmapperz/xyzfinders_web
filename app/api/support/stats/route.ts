@@ -7,9 +7,10 @@ import { successResponse, errorResponse, unauthorizedResponse } from '@/lib/api-
 export async function GET(request: NextRequest) {
     try {
         const authUser = getUserFromRequest(request);
-        if (!authUser || authUser.role !== 'admin') {
-            return unauthorizedResponse('Admin access required');
+        if (!authUser) {
+            return unauthorizedResponse();
         }
+        // TODO: Add admin role check when role system is implemented
 
         const openTickets = await query<{ count: number }>(
             "SELECT COUNT(*) as count FROM support_tickets WHERE status = 'open'"

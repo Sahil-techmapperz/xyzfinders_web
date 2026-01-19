@@ -53,9 +53,9 @@ export default function PropertyDetail({ id }: { id: string }) {
     return (
         <section className="container mx-auto px-4 py-8 font-jost">
             {/* 1. Hero Image Gallery */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4   mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 mb-8 h-[400px] md:h-[500px]">
                 {/* Large Main Image */}
-                <div className="md:col-span-2 h-full relative overflow-hidden rounded-2xl group cursor-pointer">
+                <div className="md:col-span-2 relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer">
                     <img
                         src={property.images[0]}
                         alt={property.title}
@@ -64,15 +64,15 @@ export default function PropertyDetail({ id }: { id: string }) {
                 </div>
 
                 {/* Right Column Images */}
-                <div className="hidden md:flex flex-col gap-2 md:gap-4 h-full">
-                    <div className="relative flex-1 overflow-hidden rounded-2xl group cursor-pointer">
+                <div className="flex flex-col gap-2 h-full">
+                    <div className="relative h-[250px] overflow-hidden rounded-2xl group cursor-pointer">
                         <img
                             src={property.images[1]}
                             alt={`${property.title} view 2`}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                     </div>
-                    <div className="relative flex-1 overflow-hidden rounded-2xl group cursor-pointer">
+                    <div className="relative h-[250px] overflow-hidden rounded-2xl group cursor-pointer">
                         <img
                             src={property.images[2]}
                             alt={`${property.title} view 3`}
@@ -125,61 +125,79 @@ export default function PropertyDetail({ id }: { id: string }) {
                         <span className="text-gray-500 text-xs font-medium ml-1">/ Monthly</span>
                     </div>
 
-                    {/* 3. Specs & Seller Grid */}
-                    <div className="flex flex-col md:flex-row gap-8">
-                        {/* Specs Table */}
-                        <div className="flex-1">
-                            <h2 className="text-base font-bold text-gray-900 mb-4">Specification</h2>
-                            <div className="grid grid-cols-2 gap-y-3 gap-x-8 text-xs">
-                                <div className="flex gap-4">
-                                    <span className="text-gray-900 font-bold mb-0.5">Type :-</span>
-                                    <span className="text-gray-500">{property.specs.type}</span>
-                                </div>
-                                <div className="flex gap-4">
-                                    <span className="text-gray-900 font-bold mb-0.5">Room Type :-</span>
-                                    <span className="text-gray-500">{property.specs.roomType}</span>
-                                </div>
-                                <div className="flex gap-4">
-                                    <span className="text-gray-900 font-bold mb-0.5">Security Deposit :-</span>
-                                    <span className="text-gray-500">{property.specs.securityDeposit}</span>
-                                </div>
-                                <div className="flex gap-4">
-                                    <span className="text-gray-900 font-bold mb-0.5">Attached Bathroom :-</span>
-                                    <span className="text-gray-500">{property.specs.attachedBathroom}</span>
-                                </div>
-                                <div className="flex gap-4">
-                                    <span className="text-gray-900 font-bold mb-0.5">Balcony :-</span>
-                                    <span className="text-gray-500">{property.specs.balcony}</span>
-                                </div>
-                                <div className="flex gap-4">
-                                    <span className="text-gray-900 font-bold mb-0.5">Updated :-</span>
-                                    <span className="text-gray-500">{property.specs.updated}</span>
-                                </div>
-                                <div className="flex gap-4">
-                                    <span className="text-gray-900 font-bold mb-0.5">Number of Tenants :-</span>
-                                    <span className="text-gray-500">{property.specs.tenants}</span>
+                    {/* 3. Property Details & Seller Grid */}
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 xl:gap-12">
+
+                        {/* Left: Property Specifications */}
+                        <div className="xl:col-span-2">
+                            {/* Property Details Table */}
+                            <div className="bg-white rounded-2xl p-6 mb-8 shadow-sm border border-gray-100">
+                                <h2 className="text-lg font-bold text-gray-900 mb-6">Property Details</h2>
+
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                        <span className="text-sm text-gray-500">Type</span>
+                                        <span className="text-sm font-bold text-gray-900">{property.specs.type}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                        <span className="text-sm text-gray-500">Room Type</span>
+                                        <span className="text-sm font-bold text-gray-900">{property.specs.roomType}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                        <span className="text-sm text-gray-500">Security Deposit</span>
+                                        <span className="text-sm font-bold text-gray-900">₹ {property.specs.securityDeposit}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                        <span className="text-sm text-gray-500">Attached Bathroom</span>
+                                        <span className="text-sm font-bold text-gray-900">{property.specs.attachedBathroom}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                        <span className="text-sm text-gray-500">Balcony</span>
+                                        <span className="text-sm font-bold text-gray-900">{property.specs.balcony}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                        <span className="text-sm text-gray-500">Updated</span>
+                                        <span className="text-sm font-bold text-gray-900">{property.specs.updated}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                        <span className="text-sm text-gray-500">Lease Period</span>
+                                        <span className="text-sm font-bold text-gray-900">{property.specs.tenants}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2">
+                                        <span className="text-sm text-gray-500">Furnishing</span>
+                                        <span className="text-sm font-bold text-gray-900">{property.specs.furnishing}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Seller Card (Floating right in design) */}
-                        <div className="w-full md:w-64">
-                            <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-                                <p className="text-[10px] text-gray-400 mb-1">Posted By:</p>
-                                <h3 className="text-sm font-bold text-gray-900 mb-1">{property.seller.name}</h3>
-                                {property.seller.verified && (
-                                    <span className="bg-blue-50 text-blue-500 text-[10px] px-2 py-0.5 rounded flex items-center gap-1 w-fit mb-3 font-medium">
-                                        <i className="ri-checkbox-circle-fill"></i> Verified User
-                                    </span>
-                                )}
-                                <p className="text-[10px] text-gray-400 mb-4">Member Since from {property.seller.memberSince}</p>
+                        {/* Right: Seller Card */}
+                        <div className="xl:col-span-1">
+                            <div className="sticky top-24">
+                                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4">Property Owner</h3>
 
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-[#FFF0F0] text-[#FF4D4D] text-[10px] font-bold hover:bg-[#FF4D4D] hover:text-white transition-all shadow-sm">
-                                        <i className="ri-phone-line"></i> Call
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-14 h-14 rounded-full bg-linear-to-br from-[#FF8A65] to-[#FF7043] flex items-center justify-center text-white text-xl font-bold">
+                                            {property.seller.name.charAt(0)}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="font-bold text-gray-900">{property.seller.name}</div>
+                                            <div className="text-xs text-gray-500">Member since {property.seller.memberSince}</div>
+                                        </div>
+                                        {property.seller.verified && (
+                                            <i className="ri-verified-badge-fill text-green-500 text-xl"></i>
+                                        )}
+                                    </div>
+
+                                    <button className="w-full bg-[#2196F3] text-white font-bold py-3 rounded-xl hover:bg-[#1976D2] transition-colors mb-3 flex items-center justify-center gap-2">
+                                        <i className="ri-chat-3-line"></i>
+                                        Chat with Owner
                                     </button>
-                                    <button className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-[#E3F2FD] text-[#2196F3] text-[10px] font-bold hover:bg-[#2196F3] hover:text-white transition-all shadow-sm">
-                                        <i className="ri-chat-3-line"></i> Chat
+
+                                    <button className="w-full bg-[#4CAF50] text-white font-bold py-3 rounded-xl hover:bg-[#45a049] transition-colors flex items-center justify-center gap-2">
+                                        <i className="ri-phone-line"></i>
+                                        Call Owner
                                     </button>
                                 </div>
                             </div>

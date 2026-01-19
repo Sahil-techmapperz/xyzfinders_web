@@ -1,10 +1,12 @@
+import Link from 'next/link';
+
 export default function Automobiles() {
     return (
         <section className="container mx-auto px-4 mb-12">
             {/* Automobiles Header */}
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Popular in Automobiles</h2>
-                <a href="#" className="text-[#FF4D4D] font-bold text-sm md:text-base hover:underline">View All</a>
+                <Link href="/automobiles" className="text-[#FF4D4D] font-bold text-sm md:text-base hover:underline">View All</Link>
             </div>
 
             {/* Automobiles Grid */}
@@ -13,7 +15,7 @@ export default function Automobiles() {
                 {/* Card 1 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/e74c3c/FFF?text=Scooty+E-Bike" alt="Scooty Mantra" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1626847037657-fd3622613ce3?auto=format&fit=crop&w=400&q=60" alt="Scooty Mantra" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                         <span className="absolute top-3 left-3 bg-white text-[#4CAF50] text-[10px] font-bold px-2 py-1 rounded shadow-sm border border-gray-100">Verified</span>
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Scooty Mantra E-Bike - Model 2022</h3>
@@ -50,7 +52,7 @@ export default function Automobiles() {
                 {/* Card 2 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/5D4037/FFF?text=Mahindra+Scorpio" alt="Mahindra Scorpio" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1533473359331-0135ef1bcfb0?auto=format&fit=crop&w=400&q=60" alt="Mahindra Scorpio" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Mahindra Scorpio - Model 2020</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
@@ -82,7 +84,7 @@ export default function Automobiles() {
                 {/* Card 3 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/212121/FFF?text=Auto+Rickshaw" alt="Bajaj Maxima Z" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1595188737233-68d716262b9a?auto=format&fit=crop&w=400&q=60" alt="Bajaj Maxima Z" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Bajaj Maxima Z - Model 2018</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
@@ -114,7 +116,7 @@ export default function Automobiles() {
                 {/* Card 4 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://placehold.co/400x300/3498db/FFF?text=Bike+Blue" alt="Scooty Mantra" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=400&q=60" alt="Scooty Mantra" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Scooty Mantra E-Bike - Model 2022</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
