@@ -7,7 +7,9 @@ const FURNITURE_DATA: FurnitureData[] = [
         id: 1,
         title: "Modern L-Shaped Sofa Set - 6 Seater with Premium Fabric",
         category: "Sofa",
+        brand: "PREMIUM",
         image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070&auto=format&fit=crop",
+        description: "COMFORTABLE 6-SEATER L-SHAPED SOFA WITH PREMIUM FABRIC...",
         specs: {
             material: "FABRIC",
             condition: "LIKE NEW",
@@ -17,13 +19,16 @@ const FURNITURE_DATA: FurnitureData[] = [
         price: "₹ 45,000/-",
         location: "Saket, New Delhi, Delhi",
         postedTime: "Posted 1 hr ago",
-        verified: true
+        verified: true,
+        premium: true
     },
     {
         id: 2,
         title: "King Size Bed with Storage - Solid Sheesham Wood",
         category: "Bed",
+        brand: "LUXURY",
         image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=2070&auto=format&fit=crop",
+        description: "KING SIZE BED WITH UNDER-BED STORAGE IN SOLID WOOD...",
         specs: {
             material: "WOOD",
             condition: "EXCELLENT",
@@ -33,13 +38,16 @@ const FURNITURE_DATA: FurnitureData[] = [
         price: "₹ 32,000/-",
         location: "Greater Kailash, New Delhi, Delhi",
         postedTime: "Posted 3 hr ago",
-        verified: true
+        verified: true,
+        premium: true
     },
     {
         id: 3,
         title: "Samsung 8kg Front Load Washing Machine",
         category: "Washing Machine",
+        brand: "SAMSUNG",
         image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?q=80&w=2070&auto=format&fit=crop",
+        description: "FRONT LOAD WASHING MACHINE WITH DIGITAL INVERTER...",
         specs: {
             material: "STEEL",
             condition: "GOOD",
@@ -48,13 +56,16 @@ const FURNITURE_DATA: FurnitureData[] = [
         price: "₹ 18,500/-",
         location: "Rohini, New Delhi, Delhi",
         postedTime: "Posted 5 hr ago",
-        verified: false
+        verified: false,
+        premium: false
     },
     {
         id: 4,
         title: "LG 260L Double Door Refrigerator - Smart Inverter",
         category: "Refrigerator",
+        brand: "LG",
         image: "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?q=80&w=2070&auto=format&fit=crop",
+        description: "DOUBLE DOOR REFRIGERATOR WITH SMART INVERTER TECHNOLOGY...",
         specs: {
             material: "STEEL",
             condition: "LIKE NEW",
@@ -63,13 +74,16 @@ const FURNITURE_DATA: FurnitureData[] = [
         price: "₹ 25,000/-",
         location: "Dwarka, New Delhi, Delhi",
         postedTime: "Posted 2 hr ago",
-        verified: true
+        verified: true,
+        premium: false
     },
     {
         id: 5,
         title: "6 Seater Dining Table Set - Solid Wood with Cushioned Chairs",
         category: "Table",
+        brand: "CLASSIC",
         image: "https://images.unsplash.com/photo-1617806118233-18e1de247200?q=80&w=2070&auto=format&fit=crop",
+        description: "SOLID WOOD DINING TABLE SET WITH COMFORTABLE CUSHIONED CHAIRS...",
         specs: {
             material: "WOOD",
             condition: "GOOD",
@@ -78,13 +92,16 @@ const FURNITURE_DATA: FurnitureData[] = [
         price: "₹ 28,000/-",
         location: "Vasant Kunj, New Delhi, Delhi",
         postedTime: "Posted 8 hr ago",
-        verified: false
+        verified: false,
+        premium: false
     },
     {
         id: 6,
         title: "Office Chair - Ergonomic Mesh Back with Lumbar Support",
         category: "Chair",
+        brand: "ERGONOMIC",
         image: "https://images.unsplash.com/photo-1592078615290-033ee584e267?q=80&w=2070&auto=format&fit=crop",
+        description: "ERGONOMIC OFFICE CHAIR WITH ADJUSTABLE HEIGHT AND LUMBAR SUPPORT...",
         specs: {
             material: "MESH",
             condition: "LIKE NEW",
@@ -93,7 +110,8 @@ const FURNITURE_DATA: FurnitureData[] = [
         price: "₹ 8,500/-",
         location: "Connaught Place, New Delhi, Delhi",
         postedTime: "Posted 4 hr ago",
-        verified: true
+        verified: true,
+        premium: false
     }
 ];
 
@@ -110,7 +128,7 @@ const CATEGORIES = [
 
 export default function FurnitureListings() {
     return (
-        <section className="container mx-auto px-4 py-8 max-w-7xl font-jost">
+        <section className="container mx-auto px-4 py-8 font-jost">
 
             {/* Header */}
             <div className="mb-8">

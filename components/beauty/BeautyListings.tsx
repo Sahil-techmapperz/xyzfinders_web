@@ -112,7 +112,7 @@ const SERVICES = [
 
 export default function BeautyListings() {
     return (
-        <section className="container mx-auto px-4 py-8 max-w-7xl font-jost">
+        <section className="container mx-auto px-4 py-8 font-jost">
 
             {/* Header */}
             <div className="mb-8">

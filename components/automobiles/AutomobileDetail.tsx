@@ -227,6 +227,48 @@ export default function AutomobileDetail({ id }: { id?: string }) {
                     </div>
                 </div>
 
+                {/* 4. Similar Automobiles (Carousel) */}
+                <div className="mt-16 relative">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-lg font-bold text-gray-900">Similar Automobiles</h2>
+                        <div className="flex gap-2">
+                            <button className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition" onClick={() => {
+                                const container = document.getElementById('similar-carousel');
+                                if (container) container.scrollBy({ left: -300, behavior: 'smooth' });
+                            }}>
+                                <i className="ri-arrow-left-s-line"></i>
+                            </button>
+                            <button className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition" onClick={() => {
+                                const container = document.getElementById('similar-carousel');
+                                if (container) container.scrollBy({ left: 300, behavior: 'smooth' });
+                            }}>
+                                <i className="ri-arrow-right-s-line"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="similar-carousel" className="flex gap-6 overflow-x-auto pb-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                        {[
+                            { id: 2, title: "BMW X1 sDrive20i", price: "₹ 42,00,000/-", image: "https://images.unsplash.com/photo-1555215695-3004980adade?q=80&w=2070&auto=format&fit=crop" },
+                            { id: 3, title: "Mercedes-Benz GLA 200", price: "₹ 45,00,000/-", image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=2070&auto=format&fit=crop" },
+                            { id: 4, title: "Audi Q5 45 TFSI", price: "₹ 58,00,000/-", image: "https://images.unsplash.com/photo-1606152421811-3130958578b4?q=80&w=2070&auto=format&fit=crop" },
+                            { id: 5, title: "Volvo XC40 Recharge", price: "₹ 55,00,000/-", image: "https://images.unsplash.com/photo-1626668893632-6f3d446f82c8?q=80&w=2070&auto=format&fit=crop" },
+                            { id: 6, title: "Range Rover Evoque", price: "₹ 65,00,000/-", image: "https://images.unsplash.com/photo-1605218427360-6927d14db4e6?q=80&w=2070&auto=format&fit=crop" },
+                            { id: 7, title: "Toyota Fortuner Legender", price: "₹ 48,00,000/-", image: "https://images.unsplash.com/photo-1609520505218-7421dad182d8?q=80&w=2070&auto=format&fit=crop" },
+                        ].map((car) => (
+                            <div key={car.id} className="min-w-[280px] md:min-w-[320px] bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer snap-start shrink-0">
+                                <div className="h-48 bg-gray-100 relative">
+                                    <img src={car.image} alt={car.title} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="p-4">
+                                    <h3 className="font-bold text-gray-800 text-sm mb-1 truncate">{car.title}</h3>
+                                    <div className="text-[#FF2D55] font-bold text-sm">{car.price}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
             </div>
         </div>
     );

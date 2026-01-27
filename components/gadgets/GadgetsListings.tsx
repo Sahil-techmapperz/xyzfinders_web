@@ -18,7 +18,8 @@ const GADGET_DATA: GadgetData[] = [
         location: "Connaught Place, New Delhi, Delhi",
         postedTime: "Posted 2 hr ago",
         verified: true,
-        premium: true
+        premium: true,
+        description: "Sony WH-1000XM5 wireless noise cancelling headphones with industry-leading noise cancellation, exceptional sound quality, and crystal-clear hands-free calling. Barely used."
     },
     {
         id: 2,
@@ -35,7 +36,8 @@ const GADGET_DATA: GadgetData[] = [
         location: "Saket, New Delhi, Delhi",
         postedTime: "Posted 5 hr ago",
         verified: true,
-        premium: true
+        premium: true,
+        description: "Dell XPS 15 9520 in excellent condition. 12th Gen Intel Core i7, 16GB RAM, 512GB SSD, NVIDIA RTX 3050 Ti. Stunning 3.5K OLED display. Original charger included."
     },
     {
         id: 3,
@@ -51,7 +53,8 @@ const GADGET_DATA: GadgetData[] = [
         location: "Greater Kailash, New Delhi, Delhi",
         postedTime: "Posted 1 day ago",
         verified: true,
-        premium: false
+        premium: false,
+        description: "Canon EOS R6 Mark II mirrorless camera body. Like new condition, barely used shutter count < 2000. Under warranty until Dec 2026. Box and all accessories available."
     },
     {
         id: 4,
@@ -68,7 +71,8 @@ const GADGET_DATA: GadgetData[] = [
         location: "Vasant Kunj, New Delhi, Delhi",
         postedTime: "Posted 3 hr ago",
         verified: false,
-        premium: false
+        premium: false,
+        description: "PS5 Disc Edition console in good working condition. Comes with 2 DualSense controllers and 3 games (Spider-Man 2, God of War Ragnarok, FIFA 24). Original box not available."
     },
     {
         id: 5,
@@ -85,7 +89,8 @@ const GADGET_DATA: GadgetData[] = [
         location: "Rohini, New Delhi, Delhi",
         postedTime: "Posted 12 hr ago",
         verified: true,
-        premium: true
+        premium: true,
+        description: "Apple Watch Series 9 45mm GPS model in Midnight Aluminum. Scratch-free screen and body. Battery health 100%. Comes with original Midnight Sport Band and charger."
     },
     {
         id: 6,
@@ -102,7 +107,8 @@ const GADGET_DATA: GadgetData[] = [
         location: "Dwarka, New Delhi, Delhi",
         postedTime: "Posted 8 hr ago",
         verified: false,
-        premium: false
+        premium: false,
+        description: "JBL Flip 6 portable bluetooth speaker. Powerful sound and deep bass. IP67 waterproof and dustproof. Battery life holds up to 10 hours. Minor scratches on the body but works perfectly."
     }
 ];
 
@@ -120,7 +126,7 @@ const BRANDS = [
 
 export default function GadgetsListings() {
     return (
-        <section className="container mx-auto px-4 py-8 max-w-7xl font-jost">
+        <section className="container mx-auto px-4 py-8 font-jost">
 
             {/* Header / Titles */}
             <div className="mb-8">

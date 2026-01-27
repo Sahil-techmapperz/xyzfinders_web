@@ -23,76 +23,86 @@ interface BeautyCardProps {
 
 export default function BeautyCard({ item }: BeautyCardProps) {
     return (
-        <Link href={`/beauty/${item.id}`}>
-            <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-100 flex gap-4 p-4">
-                {/* Image Section */}
-                <div className="w-[180px] h-[180px] shrink-0 relative rounded-xl overflow-hidden">
+        <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden group flex flex-col md:flex-row h-auto md:h-72">
+
+            {/* Image Section */}
+            <div className="relative w-full md:w-[45%] h-56 md:h-full bg-gray-100 overflow-hidden cursor-pointer">
+                <Link href={`/beauty/${item.id}`}>
                     <img
                         src={item.image}
                         alt={item.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
-                    {item.verified && (
-                        <div className="absolute top-2 left-2 bg-green-500 text-white text-[9px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
-                            <i className="ri-shield-check-fill"></i> VERIFIED
-                        </div>
-                    )}
+                </Link>
+
+                {/* Verified Badge */}
+                {item.verified && (
+                    <div className="absolute top-4 left-4 z-10 w-6 h-6 bg-[#4CAF50] rounded-full flex items-center justify-center shadow-sm text-white">
+                        <i className="ri-check-line text-sm font-bold"></i>
+                    </div>
+                )}
+
+                {/* Premium Badge (assuming beauty items can be premium, or reusing the logic) */}
+                <div className="absolute top-4 right-0 z-10 bg-[#FFF8E1] text-[#FFB300] text-[10px] font-bold px-2 py-0.5 shadow-sm border-l border-b border-[#FFE082] uppercase tracking-wide">
+                    Premium
                 </div>
+            </div>
 
-                {/* Content Section */}
-                <div className="flex-1 flex flex-col justify-between min-w-0">
-                    {/* Title */}
-                    <div>
-                        <h3 className="text-base font-bold text-gray-900 mb-3 line-clamp-2">
-                            {item.title}
-                        </h3>
-
-                        {/* Specs Pills */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                            <span className="bg-[#FFCCBC] text-[#FF6E40] text-xs font-bold px-3 py-1.5 rounded-md">
-                                {item.category}
-                            </span>
-                            <span className="bg-[#FFCCBC] text-[#FF6E40] text-xs font-bold px-3 py-1.5 rounded-md">
-                                {item.specs.serviceFor}
-                            </span>
-                            <span className="bg-[#FFCCBC] text-[#FF6E40] text-xs font-bold px-3 py-1.5 rounded-md">
-                                {item.specs.type}
-                            </span>
-                            {item.specs.rating && (
-                                <span className="bg-green-50 text-green-600 text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1">
-                                    <i className="ri-star-fill text-yellow-500"></i> {item.specs.rating}
-                                </span>
-                            )}
-                        </div>
+            {/* Content Section */}
+            <div className="flex-1 p-5 lg:p-6 flex flex-col justify-between">
+                <div>
+                    <div className="flex justify-between items-start">
+                        <Link href={`/beauty/${item.id}`}>
+                            <h3 className="font-bold text-lg md:text-xl text-gray-800 leading-tight mb-1 hover:text-brand-orange transition-colors">
+                                {item.title}
+                            </h3>
+                        </Link>
                     </div>
 
-                    {/* Bottom Section */}
+                    <p className="text-gray-500 text-xs font-medium mb-3">{item.category}</p>
+
+                    {/* Specs Row */}
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 mb-3">
+                        <div className="flex items-center gap-1.5"><i className="ri-user-heart-line text-gray-400 text-sm"></i> {item.specs.serviceFor}</div>
+                        <span className="text-gray-300">•</span>
+                        <div className="flex items-center gap-1.5"><i className="ri-store-2-line text-gray-400 text-sm"></i> {item.specs.type}</div>
+                        {item.specs.duration && (
+                            <>
+                                <span className="text-gray-300">•</span>
+                                <div className="flex items-center gap-1.5"><i className="ri-time-line text-gray-400 text-sm"></i> {item.specs.duration}</div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Description (using rating as description proxy or similar if needed, or just location) */}
+                    <div className="text-xs text-gray-600 mb-4 line-clamp-2">
+                        {item.specs.rating ? `Rated ${item.specs.rating} Stars by customers.` : 'Professional beauty service.'}
+                    </div>
+
+                    {/* Location */}
+                    <div className="flex items-start gap-1.5 text-xs text-gray-400 mb-4">
+                        <i className="ri-map-pin-line mt-0.5"></i>
+                        <span className="line-clamp-1">{item.location}</span>
+                    </div>
+                </div>
+
+                {/* Footer: Price & Actions */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-50">
                     <div>
-                        {/* Price */}
-                        <div className="text-2xl font-bold text-[#FF6E40] mb-2">
-                            {item.price}
-                        </div>
+                        <span className="text-[#FF4D4D] text-lg md:text-xl font-bold">{item.price}</span>
+                        <span className="text-gray-500 text-xs font-medium">/Service</span>
+                    </div>
 
-                        {/* Location & Chat */}
-                        <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-2 text-xs text-gray-500 min-w-0">
-                                <i className="ri-map-pin-line text-[#FF6E40] shrink-0"></i>
-                                <span className="truncate">{item.location}</span>
-                            </div>
-
-                            <button className="flex items-center gap-1.5 bg-[#E3F2FD] text-[#2196F3] text-xs font-bold px-4 py-2 rounded-lg hover:bg-[#BBDEFB] transition-colors shrink-0">
-                                <i className="ri-chat-3-line"></i> Chat
-                            </button>
-                        </div>
-
-                        {/* Posted Time */}
-                        <div className="flex items-center gap-1.5 text-xs text-green-600 font-medium mt-2">
-                            <i className="ri-time-line"></i>
-                            {item.postedTime}
-                        </div>
+                    <div className="flex gap-3">
+                        <button className="flex items-center gap-2 px-4 py-2 rounded bg-[#FFF0F0] text-[#FF4D4D] text-xs font-bold hover:bg-[#FF4D4D] hover:text-white transition-all shadow-sm border border-[#FFCDD2]/50">
+                            <i className="ri-phone-line text-sm"></i> Call
+                        </button>
+                        <button className="flex items-center gap-2 px-4 py-2 rounded bg-[#E3F2FD] text-[#2196F3] text-xs font-bold hover:bg-[#2196F3] hover:text-white transition-all shadow-sm border border-[#BBDEFB]/50">
+                            <i className="ri-chat-3-line text-sm"></i> Chat
+                        </button>
                     </div>
                 </div>
             </div>
-        </Link>
+        </div>
     );
 }

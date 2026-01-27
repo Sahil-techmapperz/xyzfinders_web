@@ -7,6 +7,8 @@ export interface JWTPayload {
     userId: number;
     email: string;
     user_type: string;
+    name?: string;
+    picture?: string;
 }
 
 export function signToken(payload: JWTPayload): string {
@@ -33,4 +35,23 @@ export function getUserFromRequest(request: NextRequest): JWTPayload | null {
     const token = getTokenFromRequest(request);
     if (!token) return null;
     return verifyToken(token);
+}
+
+export interface OnboardingPayload {
+    email: string;
+    name: string;
+    google_id: string;
+    picture: string;
+}
+
+export function signOnboardingToken(payload: OnboardingPayload): string {
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+}
+
+export function verifyOnboardingToken(token: string): OnboardingPayload | null {
+    try {
+        return jwt.verify(token, JWT_SECRET) as OnboardingPayload;
+    } catch (error) {
+        return null;
+    }
 }

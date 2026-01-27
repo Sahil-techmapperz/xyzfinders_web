@@ -7,7 +7,9 @@ const MOBILE_DATA: MobileData[] = [
         id: 1,
         title: "iPhone 15 Pro Max 256 GB Storage Desert Titanium",
         category: "iOS",
+        brand: "APPLE",
         image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=2070&auto=format&fit=crop",
+        description: "EXCELLENT CONDITION 256GB STORAGE WITH ALL ACCESSORIES...",
         specs: {
             age: "6 MONTHS",
             model: "iPhone 15 Pro Max",
@@ -24,7 +26,9 @@ const MOBILE_DATA: MobileData[] = [
         id: 2,
         title: "Samsung Galaxy S24 Ultra 12GB RAM, 512GB Storage",
         category: "Android",
+        brand: "SAMSUNG",
         image: "https://images.unsplash.com/photo-1610945264803-c22b62d2a7b3?q=80&w=2070&auto=format&fit=crop",
+        description: "FLAGSHIP SMARTPHONE WITH AI FEATURES AND S-PEN INCLUDED...",
         specs: {
             age: "3 MONTHS",
             model: "Galaxy S24 Ultra",
@@ -41,7 +45,9 @@ const MOBILE_DATA: MobileData[] = [
         id: 3,
         title: "OnePlus 12 Pro 16GB RAM 256GB Storage",
         category: "Android",
+        brand: "ONEPLUS",
         image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=2080&auto=format&fit=crop",
+        description: "HASSELBLAD CAMERA SYSTEM WITH FAST CHARGING SUPPORT...",
         specs: {
             age: "1 YEAR",
             model: "OnePlus 12 Pro",
@@ -58,7 +64,9 @@ const MOBILE_DATA: MobileData[] = [
         id: 4,
         title: "Google Pixel 8 Pro 12GB RAM 256GB Storage",
         category: "Android",
+        brand: "GOOGLE",
         image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=2127&auto=format&fit=crop",
+        description: "PURE ANDROID EXPERIENCE WITH GOOGLE TENSOR G3 CHIP...",
         specs: {
             age: "BRAND NEW",
             model: "Pixel 8 Pro",
@@ -87,7 +95,7 @@ const LOCATIONS = [
 
 export default function MobileListings() {
     return (
-        <section className="container mx-auto px-4 py-8 max-w-7xl font-jost">
+        <section className="container mx-auto px-4 py-8 font-jost">
 
             {/* Header / Titles */}
             <div className="mb-8">

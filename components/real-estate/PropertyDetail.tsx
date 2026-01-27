@@ -249,23 +249,41 @@ export default function PropertyDetail({ id }: { id: string }) {
                 </div>
             </div>
 
-            {/* 5. Similar Properties */}
-            <div className="mb-12 relative group">
-                <h2 className="text-lg font-bold text-gray-900 mb-6">Similar Properties</h2>
+            {/* 5. Similar Properties Carousel */}
+            <div className="mb-12 relative">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg font-bold text-gray-900">Similar Properties</h2>
+                    <div className="flex gap-2">
+                        <button className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition" onClick={() => {
+                            const container = document.getElementById('similar-properties-carousel');
+                            if (container) container.scrollBy({ left: -300, behavior: 'smooth' });
+                        }}>
+                            <i className="ri-arrow-left-s-line"></i>
+                        </button>
+                        <button className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition" onClick={() => {
+                            const container = document.getElementById('similar-properties-carousel');
+                            if (container) container.scrollBy({ left: 300, behavior: 'smooth' });
+                        }}>
+                            <i className="ri-arrow-right-s-line"></i>
+                        </button>
+                    </div>
+                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div id="similar-properties-carousel" className="flex gap-6 overflow-x-auto pb-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {[
-                        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500&q=80",
-                        "https://images.unsplash.com/photo-1600596542815-225dfc086928?w=500&q=80",
-                        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=500&q=80"
-                    ].map((imgUrl, i) => (
-                        <div key={i} className="bg-white rounded-xl cursor-pointer hover:shadow-lg transition-all duration-300 border border-transparent hover:border-gray-100 overflow-hidden">
+                        { title: "Premium 4BHK Apartment", price: "₹ 95,000", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500&q=80", location: "New Sabji Mandi Teacher Colony..." },
+                        { title: "Luxury Villa with Pool", price: "₹ 1,50,000", image: "https://images.unsplash.com/photo-1600596542815-225dfc086928?w=500&q=80", location: "Vasant Vihar, New Delhi" },
+                        { title: "Modern 3BHK Flat", price: "₹ 45,000", image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=500&q=80", location: "Saket, New Delhi" },
+                        { title: "Spacious Studio Apartment", price: "₹ 25,000", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500&q=80", location: "Hauz Khas, New Delhi" },
+                        { title: "Duplex Penthouse", price: "₹ 1,20,000", image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=500&q=80", location: "Defence Colony, New Delhi" },
+                    ].map((prop, i) => (
+                        <div key={i} className="min-w-[280px] md:min-w-[320px] bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer snap-start shrink-0">
                             {/* Image */}
-                            <div className="relative h-52 bg-gray-100">
+                            <div className="relative h-48 bg-gray-100">
                                 <img
-                                    src={imgUrl}
+                                    src={prop.image}
                                     className="w-full h-full object-cover"
-                                    alt="Similar Property"
+                                    alt={prop.title}
                                 />
                                 <span className="absolute top-3 left-3 bg-white/90 backdrop-blur text-green-600 text-[10px] font-bold px-2 py-0.5 rounded border border-green-100 flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Verified
@@ -274,40 +292,35 @@ export default function PropertyDetail({ id }: { id: string }) {
 
                             {/* Content */}
                             <div className="p-4">
-                                <h4 className="font-bold text-gray-900 text-sm mb-3">Premium 4BHK Apartment for Rent.</h4>
+                                <h4 className="font-bold text-gray-900 text-sm mb-3 truncate">{prop.title}</h4>
 
                                 {/* Specs */}
                                 <div className="flex items-center gap-4 text-[10px] text-gray-500 mb-3">
                                     <div className="flex items-center gap-1">
-                                        <i className="ri-hotel-bed-fill text-gray-300"></i> 4 Bedroom
+                                        <i className="ri-hotel-bed-fill text-gray-300"></i> 4 Bed
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <i className="ri-restaurant-fill text-gray-300"></i> 1 Kitchen
+                                        <i className="ri-restaurant-fill text-gray-300"></i> 1 Kit
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <i className="ri-drop-fill text-gray-300"></i> 2 Bathroom
+                                        <i className="ri-drop-fill text-gray-300"></i> 2 Bath
                                     </div>
                                 </div>
 
                                 {/* Location */}
                                 <div className="flex items-center gap-1.5 text-[10px] text-gray-400 mb-3">
                                     <i className="ri-map-pin-line"></i>
-                                    <span className="line-clamp-1">New Sabji Mandi Teacher Colony Kashi...</span>
+                                    <span className="truncate">{prop.location}</span>
                                 </div>
 
                                 {/* Price */}
                                 <div>
-                                    <span className="text-[#FF4D4D] text-base font-bold">₹ 950,000</span>
+                                    <span className="text-[#FF4D4D] text-base font-bold">{prop.price}</span>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
-
-                {/* Carousel Arrow (Decorational for now) */}
-                <button className="absolute top-1/2 -right-4 transform -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-gray-400 hover:text-brand-orange border border-gray-100 z-10 hidden md:flex">
-                    <i className="ri-arrow-right-s-line text-xl"></i>
-                </button>
             </div>
 
         </section>

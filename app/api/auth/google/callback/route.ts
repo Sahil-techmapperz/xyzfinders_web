@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
                 );
             }
         } else {
-            // Create new user
+            // Create new user (DEFAULT TO BUYER)
             const result: any = await query(
                 `INSERT INTO users (name, email, google_id, avatar, email_verified, user_type, created_at, updated_at)
                  VALUES (?, ?, ?, ?, 1, 'buyer', NOW(), NOW())`,
@@ -111,16 +111,30 @@ export async function GET(request: NextRequest) {
         const token = signToken({
             userId,
             email: googleUser.email,
+            name: googleUser.name,
+            picture: googleUser.picture,
             user_type: userType,
         });
 
         // Redirect to frontend with token
+        // Use window.opener logic if this was a popup, but since we are doing full redirect flow for now (from modal button),
+        // we can just redirect back to the returnUrl (state). 
+        // Note: The Header.tsx keeps modal open, so we might want to handle token storage differently?
+        // Actually, the standard flow: redirect main window -> callback -> redirect main window to App with token query param.
+        // The App (Header or Layout) needs to read this token and store it.
+        // Or we can just redirect to '/', and the user will look logged in.
+        // The Header check works on mount, but if we redirect to a page with `?token=...`, we need logic to capture it.
+
+        // Let's stick to the URL query param method which was already set up in the previous implementation plan context
+        // (GOOGLE_OAUTH_SETUP.md mentions handling it in a component).
+
         const redirectUrl = `${process.env.NEXT_PUBLIC_BASE_URL}${state}?token=${token}`;
         return NextResponse.redirect(redirectUrl);
+
     } catch (error) {
         console.error('Google OAuth callback error:', error);
         return NextResponse.redirect(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/auth?error=authentication_failed`
+            `${process.env.NEXT_PUBLIC_BASE_URL}/?error=authentication_failed`
         );
     }
 }
