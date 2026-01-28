@@ -11,7 +11,40 @@ export default function Header() {
     const [searchQuery, setSearchQuery] = useState('');
     const [locationQuery, setLocationQuery] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [user, setUser] = useState<{ name: string; email: string; avatar?: string } | null>(null);
+    const [currentMode, setCurrentMode] = useState('buyer');
+    const [user, setUser] = useState<any>(null);
+
+    const handleSwitchMode = async (mode: 'buyer' | 'seller') => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/auth/switch-mode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ mode })
+            });
+
+            if (res.ok) {
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                    const parsed = JSON.parse(storedUser);
+                    parsed.current_mode = mode;
+                    localStorage.setItem('user', JSON.stringify(parsed));
+                    setCurrentMode(mode);
+
+                    if (mode === 'seller') {
+                        window.location.href = '/seller/dashboard';
+                    } else {
+                        window.location.href = '/buyer/profile';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error switching mode", error);
+        }
+    };
 
     // Check for token in URL (OAuth redirect) or localStorage
     useEffect(() => {
@@ -20,10 +53,11 @@ export default function Header() {
         const tokenFromUrl = urlParams.get('token');
 
         if (tokenFromUrl) {
+            // ... (existing OAuth logic - omit for brevity if not changing, but cleaner to replace whole block)
+            // Actually, let's keep the existing structure but add the seller check at the end
             try {
                 localStorage.setItem('token', tokenFromUrl);
-
-                // Decode token manually to avoid external dependencies
+                // ... (decode logic)
                 const base64Url = tokenFromUrl.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
                 const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
@@ -41,20 +75,56 @@ export default function Header() {
                 localStorage.setItem('user', JSON.stringify(userObj));
                 setUser(userObj);
                 setIsLoggedIn(true);
-
-                // Clean URL
                 window.history.replaceState({}, document.title, window.location.pathname);
             } catch (error) {
                 console.error("Error parsing token", error);
             }
-            return;
-        }
+        } else {
+            const token = localStorage.getItem('token');
+            const storedUser = localStorage.getItem('user');
+            if (token && storedUser) {
+                setIsLoggedIn(true);
+                const parsed = JSON.parse(storedUser);
+                setUser(parsed);
+                if (parsed.current_mode) {
+                    setCurrentMode(parsed.current_mode);
+                } else if (window.location.pathname.startsWith('/seller')) {
+                    setCurrentMode('seller');
+                }
 
-        const token = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
-        if (token && storedUser) {
-            setIsLoggedIn(true);
-            setUser(JSON.parse(storedUser));
+                // Background check for seller status to keep UI in sync
+                fetch('/api/user/status', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        let shouldUpdate = false;
+                        const updatedUser = { ...parsed };
+
+                        if (data.isSeller !== parsed.is_seller) {
+                            updatedUser.is_seller = data.isSeller;
+                            shouldUpdate = true;
+                        }
+
+                        // Sync Seller Logo
+                        if (data.brand_logo !== undefined && data.brand_logo !== parsed.brand_logo) {
+                            updatedUser.brand_logo = data.brand_logo;
+                            shouldUpdate = true;
+                        }
+
+                        // Sync Buyer Avatar
+                        if (data.avatar !== undefined && data.avatar !== parsed.avatar) {
+                            updatedUser.avatar = data.avatar;
+                            shouldUpdate = true;
+                        }
+
+                        if (shouldUpdate) {
+                            localStorage.setItem('user', JSON.stringify(updatedUser));
+                            setUser(updatedUser);
+                        }
+                    })
+                    .catch(err => console.error("Header status check warning", err));
+            }
         }
     }, []);
 
@@ -96,58 +166,58 @@ export default function Header() {
             </div>
 
             {/* Main Header */}
-            <div className="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="container mx-auto px-2 md:px-4 py-3 md:py-4 flex flex-wrap md:flex-nowrap items-center justify-between gap-2 md:gap-4">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2">
-                    <img src="/logo.png" alt="XYZFinders Logo" className="h-12 w-auto" />
+                <Link href="/" className="flex items-center gap-2 shrink-0">
+                    <img src="/logo.png" alt="XYZFinders Logo" className="h-8 md:h-10 lg:h-12 w-auto" />
                 </Link>
 
                 {/* Search Bar */}
-                <form onSubmit={handleSearch} className="flex-1 max-w-xl bg-gray-100 rounded-full flex items-center p-1 pl-4 lg:pl-6 gap-2 border border-gray-200">
+                <form onSubmit={handleSearch} className="order-last md:order-0 w-full md:w-auto flex-1 max-w-xl bg-gray-100 rounded-full flex items-center p-1 pl-3 lg:pl-6 gap-2 border border-gray-200 mt-2 md:mt-0">
                     <input
                         type="text"
                         placeholder="Search Anything"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="bg-transparent border-none outline-none flex-1 w-full text-gray-600 placeholder-gray-400 text-sm lg:text-base"
+                        className="bg-transparent border-none outline-none flex-1 w-full text-gray-600 placeholder-gray-400 text-xs md:text-sm lg:text-base min-w-0"
                     />
                     <button
                         type="submit"
-                        className="bg-brand-orange text-white px-6 py-2 rounded-full font-medium hover:bg-[#e07a46] transition shadow-sm"
+                        className="bg-brand-orange text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full font-medium hover:bg-[#e07a46] transition shadow-sm whitespace-nowrap text-xs md:text-sm lg:text-base"
                     >
                         Search
                     </button>
                 </form>
 
-                {/* Location */}
-                <div className="hidden xl:flex items-center bg-gray-100 rounded-full px-4 py-2 gap-2 text-sm text-gray-700 border border-gray-200">
-                    <i className="ri-map-pin-line text-brand-orange text-lg"></i>
+                {/* Location - Hidden on small, visible on xl */}
+                <div className="hidden xl:flex items-center bg-gray-100 rounded-full px-3 py-1.5 lg:px-4 lg:py-2 gap-2 text-xs lg:text-sm text-gray-700 border border-gray-200">
+                    <i className="ri-map-pin-line text-brand-orange text-base lg:text-lg"></i>
                     <input
                         type="text"
                         placeholder="Location"
                         value={locationQuery}
                         onChange={(e) => setLocationQuery(e.target.value)}
                         onKeyDown={handleLocationSearch}
-                        className="bg-transparent border-none outline-none w-[150px] text-gray-700 placeholder-gray-500 font-medium"
+                        className="bg-transparent border-none outline-none w-[100px] lg:w-[150px] text-gray-700 placeholder-gray-500 font-medium"
                     />
                 </div>
 
                 {/* User Actions */}
-                <div className="flex items-center gap-4 lg:gap-6">
+                <div className="flex items-center gap-2 md:gap-4 lg:gap-6 shrink-0">
                     {isLoggedIn && user ? (
                         <div className="relative">
                             <button
                                 onClick={() => setShowUserDropdown(!showUserDropdown)}
-                                className="flex items-center gap-3 hover:bg-gray-50 p-1.5 rounded-full pr-4 transition border border-transparent hover:border-gray-100"
+                                className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded-full pr-2 md:pr-4 transition border border-transparent hover:border-gray-100"
                             >
-                                {user.avatar ? (
-                                    <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                                {(currentMode === 'seller' && user.brand_logo) || user.avatar ? (
+                                    <img src={(currentMode === 'seller' && user.brand_logo) ? user.brand_logo : user.avatar} alt={user.name} className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border border-gray-200" />
                                 ) : (
-                                    <div className="w-10 h-10 bg-brand-orange/10 rounded-full flex items-center justify-center text-brand-orange overflow-hidden border border-brand-orange/20">
-                                        <i className="ri-user-smile-line text-xl"></i>
+                                    <div className="w-8 h-8 md:w-10 md:h-10 bg-brand-orange/10 rounded-full flex items-center justify-center text-brand-orange overflow-hidden border border-brand-orange/20">
+                                        <i className="ri-user-smile-line text-lg md:text-xl"></i>
                                     </div>
                                 )}
-                                <span className="text-sm font-medium text-gray-700 hidden sm:block">
+                                <span className="text-xs md:text-sm font-medium text-gray-700 hidden sm:block max-w-[80px] md:max-w-[120px] truncate">
                                     {user.name?.split(' ')[0] || user.email?.split('@')[0]}
                                 </span>
                                 <i className={`ri-arrow-down-s-line text-gray-400 transition ${showUserDropdown ? 'rotate-180' : ''}`}></i>
@@ -159,26 +229,78 @@ export default function Header() {
                                     <div className="p-4 border-b border-gray-50 bg-gray-50/50">
                                         <p className="font-bold text-gray-800 truncate">{user.name || 'User'}</p>
                                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                        {currentMode === 'seller' ? (
+                                            <span className="inline-block mt-1 text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Seller Mode</span>
+                                        ) : (
+                                            <span className="inline-block mt-1 text-[10px] font-bold bg-orange-100 text-brand-orange px-2 py-0.5 rounded-full uppercase tracking-wider">Buyer Mode</span>
+                                        )}
                                     </div>
                                     <div className="p-2 space-y-1">
-                                        <Link href="/buyer/profile" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
-                                            <i className="ri-user-line text-lg"></i>
-                                            <span>My Profile</span>
-                                        </Link>
-                                        <Link href="/buyer/messages" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
-                                            <i className="ri-message-3-line text-lg"></i>
-                                            <span>Messages</span>
-                                        </Link>
-                                        <div className="h-px bg-gray-100 my-0.5 mx-2"></div>
-                                        <Link href="/buyer/wishlist" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
-                                            <i className="ri-heart-line text-lg"></i>
-                                            <span>Wishlist</span>
-                                        </Link>
-                                        <div className="h-px bg-gray-100 my-1"></div>
-                                        <Link href="/seller/register" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
-                                            <i className="ri-store-2-line text-lg"></i>
-                                            <span>Become a Seller</span>
-                                        </Link>
+                                        {currentMode === 'seller' ? (
+                                            <>
+                                                <Link href="/seller/dashboard" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
+                                                    <i className="ri-dashboard-line text-lg"></i>
+                                                    <span>Dashboard</span>
+                                                </Link>
+                                                <Link href="/seller/my-ads" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
+                                                    <i className="ri-file-list-3-line text-lg"></i>
+                                                    <span>My Ads</span>
+                                                </Link>
+                                                <Link href="/seller/place-ad" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
+                                                    <i className="ri-add-circle-line text-lg"></i>
+                                                    <span>Post Ad</span>
+                                                </Link>
+                                                <Link href="/seller/settings" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
+                                                    <i className="ri-settings-4-line text-lg"></i>
+                                                    <span>Settings</span>
+                                                </Link>
+                                                <div className="h-px bg-gray-100 my-1"></div>
+                                                <button
+                                                    onClick={() => handleSwitchMode('buyer')}
+                                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                                                >
+                                                    <i className="ri-shopping-bag-3-line text-lg"></i>
+                                                    <span>Switch to Buying</span>
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Link href="/buyer/profile" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
+                                                    <i className="ri-user-line text-lg"></i>
+                                                    <span>My Profile</span>
+                                                </Link>
+                                                <Link href="/buyer/inquiries" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
+                                                    <i className="ri-chat-1-line text-lg"></i>
+                                                    <span>My Inquiries</span>
+                                                </Link>
+                                                <Link href="/buyer/messages" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
+                                                    <i className="ri-message-3-line text-lg"></i>
+                                                    <span>Messages</span>
+                                                </Link>
+                                                <Link href="/buyer/wishlist" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
+                                                    <i className="ri-heart-line text-lg"></i>
+                                                    <span>Wishlist</span>
+                                                </Link>
+                                                <div className="h-px bg-gray-100 my-1"></div>
+
+                                                {/* Check if user is seller (using is_seller flag or fallback to user_type if older session) */}
+                                                {(user.is_seller || user.user_type === 'seller') ? (
+                                                    <button
+                                                        onClick={() => handleSwitchMode('seller')}
+                                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-purple-600 hover:bg-purple-50 rounded-lg transition"
+                                                    >
+                                                        <i className="ri-store-2-line text-lg"></i>
+                                                        <span>Switch to Selling</span>
+                                                    </button>
+                                                ) : (
+                                                    <Link href="/buyer/become-seller" className="flex items-center gap-3 px-3 py-2.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                                        <i className="ri-briefcase-line text-lg"></i>
+                                                        <span>Become a Seller</span>
+                                                    </Link>
+                                                )}
+                                            </>
+                                        )}
+
                                         <div className="h-px bg-gray-100 my-1"></div>
                                         <button
                                             onClick={handleLogout}
@@ -194,51 +316,52 @@ export default function Header() {
                     ) : (
                         <button
                             onClick={() => setIsAuthModalOpen(true)}
-                            className="flex items-center gap-2 text-gray-800 font-bold text-sm hover:text-brand-orange transition-colors"
+                            className="flex items-center gap-2 text-gray-800 font-bold text-xs md:text-sm hover:text-brand-orange transition-colors"
                         >
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 overflow-hidden border border-blue-200">
-                                <i className="ri-user-smile-line text-xl"></i>
+                            <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 overflow-hidden border border-blue-200">
+                                <i className="ri-user-smile-line text-lg md:text-xl"></i>
                             </div>
                             <span className="hidden sm:inline">Log In \ Sign Up</span>
                         </button>
                     )}
 
-                    <Link
-                        href="/seller/place-ad"
-                        className="bg-brand-orange text-white px-5 py-2.5 rounded shadow-md hover:bg-[#e07a46] transition font-semibold text-sm sm:text-base"
-                    >
-                        Place Your Ads
-                    </Link>
+                    {(currentMode === 'seller' || !isLoggedIn) && (
+                        <Link
+                            href="/seller/place-ad"
+                            className="bg-brand-orange text-white px-3 md:px-5 py-2 md:py-2.5 rounded shadow-md hover:bg-[#e07a46] transition font-semibold text-xs md:text-sm whitespace-nowrap"
+                        >
+                            Place Your Ads
+                        </Link>
+                    )}
                 </div>
             </div>
 
             {/* Navigation Bar */}
-            <div className="border-t border-gray-200 bg-[#FFFBF7] shadow-sm relative z-50">
-                <div className="container mx-auto px-4 py-3 flex items-center justify-between relative">
+            <div className="border-t border-gray-200 bg-[#FFFBF7] shadow-sm relative z-40">
+                <div className="container mx-auto px-2 md:px-4 py-2 md:py-3 flex items-center justify-between gap-4">
                     {/* Browser Categories */}
-                    <div className="relative group">
+                    <div className="relative group shrink-0">
                         <Link
                             href="/categories"
-                            className="bg-brand-orange text-white px-5 py-2 rounded-full flex items-center gap-2 font-medium shadow-sm hover:bg-[#e07a46] transition"
+                            className="bg-brand-orange text-white px-3 md:px-5 py-1.5 md:py-2 rounded-full flex items-center gap-2 font-medium shadow-sm hover:bg-[#e07a46] transition text-xs md:text-sm"
                         >
-                            <i className="ri-menu-line"></i>
                             <span>Browse Categories</span>
                         </Link>
                     </div>
 
-                    {/* Nav Links mapping */}
-                    <nav className="hidden xl:flex items-center gap-8 text-gray-700 font-medium text-sm absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    {/* Nav Links mapping - Flex layout instead of absolute centering to prevent overlap */}
+                    <nav className="hidden lg:flex flex-1 justify-center items-center gap-4 lg:gap-6 xl:gap-8 text-gray-700 font-medium text-xs md:text-sm">
                         {NAV_ITEMS.map((item, index) => (
                             <div
                                 key={index}
-                                className="relative group py-3"
+                                className="relative group py-2"
                                 onMouseEnter={() => setActiveDropdown(item.label)}
                                 onMouseLeave={() => setActiveDropdown(null)}
                             >
-                                <Link href={item.link} className="flex items-center gap-1 hover:text-brand-orange transition ">
+                                <Link href={item.link} className="flex items-center gap-1 hover:text-brand-orange transition whitespace-nowrap">
                                     {item.label}
                                     {item.badge && (
-                                        <span className="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">{item.badge}</span>
+                                        <span className="bg-red-600 text-white text-[9px] md:text-[10px] px-1 md:px-1.5 py-0.5 rounded-full font-bold">{item.badge}</span>
                                     )}
                                     {item.dropdown && <i className="ri-arrow-down-s-line text-xs ml-0.5 opacity-50"></i>}
                                 </Link>
@@ -281,18 +404,18 @@ export default function Header() {
                     </nav>
 
                     {/* Right Icons */}
-                    <div className="flex items-center gap-3 text-gray-500">
+                    <div className="flex items-center gap-2 md:gap-3 text-gray-500 shrink-0">
                         <Link
                             href="/buyer/wishlist"
-                            className="w-10 h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:bg-brand-orange hover:text-white transition hover:border-brand-orange"
+                            className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:bg-brand-orange hover:text-white transition hover:border-brand-orange"
                         >
-                            <i className="ri-heart-line text-lg"></i>
+                            <i className="ri-heart-line text-base md:text-lg"></i>
                         </Link>
                         <Link
                             href="/buyer/messages"
-                            className="w-10 h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:bg-brand-orange hover:text-white transition hover:border-brand-orange"
+                            className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:bg-brand-orange hover:text-white transition hover:border-brand-orange"
                         >
-                            <i className="ri-message-3-line text-lg"></i>
+                            <i className="ri-message-3-line text-base md:text-lg"></i>
                         </Link>
                     </div>
                 </div>

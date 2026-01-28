@@ -34,8 +34,10 @@ export async function GET(request: NextRequest) {
         const accessToken = tokenData.access_token;
 
         // Get user info
-        const userResponse = await fetch(`https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${accessToken}`);
+        const userResponse = await fetch(`https://graph.facebook.com/me?fields=id,name,email,picture,location&access_token=${accessToken}`);
         const fbUser = await userResponse.json();
+
+        const locationName = fbUser.location?.name || null;
 
         if (!fbUser.email) {
             // Some FB accounts don't have emails verified or shared
@@ -56,20 +58,49 @@ export async function GET(request: NextRequest) {
             userId = user.id;
             userType = user.user_type;
 
+            const updates: string[] = [];
+            const params: any[] = [];
+
             if (!user.facebook_id) {
+                updates.push('facebook_id = ?');
+                params.push(fbUser.id);
+            }
+
+            // Update location if not set and available from FB
+            if (!user.location && locationName) {
+                updates.push('location = ?');
+                params.push(locationName);
+            }
+
+            if (updates.length > 0) {
+                updates.push('updated_at = NOW()');
+                params.push(userId);
                 await query(
-                    'UPDATE users SET facebook_id = ?, updated_at = NOW() WHERE id = ?',
-                    [fbUser.id, userId]
+                    `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
+                    params
                 );
             }
+            // Sync Buyer Profile (Insert only if not exists)
+            await query(
+                `INSERT IGNORE INTO buyers (user_id, avatar, created_at, updated_at)
+                 VALUES (?, ?, NOW(), NOW())`,
+                [userId, fbUser.picture?.data?.url || null]
+            );
         } else {
             // Create new user
             const result: any = await query(
-                `INSERT INTO users (name, email, facebook_id, avatar, email_verified, user_type, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, 1, 'buyer', NOW(), NOW())`,
-                [fbUser.name, fbUser.email, fbUser.id, fbUser.picture?.data?.url]
+                `INSERT INTO users (name, email, facebook_id, avatar, email_verified, location, user_type, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, 1, ?, 'buyer', NOW(), NOW())`,
+                [fbUser.name, fbUser.email, fbUser.id, fbUser.picture?.data?.url || null, locationName]
             );
             userId = result.insertId;
+
+            // Sync Buyer Profile
+            await query(
+                `INSERT INTO buyers (user_id, avatar, created_at, updated_at)
+                 VALUES (?, ?, NOW(), NOW())`,
+                [userId, fbUser.picture?.data?.url || null]
+            );
         }
 
         // Generate JWT

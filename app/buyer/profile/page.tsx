@@ -14,26 +14,93 @@ export default function UserProfile() {
         location: 'Not Specified'
     });
     const [isDeleting, setIsDeleting] = useState(false);
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [previewAvatar, setPreviewAvatar] = useState<string | null>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setAvatarFile(file);
+            setPreviewAvatar(URL.createObjectURL(file));
+        }
+    };
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-            setUserData(prev => ({
-                ...prev,
-                name: parsedUser.name || '',
-                email: parsedUser.email || ''
-            }));
-        } else {
-            router.push('/');
-        }
+        const fetchProfile = async () => {
+            const token = localStorage.getItem('token');
+            // MainLayout handles protection, but we need token for API
+            if (!token) return;
+
+            try {
+                const res = await fetch('/api/buyer/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.buyer) {
+                        setUser(data.buyer);
+                        setUserData({
+                            name: data.buyer.name || '',
+                            email: data.buyer.email || '',
+                            phone: data.buyer.phone || '',
+                            location: data.buyer.location || ''
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+            }
+        };
+
+        fetchProfile();
     }, [router]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Update localStorage if needed, or call update API
-        alert('Profile updated successfully!');
+        try {
+            const token = localStorage.getItem('token');
+            const formData = new FormData();
+            formData.append('name', userData.name);
+            formData.append('phone', userData.phone);
+            formData.append('location', userData.location);
+            if (avatarFile) {
+                formData.append('avatar', avatarFile);
+            }
+
+            const res = await fetch('/api/buyer/profile', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                alert('Profile updated successfully!');
+
+                // Update local storage
+                const storedUserRaw = localStorage.getItem('user');
+                if (storedUserRaw) {
+                    const parsed = JSON.parse(storedUserRaw);
+                    parsed.name = userData.name;
+                    // If avatar was updated, update it in local storage
+                    if (data.buyer && data.buyer.avatar) {
+                        parsed.avatar = data.buyer.avatar;
+                    }
+                    localStorage.setItem('user', JSON.stringify(parsed));
+                }
+
+                // Refresh page
+                window.location.reload();
+            } else {
+                alert('Failed to update profile.');
+            }
+        } catch (error) {
+            console.error('Update error:', error);
+            alert('An error occurred.');
+        }
     };
 
     const handleDeleteAccount = async () => {
@@ -56,7 +123,7 @@ export default function UserProfile() {
                 localStorage.removeItem('user');
                 alert('Account deleted successfully.');
                 router.push('/');
-                window.location.reload();
+                window.location.href = '/';
             } else {
                 alert('Failed to delete account. Please try again.');
             }
@@ -98,19 +165,30 @@ export default function UserProfile() {
                     <div className="space-y-6">
                         {/* Avatar Card */}
                         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 text-center">
-                            {user.avatar ? (
-                                <img src={user.avatar} alt={user.name} className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-2 border-brand-orange/20" />
-                            ) : (
-                                <div className="w-24 h-24 rounded-full bg-brand-orange/10 flex items-center justify-center text-brand-orange text-3xl font-bold mx-auto mb-4 border border-brand-orange/20">
-                                    {user.name?.charAt(0) || 'U'}
+                            <div className="relative group mx-auto w-24 h-24 mb-4">
+                                <div className="w-full h-full rounded-full overflow-hidden border-2 border-brand-orange/20">
+                                    {previewAvatar || user.avatar ? (
+                                        <img src={previewAvatar || user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full bg-brand-orange/10 flex items-center justify-center text-brand-orange text-3xl font-bold">
+                                            {user.name?.charAt(0) || 'U'}
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                                <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition rounded-full cursor-pointer text-white">
+                                    <i className="ri-camera-line text-2xl"></i>
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                                </label>
+                            </div>
+
                             <h3 className="text-lg font-bold text-gray-900 mb-1">{user.name}</h3>
                             <p className="text-sm text-gray-500 mb-4">{user.email}</p>
-                            <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition flex items-center gap-2 mx-auto">
+
+                            <label className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition flex items-center gap-2 mx-auto cursor-pointer w-fit">
                                 <i className="ri-upload-2-line"></i>
                                 Change Photo
-                            </button>
+                                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                            </label>
                         </div>
 
                         {/* Activity Stats */}

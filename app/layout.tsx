@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import MainLayout from "@/components/layout/MainLayout";
 
 export const metadata: Metadata = {
   title: "XYZ Finders - No. 1 Classified Marketplace",
@@ -23,9 +22,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <MainLayout>{children}</MainLayout>
       </body>
     </html>
   );

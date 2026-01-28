@@ -91,20 +91,52 @@ export async function GET(request: NextRequest) {
             userId = user.id;
             userType = user.user_type;
 
+            const updates: string[] = [];
+            const params: any[] = [];
+
             if (!user.google_id) {
+                updates.push('google_id = ?');
+                params.push(googleUser.id);
+            }
+
+            // Update location if not set and locale is available
+            if (!user.location && googleUser.locale) {
+                updates.push('location = ?');
+                params.push(googleUser.locale);
+            }
+
+            if (updates.length > 0) {
+                updates.push('updated_at = NOW()');
+                params.push(userId);
                 await query(
-                    'UPDATE users SET google_id = ?, updated_at = NOW() WHERE id = ?',
-                    [googleUser.id, userId]
+                    `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
+                    params
                 );
             }
+
+            // Sync buyer profile (Insert only if not exists, do not overwrite)
+            await query(
+                `INSERT IGNORE INTO buyers (user_id, avatar, created_at, updated_at)
+                 VALUES (?, ?, NOW(), NOW())`,
+                [userId, googleUser.picture || null]
+            );
+
         } else {
             // Create new user (DEFAULT TO BUYER)
+            // Use locale as location
             const result: any = await query(
-                `INSERT INTO users (name, email, google_id, avatar, email_verified, user_type, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, 1, 'buyer', NOW(), NOW())`,
-                [googleUser.name, googleUser.email, googleUser.id, googleUser.picture]
+                `INSERT INTO users (name, email, google_id, avatar, email_verified, location, user_type, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, 1, ?, 'buyer', NOW(), NOW())`,
+                [googleUser.name, googleUser.email, googleUser.id, googleUser.picture || null, googleUser.locale || null]
             );
             userId = result.insertId;
+
+            // Also create buyer profile
+            await query(
+                `INSERT INTO buyers (user_id, avatar, created_at, updated_at)
+                 VALUES (?, ?, NOW(), NOW())`,
+                [userId, googleUser.picture || null]
+            );
         }
 
         // Generate JWT token

@@ -1,6 +1,5 @@
 'use client';
 
-import SellerNav from '@/components/layout/SellerNav';
 
 export default function SellerLayout({
     children,
@@ -9,7 +8,6 @@ export default function SellerLayout({
 }) {
     return (
         <>
-            <SellerNav />
             {children}
         </>
     );

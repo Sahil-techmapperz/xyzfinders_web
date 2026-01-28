@@ -21,6 +21,9 @@ export async function DELETE(request: NextRequest) {
         // Delete seller profile if exists
         await query('DELETE FROM sellers WHERE user_id = ?', [userId]);
 
+        // Delete buyer profile if exists
+        await query('DELETE FROM buyers WHERE user_id = ?', [userId]);
+
         // Delete user
         await query('DELETE FROM users WHERE id = ?', [userId]);
 
