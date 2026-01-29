@@ -74,7 +74,7 @@ const properties: Property[] = [
         location: "Kundeshwari Rd, Kundeshwari, Kashipur, Uttarakhand",
         specs: { bedroom: 3, kitchen: 1, bathroom: 2 },
         tags: ["Spacious Plot", "Semi-furnished", "Ready to Shift"],
-        image: "https://images.unsplash.com/photo-1522771753035-4a53c9f13185?w=800&q=80",
+        image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=60",
         verified: true,
         premium: true
     },

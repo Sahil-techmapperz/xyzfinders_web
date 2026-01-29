@@ -49,7 +49,7 @@ export default function BeautyWellbeing() {
                 {/* Card 2 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://images.unsplash.com/photo-1615887023591-614d55c91439?auto=format&fit=crop&w=400&q=60" alt="ENVY Luxury Pack" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://envyfragrances.com/cdn/shop/files/arnold_george_vibe.jpg?v=1757676420" alt="ENVY Luxury Pack" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">ENVY Luxury Mans pack 3</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
@@ -80,7 +80,7 @@ export default function BeautyWellbeing() {
                 {/* Card 3 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://images.unsplash.com/photo-1596462502278-27bfdd403348?auto=format&fit=crop&w=400&q=60" alt="Cosmetics" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://www.jiomart.com/images/product/original/rvgytmzq1h/ladyeye-complete-makeup-set-for-girls-combo-of-20-premium-beauty-products-for-regular-use-product-images-orvgytmzq1h-p610043726-0-202409271839.jpg?im=Resize=(1000,1000)" alt="Cosmetics" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Premium Beauty Collection</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">

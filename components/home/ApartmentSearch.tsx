@@ -1,9 +1,11 @@
+import Skyline_Banner from "@/public/Skyline_Banner.png";
+import Image from "next/image";
 export default function ApartmentSearch() {
     return (
         <section className="mb-12 relative">
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
-                <img src="https://placehold.co/1920x600/2c3e50/000000?text=City+Skyline+Night" alt="Background" className="w-full h-full object-cover" />
+                <Image src={Skyline_Banner} alt="Background" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/40"></div>
             </div>
 

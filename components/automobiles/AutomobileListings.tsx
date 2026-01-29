@@ -51,7 +51,7 @@ const AUTO_DATA = [
         fuel: "Diesel",
         price: "4,500,000",
         location: "Vasant Vihar, New Delhi",
-        image: "https://images.unsplash.com/photo-1555215695-3004980adade?q=80&w=2070&auto=format&fit=crop",
+        image: "https://5.imimg.com/data5/SELLER/Default/2022/11/VN/FC/TN/64991677/bmw-5-series-520d-luxury-line.jpeg",
         verified: true,
         premium: false
     },

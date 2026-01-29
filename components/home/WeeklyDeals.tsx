@@ -24,8 +24,8 @@ const products: Product[] = [
         rating: 5,
         reviews: 450,
         price: '₹ 25,000',
-        image1: 'https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?auto=format&fit=crop&w=300&q=80',
-        image2: 'https://images.unsplash.com/photo-1588872657578-a3d2dd1ad6e8?auto=format&fit=crop&w=300&q=80'
+        image1: 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTqI8qjDfGY950I1YXHpi4CS0Kgm44UC3C6yDWKZhv_oro7bu0DnhHwQPWL6q_vd9lLMHLOvZHYFn5BYLzdlLLRrBmii4OPQ6YWVLr-hInj0XBqBM8pNxjw9NetFOStEl0xW1eHfLhk8Q&usqp=CAc',
+        image2: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTY-9JsrLMvjWU3b77voV_jMxa7aYYTjEmdLg&s'
     },
     {
         id: 2,
@@ -37,8 +37,8 @@ const products: Product[] = [
         rating: 5,
         reviews: 450,
         price: '₹ 105,565',
-        image1: 'https://images.unsplash.com/photo-1695504239663-c91836173428?auto=format&fit=crop&w=300&q=80',
-        image2: 'https://images.unsplash.com/photo-1696446700547-a859737f09f6?auto=format&fit=crop&w=300&q=80'
+        image1: 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcT6mSUFw9EZDLW4rfOTyEoWQj1Yzu4ltqNLQ5IfeYvzDDQp2QuYZ_1Ech0i5zGmzrlc-DA05bJDjX9JB3BYoSuPyDLAKZVkyQdhav5mE_Wj-8R2VoLUrcZBjhuzk6ujXzS-krjsJXg&usqp=CAc',
+        image2: 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcT4q5YoX_R4UFTUEDRoG2dp0I0x5XWK2PKUWg_RahEpX4NWrAV9XBDjRiKVcGsF-1cZ_mX6ePdwH6IpKGYon66TTc73q3HAs23s7grnqb-teeKv2vQn3xBSIS7AS8CApkc6sM6MklI&usqp=CAc'
     },
     {
         id: 3,
@@ -61,8 +61,8 @@ const products: Product[] = [
         rating: 5,
         reviews: 450,
         price: '₹ 105,565',
-        image1: 'https://images.unsplash.com/photo-1621330383348-1126f394f796?auto=format&fit=crop&w=300&q=80',
-        image2: 'https://images.unsplash.com/photo-1592434132770-bf2c844ae239?auto=format&fit=crop&w=300&q=80'
+        image1: 'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSLHtf9eowG0uhZCWN40VFetsE08D5S27JGNfUGC-qmMCOTgUiLKjQxFaSbrqAGmCkgRnv86YVz6zScd_YlVJSjcFk5llSOOC6DgodxXZPgQTYS2ODHT59NTXkn8lBSgDRKg-5PqrQ&usqp=CAc',
+        image2: 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQA4jdlcozXJ53l3d-3f40qSnbfMub2qsxsIzc2eQwXyMAuWx1LC3V0kwu0wGTcsYBfo32VtUcMvzjXDe8FttaHZGjHjbB1rF3_r40iXCLY23i33w2gPsjVz5lzyx5totWPeAMCfLI&usqp=CAc'
     },
     {
         id: 5,
@@ -73,7 +73,7 @@ const products: Product[] = [
         rating: 5,
         reviews: 450,
         price: '₹ 65,000',
-        image1: 'https://images.unsplash.com/photo-1588702547923-a3a87954fa63?auto=format&fit=crop&w=300&q=80',
+        image1: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=300&q=80',
         image2: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=300&q=80'
     }
 ];

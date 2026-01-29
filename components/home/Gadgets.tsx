@@ -49,7 +49,7 @@ export default function Gadgets() {
                 {/* Card 2 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://images.unsplash.com/photo-1572569028738-411a0977d4aa?auto=format&fit=crop&w=400&q=60" alt="Samsung SE Earbuds" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcShdq8JHYbU_Zvx7WOv5Yh7oM3qCkNUCbskMRX1_B4Ru2Bc1re9wSM18KJQfeMXipVHd8CSo6Ec7RcCIdyVxApB0Rlp5I83DPxT7ayV6Y60l8mq0miQTvgzOS7YkCn3Vun1nHpF9dU&usqp=CAc" alt="Samsung SE Earbuds" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Samsung SE Earbuds 21s</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
@@ -111,7 +111,7 @@ export default function Gadgets() {
                 {/* Card 4 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://images.unsplash.com/photo-1621330383348-1126f394f796?auto=format&fit=crop&w=400&q=60" alt="iPhone 16 Pro" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTv5YUkUBHsFwRuiUIgPb8kcj4iz1DIzN5iCiy7HobYcrMEnpMIaZoXqH9zoxmc7vX6DlvNKmLAD2r8lnDbLp0T4x-PkybyeXwpS4nwPVTCU4tSZYbq6QZsZHdEEAUKtDiy-GRDrA&usqp=CAc" alt="iPhone 16 Pro" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Apple iPhone 16 Pro 256GB Natural...</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">

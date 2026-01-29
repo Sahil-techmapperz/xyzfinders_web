@@ -1,11 +1,13 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import Mobile_Banner from "@/public/mobile_banner.png";
 
 export default function MobileBanner() {
     return (
         <section className="container mx-auto px-4 mb-12">
             <div className="rounded-xl overflow-hidden h-64 relative group">
-                <img
-                    src="https://placehold.co/1200x300/FFF5E6/005251?text=Mobile+%26+Tablet+Promo+Banner"
+                <Image
+                    src={Mobile_Banner}
                     alt="Looking for Sale or Buy your Mobile & Tablet?"
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                 />

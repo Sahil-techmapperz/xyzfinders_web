@@ -87,7 +87,7 @@ export default function ResidentialRent() {
         {/* Card 3 */}
         <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
           <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-            <img src="https://images.unsplash.com/photo-1574362848149-11496d97a7bc?auto=format&fit=crop&w=400&q=60" alt="Apartment" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+            <img src="https://media.istockphoto.com/id/1218372448/photo/living-room-in-modern-studio-apartments.webp?a=1&b=1&s=612x612&w=0&k=20&c=VJcii7Ja6j4WjyF6McdQTA0FeLeQwjG2eRbfPKvhpqM=" alt="Apartment" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
             <span className="absolute top-3 left-3 bg-white text-[#4CAF50] text-[10px] font-bold px-2 py-1 rounded shadow-sm border border-gray-100">Verified</span>
           </div>
           <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Premium 2BHK Apartment for Rent.</h3>

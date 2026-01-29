@@ -52,7 +52,7 @@ export default function Automobiles() {
                 {/* Card 2 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://images.unsplash.com/photo-1533473359331-0135ef1bcfb0?auto=format&fit=crop&w=400&q=60" alt="Mahindra Scorpio" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://media.istockphoto.com/id/2192428587/photo/tank-300.jpg?s=612x612&w=0&k=20&c=lgoikW-iaZ_2CEwqn1SYoTa_gn4ALFvCgKxeSrhWhXE=" alt="Mahindra Scorpio" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Mahindra Scorpio - Model 2020</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
@@ -84,7 +84,7 @@ export default function Automobiles() {
                 {/* Card 3 */}
                 <div className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer">
                     <div className="relative h-60 rounded-xl overflow-hidden mb-4">
-                        <img src="https://images.unsplash.com/photo-1595188737233-68d716262b9a?auto=format&fit=crop&w=400&q=60" alt="Bajaj Maxima Z" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                        <img src="https://cdn.bajajauto.com/-/media/assets/bajajauto/360degreeimages/3-wheelers-and-qute/maxima-z/cng/eco-green/webp/00.png" alt="Bajaj Maxima Z" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-1">Bajaj Maxima Z - Model 2018</h3>
                     <ul className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
