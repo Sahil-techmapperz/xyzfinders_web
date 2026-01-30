@@ -31,3 +31,77 @@ export async function GET(request: NextRequest) {
         return errorResponse('Failed to fetch locations', 500);
     }
 }
+
+// POST /api/locations - Create or find location
+export async function POST(request: NextRequest) {
+    try {
+        const body = await request.json();
+        const { city, state, name } = body;
+
+        if (!city || !state) {
+            return errorResponse('City and state are required');
+        }
+
+        const locationName = name || city;
+
+        // Find or create state
+        let stateRecord = await queryOne<{ id: number; name: string }>(
+            'SELECT * FROM states WHERE name = ? LIMIT 1',
+            [state]
+        );
+
+        if (!stateRecord) {
+            const result: any = await query(
+                'INSERT INTO states (name, created_at) VALUES (?, NOW())',
+                [state]
+            );
+            stateRecord = await queryOne<{ id: number; name: string }>(
+                'SELECT * FROM states WHERE id = ?',
+                [result.insertId]
+            );
+        }
+
+        const stateId = stateRecord!.id;
+
+        // Find or create city
+        let cityRecord = await queryOne<{ id: number; state_id: number; name: string }>(
+            'SELECT * FROM cities WHERE state_id = ? AND name = ? LIMIT 1',
+            [stateId, city]
+        );
+
+        if (!cityRecord) {
+            const result: any = await query(
+                'INSERT INTO cities (state_id, name, created_at) VALUES (?, ?, NOW())',
+                [stateId, city]
+            );
+            cityRecord = await queryOne<{ id: number; state_id: number; name: string }>(
+                'SELECT * FROM cities WHERE id = ?',
+                [result.insertId]
+            );
+        }
+
+        const cityId = cityRecord!.id;
+
+        // Find or create location
+        let locationRecord = await queryOne<{ id: number; city_id: number; name: string }>(
+            'SELECT * FROM locations WHERE city_id = ? AND name = ? LIMIT 1',
+            [cityId, locationName]
+        );
+
+        if (!locationRecord) {
+            const result: any = await query(
+                'INSERT INTO locations (city_id, name, created_at) VALUES (?, ?, NOW())',
+                [cityId, locationName]
+            );
+            locationRecord = await queryOne<{ id: number; city_id: number; name: string }>(
+                'SELECT * FROM locations WHERE id = ?',
+                [result.insertId]
+            );
+        }
+
+        return successResponse(locationRecord);
+    } catch (error) {
+        console.error('Create location error:', error);
+        return errorResponse('Failed to create location', 500);
+    }
+}

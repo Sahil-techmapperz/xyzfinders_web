@@ -96,6 +96,10 @@ export const NAV_ITEMS = [
         link: "/pets",
     },
     {
+        label: "Local Events",
+        link: "/events",
+    },
+    {
         label: "Beauty & Well being",
         link: "/beauty",
     },

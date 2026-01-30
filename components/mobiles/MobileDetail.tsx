@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import ContactSellerButton from '../shared/ContactSellerButton';
 
 export default function MobileDetail({ id }: { id?: string }) {
     // Mock Data matching the image content
@@ -36,7 +37,8 @@ Additionally, this phone is covered by warranty, ensuring peace of mind for any 
             name: "Rahul Sharma",
             verified: true,
             memberSince: "December 2023",
-            image: "https://ui-avatars.com/api/?name=Rahul+Sharma&background=0D8ABC&color=fff"
+            image: "https://ui-avatars.com/api/?name=Rahul+Sharma&background=0D8ABC&color=fff",
+            id: 1 // Default or from API
         },
         images: [
             "https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?q=80&w=2070&auto=format&fit=crop",
@@ -189,9 +191,10 @@ Additionally, this phone is covered by warranty, ensuring peace of mind for any 
                             <button className="w-full bg-[#D50000] hover:bg-[#b50000] text-white text-xs font-bold py-2.5 rounded-lg mb-2 flex items-center justify-center gap-2 transition-colors">
                                 <i className="ri-phone-fill"></i> Call
                             </button>
-                            <button className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white text-xs font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                                <i className="ri-chat-3-fill"></i> Chat with Seller
-                            </button>
+                            <ContactSellerButton
+                                productId={id || 1}
+                                sellerId={item.seller.id}
+                            />
                         </div>
 
                         {/* Google Ads Vertical Banner */}

@@ -21,7 +21,7 @@ export default function GlobalFilterSidebar({
     locationFilter: string,
     setLocationFilter: (l: string) => void
 }) {
-    const CATEGORIES = ["All", "Real Estate", "Automobiles", "Mobiles", "Furniture", "Electronics", "Beauty", "Jobs"];
+    const CATEGORIES = ["All", "Real Estate", "Automobiles", "Mobiles", "Furniture", "Electronics", "Beauty", "Jobs", "Pets & Animals Accessories", "Learning & Education", "Local Events", "Services"];
 
     const handleCategoryChange = (cat: string) => {
         if (cat === 'All') {

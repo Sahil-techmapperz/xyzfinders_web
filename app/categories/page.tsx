@@ -7,6 +7,10 @@ import GlobalFilterSidebar from '@/components/shared/GlobalFilterSidebar';
 import PropertyCard from '@/components/real-estate/PropertyCard';
 import AutomobileCard from '@/components/automobiles/AutomobileCard';
 import MobileCard from '@/components/mobiles/MobileCard';
+import PetsCard from '@/components/pets/PetsCard';
+import EducationCard from '@/components/education/EducationCard';
+import EventsCard from '@/components/events/EventsCard';
+import ServicesCard from '@/components/services/ServicesCard';
 
 function GlobalListingsContent() {
     const router = useRouter();
@@ -43,11 +47,6 @@ function GlobalListingsContent() {
         if (!selectedCategory.includes('All')) {
             selectedCategory.forEach(c => params.append('category', c));
         } else {
-            // If All is implicitly selected, we typically don't set it, or set it to 'All'. 
-            // Previous logic set 'category' if !== 'All'.
-            // Let's set it to 'All' if explicitly tracking it, or omit.
-            // But my state init does: searchParams.getAll('category'). || 'All'.
-            // If URL is empty, state is ['All']. So clearing params relies on absence -> All.
             params.set('category', 'All');
         }
 
@@ -80,18 +79,23 @@ function GlobalListingsContent() {
                 matchesCategory = selectedCategory.some(cat => {
                     if (cat === 'Real Estate') return item.listingType === 'property';
                     if (cat === 'Automobiles') return item.listingType === 'automobile';
-                    if (cat === 'Mobiles') return item.listingType === 'mobile';
+                    if (cat === 'Mobile & Tablet' || cat === 'Mobiles') return item.listingType === 'mobile';
+                    if (cat === 'Pets & Animals Accessories') return item.listingType === 'pet';
+                    if (cat === 'Learning & Education') return item.listingType === 'education';
+                    if (cat === 'Local Events') return item.listingType === 'event';
+                    if (cat === 'Services') return item.listingType === 'service';
                     return false;
                 });
             }
 
             // Price 
-            const priceNum = parseInt(item.price.replace(/[^\d]/g, ''));
+            const rawPrice = (item as any).price || (item as any).fees || "0";
+            const priceNum = parseInt(rawPrice.toString().replace(/[^\d]/g, '')) || 0;
             const matchesPrice = priceNum >= priceRange[0] && priceNum <= priceRange[1];
 
             // Badges
-            const matchesVerified = verifiedOnly ? item.verified : true;
-            const matchesPremium = premiumOnly ? item.premium : true;
+            const matchesVerified = verifiedOnly ? (item as any).verified : true;
+            const matchesPremium = premiumOnly ? (item as any).premium : true;
 
             // Location Filter
             const matchesLocation = locationFilter ? item.location.toLowerCase().includes(locationFilter.toLowerCase()) : true;
@@ -102,18 +106,21 @@ function GlobalListingsContent() {
         // Sorting Logic
         if (sortBy === 'price-low') {
             result.sort((a, b) => {
-                const priceA = parseInt(a.price.replace(/[^\d]/g, ''));
-                const priceB = parseInt(b.price.replace(/[^\d]/g, ''));
+                const priceAStr = (a as any).price || (a as any).fees || "0";
+                const priceBStr = (b as any).price || (b as any).fees || "0";
+                const priceA = parseInt(priceAStr.toString().replace(/[^\d]/g, '')) || 0;
+                const priceB = parseInt(priceBStr.toString().replace(/[^\d]/g, '')) || 0;
                 return priceA - priceB;
             });
         } else if (sortBy === 'price-high') {
             result.sort((a, b) => {
-                const priceA = parseInt(a.price.replace(/[^\d]/g, ''));
-                const priceB = parseInt(b.price.replace(/[^\d]/g, ''));
+                const priceAStr = (a as any).price || (a as any).fees || "0";
+                const priceBStr = (b as any).price || (b as any).fees || "0";
+                const priceA = parseInt(priceAStr.toString().replace(/[^\d]/g, '')) || 0;
+                const priceB = parseInt(priceBStr.toString().replace(/[^\d]/g, '')) || 0;
                 return priceB - priceA;
             });
         } else if (sortBy === 'newest') {
-            // Mock data uses ID as proxy for newness if date not available
             result.sort((a, b) => b.id - a.id);
         }
 
@@ -192,6 +199,10 @@ function GlobalListingsContent() {
                                         if (item.listingType === 'property') return <PropertyCard key={`${item.listingType}-${item.id}`} property={item} />;
                                         if (item.listingType === 'automobile') return <AutomobileCard key={`${item.listingType}-${item.id}`} auto={item} />;
                                         if (item.listingType === 'mobile') return <MobileCard key={`${item.listingType}-${item.id}`} item={item} />;
+                                        if (item.listingType === 'pet') return <PetsCard key={`${item.listingType}-${item.id}`} item={item} />;
+                                        if (item.listingType === 'education') return <EducationCard key={`${item.listingType}-${item.id}`} item={item} />;
+                                        if (item.listingType === 'event') return <EventsCard key={`${item.listingType}-${item.id}`} item={item} />;
+                                        if (item.listingType === 'service') return <ServicesCard key={`${item.listingType}-${item.id}`} item={item} />;
                                         return null;
                                     })}
                                 </div>

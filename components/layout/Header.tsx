@@ -252,6 +252,10 @@ export default function Header() {
                                                     <i className="ri-add-circle-line text-lg"></i>
                                                     <span>Post Ad</span>
                                                 </Link>
+                                                <Link href="/seller/messages" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
+                                                    <i className="ri-message-3-line text-lg"></i>
+                                                    <span>Messages</span>
+                                                </Link>
                                                 <Link href="/seller/settings" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
                                                     <i className="ri-settings-4-line text-lg"></i>
                                                     <span>Settings</span>
@@ -362,9 +366,9 @@ export default function Header() {
 
             {/* Navigation Bar */}
             <div className="border-t border-gray-200 bg-[#FFFBF7] shadow-sm relative z-40">
-                <div className="container mx-auto px-2 md:px-4 py-2 md:py-3 flex items-center justify-between gap-4">
+                <div className="container mx-auto px-2 md:px-4 py-2 md:py-3 flex items-center justify-between gap-4 relative">
                     {/* Browser Categories */}
-                    <div className="relative group shrink-0">
+                    <div className="group shrink-0">
                         <button
                             onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
                             onBlur={() => setTimeout(() => setShowCategoryDropdown(false), 200)}
@@ -376,24 +380,24 @@ export default function Header() {
 
                         {/* Categories Dropdown */}
                         {showCategoryDropdown && (
-                            <div className="absolute top-full left-0 mt-2 w-[320px] bg-white rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="p-4 grid grid-cols-3 gap-y-4 gap-x-2">
+                            <div className="absolute top-full left-0 mt-2 w-full bg-white rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="p-4 lg:p-6 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-y-4 gap-x-2 lg:gap-6">
                                     {BROWSE_CATEGORIES.map((cat, idx) => (
-                                        <Link key={idx} href={cat.link} className="flex flex-col items-center gap-1 group/item">
-                                            <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover/item:bg-orange-50 transition border border-gray-100 group-hover/item:border-orange-100 p-1.5">
+                                        <Link key={idx} href={cat.link} className="flex flex-col items-center gap-2 group/item p-2 rounded-lg hover:bg-gray-50 transition">
+                                            <div className="w-10 h-10 lg:w-16 lg:h-16 rounded-full bg-gray-50 flex items-center justify-center group-hover/item:scale-110 transition-transform duration-300 border border-gray-100 p-1.5 lg:p-2">
                                                 {/* @ts-ignore - isImage property handling */}
                                                 {cat.isImage ? (
                                                     <img src={cat.icon} alt={cat.name} className="w-full h-full object-contain" />
                                                 ) : (
-                                                    <i className={`${cat.icon} text-lg text-gray-600 group-hover/item:text-brand-orange transition`}></i>
+                                                    <i className={`${cat.icon} text-lg lg:text-2xl text-gray-600 group-hover/item:text-brand-orange transition`}></i>
                                                 )}
                                             </div>
-                                            <span className="text-[10px] font-bold text-gray-600 group-hover/item:text-brand-orange text-center leading-tight">{cat.name}</span>
+                                            <span className="text-[10px] lg:text-sm font-bold text-gray-700 group-hover/item:text-brand-orange text-center leading-tight line-clamp-2">{cat.name}</span>
                                         </Link>
                                     ))}
                                 </div>
-                                <div className="bg-gray-50 p-2 text-center border-t border-gray-100">
-                                    <Link href="/categories" className="text-xs font-bold text-brand-orange hover:underline">
+                                <div className="bg-gray-50 p-3 text-center border-t border-gray-100">
+                                    <Link href="/categories" className="text-xs lg:text-sm font-bold text-brand-orange hover:underline">
                                         View All Categories
                                     </Link>
                                 </div>

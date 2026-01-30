@@ -43,20 +43,20 @@ class ApiClient {
 
     private getToken(): string | null {
         if (typeof window !== 'undefined') {
-            return localStorage.getItem('auth_token');
+            return localStorage.getItem('token');
         }
         return null;
     }
 
     private clearToken(): void {
         if (typeof window !== 'undefined') {
-            localStorage.removeItem('auth_token');
+            localStorage.removeItem('token');
         }
     }
 
     public setToken(token: string): void {
         if (typeof window !== 'undefined') {
-            localStorage.setItem('auth_token', token);
+            localStorage.setItem('token', token);
         }
     }
 

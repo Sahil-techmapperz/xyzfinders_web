@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import ContactSellerButton from '../shared/ContactSellerButton';
 
 export default function AutomobileDetail({ id }: { id?: string }) {
     // In a real app, use the ID to fetch data. For now, we use fixed mock data matching the image.
@@ -213,10 +214,11 @@ export default function AutomobileDetail({ id }: { id?: string }) {
                                 Call
                             </button>
 
-                            <button className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                                <i className="ri-message-2-fill"></i>
-                                Chat with Seller
-                            </button>
+                            <ContactSellerButton
+                                productId={id || 1}
+                                sellerId={2}
+                                className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                            />
                         </div>
 
                         {/* Google Ads Banner Slot */}

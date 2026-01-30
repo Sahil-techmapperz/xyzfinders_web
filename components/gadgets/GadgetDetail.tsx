@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import ContactSellerButton from '../shared/ContactSellerButton';
 
 export default function GadgetDetail({ id }: { id?: string }) {
     // Mock data - in real app, fetch based on ID
@@ -193,10 +194,11 @@ export default function GadgetDetail({ id }: { id?: string }) {
                                     )}
                                 </div>
 
-                                <button className="w-full bg-[#2196F3] text-white font-bold py-3 rounded-xl hover:bg-[#1976D2] transition-colors mb-3 flex items-center justify-center gap-2">
-                                    <i className="ri-chat-3-line"></i>
-                                    Chat with Seller
-                                </button>
+                                <ContactSellerButton
+                                    productId={id || 1}
+                                    sellerId={1}
+                                    className="w-full bg-[#2196F3] text-white font-bold py-3 rounded-xl hover:bg-[#1976D2] transition-colors mb-3 flex items-center justify-center gap-2"
+                                />
 
                                 <button className="w-full bg-[#4CAF50] text-white font-bold py-3 rounded-xl hover:bg-[#45a049] transition-colors flex items-center justify-center gap-2">
                                     <i className="ri-phone-line"></i>

@@ -237,9 +237,293 @@ export const MOCK_MOBILES = [
     }
 ];
 
+// Pets Data
+export const MOCK_PETS = [
+    {
+        id: 1,
+        title: "Golden Retriever Puppies KCI Registered",
+        category: "Dogs",
+        type: "Dog",
+        image: "https://images.unsplash.com/photo-1633722715463-d30f4f325e24?q=80&w=2069&auto=format&fit=crop",
+        description: "Adorbale Golden Retriever puppies available. KCI registered, first vaccination done. Very playful and healthy...",
+        specs: {
+            age: "45 Days",
+            breed: "Golden Retriever",
+            gender: "Male/Female",
+            vaccinated: "Yes"
+        },
+        price: "₹ 25,000/-",
+        location: "Vasant Vihar, New Delhi",
+        postedTime: "Posted 3 hr ago",
+        verified: true,
+        premium: true
+    },
+    {
+        id: 2,
+        title: "Persian Cat Kittens (Doll Face)",
+        category: "Cats",
+        type: "Cat",
+        image: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=1887&auto=format&fit=crop",
+        description: "Pure white Persian kittens with blue eyes. Litter trained and very friendly. Looking for a loving home.",
+        specs: {
+            age: "2 Months",
+            breed: "Persian",
+            gender: "Male",
+            vaccinated: "No"
+        },
+        price: "₹ 12,000/-",
+        location: "Lajpat Nagar, New Delhi",
+        postedTime: "Posted 6 hr ago",
+        verified: true,
+        premium: true
+    },
+    {
+        id: 3,
+        title: "Large Dog Cage / Crate (Heavy Duty)",
+        category: "Accessories",
+        type: "Accessory",
+        image: "https://images.unsplash.com/photo-1598585226456-ccde20937a0c?q=80&w=2072&auto=format&fit=crop",
+        description: "Heavy duty customized dog cage suitable for large breeds like German Shepherd, Rottweiler. Size 4x3x3 feet.",
+        specs: {
+            age: "New",
+            breed: "Universal",
+            gender: "N/A",
+            vaccinated: "N/A"
+        },
+        price: "₹ 4,500/-",
+        location: "Dwarka, New Delhi",
+        postedTime: "Posted 10 hr ago",
+        verified: false,
+        premium: false
+    },
+    {
+        id: 4,
+        title: "Pedigree Adult Dog Food Chicken & Vegetables 20kg",
+        category: "Food",
+        type: "Food",
+        image: "https://images.unsplash.com/photo-1585846888147-3fe14c130048?q=80&w=1887&auto=format&fit=crop",
+        description: "Unopened bag of Pedigree Adult Dog Food. Selling because my dog switched to a different diet. Market price 3800, selling for cheap.",
+        specs: {
+            age: "New",
+            breed: "All Breeds",
+            gender: "N/A",
+            vaccinated: "N/A"
+        },
+        price: "₹ 2,800/-",
+        location: "Rohini, New Delhi",
+        postedTime: "Posted 1 day ago",
+        verified: true,
+        premium: false
+    }
+];
+
+// Education Data
+export const MOCK_EDUCATION = [
+    {
+        id: 1,
+        title: "Mathematics & Science Tuition (Class 9-10)",
+        category: "Tuition",
+        subject: "Maths & Science",
+        image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2070&auto=format&fit=crop",
+        description: "Experienced tutor with 10+ years of experience. Focus on concept building and exam preparation. Weekly tests and doubt sessions.",
+        specs: {
+            mode: "Offline/Home",
+            level: "High School",
+            duration: "Monthly",
+            language: "English"
+        },
+        fees: "₹ 3,500/-",
+        location: "Dwarka Sector 12, New Delhi",
+        postedTime: "Posted 2 hr ago",
+        verified: true,
+        premium: true
+    },
+    {
+        id: 2,
+        title: "IELTS & TOEFL Coaching - Guaranteed 7+ Band",
+        category: "Exam Prep",
+        subject: "English",
+        image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop",
+        description: "Comprehensive coaching for IELTS/TOEFL. Study material included. Mock tests every weekend. Flexible timings.",
+        specs: {
+            mode: "Online/Offline",
+            level: "Professional",
+            duration: "3 Months",
+            language: "English"
+        },
+        fees: "₹ 12,000/-",
+        location: "Rajouri Garden, New Delhi",
+        postedTime: "Posted 5 hr ago",
+        verified: true,
+        premium: true
+    },
+    {
+        id: 3,
+        title: "Personal Fitness Trainer Certification Course",
+        category: "Vocational",
+        subject: "Fitness",
+        image: "https://images.unsplash.com/photo-1544367563-12123d8965cd?q=80&w=2070&auto=format&fit=crop",
+        description: "Become a certified fitness trainer. Practical training included. Job placement assistance provided after course completion.",
+        specs: {
+            mode: "Offline",
+            level: "Adult",
+            duration: "6 Months",
+            language: "English/Hindi"
+        },
+        fees: "₹ 45,000/-",
+        location: "Saket, New Delhi",
+        postedTime: "Posted 1 day ago",
+        verified: false,
+        premium: false
+    },
+    {
+        id: 4,
+        title: "French Language Classes for Beginners",
+        category: "Language",
+        subject: "French",
+        image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=2070&auto=format&fit=crop",
+        description: "Learn French from a level A1 certified trainer. Small batch size for personal attention. Weekend classes available.",
+        specs: {
+            mode: "Online",
+            level: "Beginner",
+            duration: "3 Months",
+            language: "French"
+        },
+        fees: "₹ 8,000/-",
+        location: "Vasant Kunj, New Delhi",
+        postedTime: "Posted 3 days ago",
+        verified: true,
+        premium: false
+    }
+];
+
+// Events Data
+export const MOCK_EVENTS = [
+    {
+        id: 1,
+        title: "Arijit Singh Live Concert - India Tour",
+        category: "Music",
+        image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop",
+        date: "15 OCT",
+        time: "6:00 PM Onwards",
+        location: "JLN Stadium, New Delhi",
+        price: "₹ 1,500 onwards",
+        organizer: "Star Events",
+        description: "Experience the magic of Arijit Singh live in concert. A night full of soulful melodies and chart-topping hits. Book your tickets now!",
+        verified: true,
+        premium: true
+    },
+    {
+        id: 2,
+        title: "Delhi Food Carnival 2024",
+        category: "Food & Drink",
+        image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1974&auto=format&fit=crop",
+        date: "20 OCT",
+        time: "12:00 PM - 10:00 PM",
+        location: "Dilli Haat, INA",
+        price: "Entry Free",
+        organizer: "Delhi Tourism",
+        description: "A celebration of flavors! Taste dishes from over 50 renowned food stalls. Live music, games, and fun for the whole family.",
+        verified: true,
+        premium: false
+    },
+    {
+        id: 3,
+        title: "Standup Comedy Special - Zakir Khan",
+        category: "Comedy",
+        image: "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?q=80&w=2070&auto=format&fit=crop",
+        date: "22 OCT",
+        time: "8:00 PM",
+        location: "Siri Fort Auditorium",
+        price: "₹ 999 onwards",
+        organizer: "Comedy High",
+        description: "Laugh your heart out with the 'Sakht Launda' himself. Brand new material, never performed before specials.",
+        verified: true,
+        premium: true
+    },
+    {
+        id: 4,
+        title: "Startup Founders Meetup",
+        category: "Networking",
+        image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=2070&auto=format&fit=crop",
+        date: "25 OCT",
+        time: "5:00 PM - 8:00 PM",
+        location: "WeWork, Cyber City",
+        price: "Free (Reg. Req.)",
+        organizer: "Tech Circle",
+        description: "Connect with fellow founders, investors, and tech enthusiasts. Panel discussions on scaling and fundraising.",
+        verified: false,
+        premium: false
+    }
+];
+
+// Services Data
+export const MOCK_SERVICES = [
+    {
+        id: 1,
+        title: "Expert Home Plumbing Services",
+        category: "Home Maintenance",
+        subcategory: "Plumbing",
+        image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?q=80&w=2072&auto=format&fit=crop",
+        rating: 4.8,
+        reviews: 124,
+        location: "Kalkaji, New Delhi",
+        price: "₹ 500 Visit Charge",
+        verified: true,
+        premium: true,
+        provider: "QuickFix Solutions"
+    },
+    {
+        id: 2,
+        title: "Professional House Deep Cleaning",
+        category: "Cleaning",
+        subcategory: "Deep Clean",
+        image: "https://images.unsplash.com/photo-1581578731117-104f2a8d46a8?q=80&w=1974&auto=format&fit=crop",
+        rating: 4.9,
+        reviews: 210,
+        location: "Vasant Kunj, New Delhi",
+        price: "₹ 1,999 (2BHK)",
+        verified: true,
+        premium: true,
+        provider: "Sparkle Homes"
+    },
+    {
+        id: 3,
+        title: "AC Repair & Service - Brand Authorized",
+        category: "Appliances",
+        subcategory: "AC Repair",
+        image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=2069&auto=format&fit=crop",
+        rating: 4.5,
+        reviews: 89,
+        location: "Dwarka, New Delhi",
+        price: "₹ 600 Visit Charge",
+        verified: false,
+        premium: false,
+        provider: "Cool Breeze Services"
+    },
+    {
+        id: 4,
+        title: "Interior Design Consultation",
+        category: "Design",
+        subcategory: "Interior",
+        image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000&auto=format&fit=crop",
+        rating: 5.0,
+        reviews: 45,
+        location: "South Ex, New Delhi",
+        price: "Free Consultation",
+        verified: true,
+        premium: true,
+        provider: "Urban Space Designs"
+    }
+];
+
 // Unified List
 export const ALL_LISTINGS = [
     ...MOCK_PROPERTIES.map(item => ({ ...item, listingType: 'property' })),
     ...MOCK_AUTOMOBILES.map(item => ({ ...item, listingType: 'automobile' })),
     ...MOCK_MOBILES.map(item => ({ ...item, listingType: 'mobile' })),
+    ...MOCK_PETS.map(item => ({ ...item, listingType: 'pet' })),
+    ...MOCK_EDUCATION.map(item => ({ ...item, listingType: 'education' })),
+    ...MOCK_EVENTS.map(item => ({ ...item, listingType: 'event' })),
+    ...MOCK_SERVICES.map(item => ({ ...item, listingType: 'service' })),
 ];
