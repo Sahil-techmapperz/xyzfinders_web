@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { NAV_ITEMS } from '../../data/navigation';
+import { NAV_ITEMS, BROWSE_CATEGORIES } from '../../data/navigation';
 import AuthModal from '../auth/AuthModal';
+import toast from 'react-hot-toast';
 
 export default function Header() {
     const router = useRouter();
@@ -155,6 +156,7 @@ export default function Header() {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
     const [showUserDropdown, setShowUserDropdown] = useState(false);
+    const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
     return (
         <header className="font-jost w-full bg-white relative z-50">
@@ -326,12 +328,34 @@ export default function Header() {
                     )}
 
                     {(currentMode === 'seller' || !isLoggedIn) && (
-                        <Link
-                            href="/seller/place-ad"
-                            className="bg-brand-orange text-white px-3 md:px-5 py-2 md:py-2.5 rounded shadow-md hover:bg-[#e07a46] transition font-semibold text-xs md:text-sm whitespace-nowrap"
-                        >
-                            Place Your Ads
-                        </Link>
+                        <>
+                            <Link
+                                href={isLoggedIn ? "/seller/settings" : "#"}
+                                onClick={(e) => {
+                                    if (!isLoggedIn) {
+                                        e.preventDefault();
+                                        toast.error("Please login to setup your store");
+                                        setIsAuthModalOpen(true);
+                                    }
+                                }}
+                                className="bg-white text-brand-orange border border-brand-orange px-3 md:px-5 py-2 md:py-2.5 rounded shadow-sm hover:bg-orange-50 transition font-semibold text-xs md:text-sm whitespace-nowrap"
+                            >
+                                Setup Store
+                            </Link>
+                            <Link
+                                href={isLoggedIn ? "/seller/place-ad" : "#"}
+                                onClick={(e) => {
+                                    if (!isLoggedIn) {
+                                        e.preventDefault();
+                                        toast.error("Please login to list your shop");
+                                        setIsAuthModalOpen(true);
+                                    }
+                                }}
+                                className="bg-brand-orange text-white px-3 md:px-5 py-2 md:py-2.5 rounded shadow-md hover:bg-[#e07a46] transition font-semibold text-xs md:text-sm whitespace-nowrap"
+                            >
+                                List Your Shop
+                            </Link>
+                        </>
                     )}
                 </div>
             </div>
@@ -341,20 +365,51 @@ export default function Header() {
                 <div className="container mx-auto px-2 md:px-4 py-2 md:py-3 flex items-center justify-between gap-4">
                     {/* Browser Categories */}
                     <div className="relative group shrink-0">
-                        <Link
-                            href="/categories"
+                        <button
+                            onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                            onBlur={() => setTimeout(() => setShowCategoryDropdown(false), 200)}
                             className="bg-brand-orange text-white px-3 md:px-5 py-1.5 md:py-2 rounded-full flex items-center gap-2 font-medium shadow-sm hover:bg-[#e07a46] transition text-xs md:text-sm"
                         >
-                            <span>Browse Categories</span>
-                        </Link>
+                            <span>See All Categories</span>
+                            <i className={`ri-arrow-down-s-line transition-transform duration-300 ${showCategoryDropdown ? 'rotate-180' : ''}`}></i>
+                        </button>
+
+                        {/* Categories Dropdown */}
+                        {showCategoryDropdown && (
+                            <div className="absolute top-full left-0 mt-2 w-[320px] bg-white rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="p-4 grid grid-cols-3 gap-y-4 gap-x-2">
+                                    {BROWSE_CATEGORIES.map((cat, idx) => (
+                                        <Link key={idx} href={cat.link} className="flex flex-col items-center gap-1 group/item">
+                                            <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover/item:bg-orange-50 transition border border-gray-100 group-hover/item:border-orange-100 p-1.5">
+                                                {/* @ts-ignore - isImage property handling */}
+                                                {cat.isImage ? (
+                                                    <img src={cat.icon} alt={cat.name} className="w-full h-full object-contain" />
+                                                ) : (
+                                                    <i className={`${cat.icon} text-lg text-gray-600 group-hover/item:text-brand-orange transition`}></i>
+                                                )}
+                                            </div>
+                                            <span className="text-[10px] font-bold text-gray-600 group-hover/item:text-brand-orange text-center leading-tight">{cat.name}</span>
+                                        </Link>
+                                    ))}
+                                </div>
+                                <div className="bg-gray-50 p-2 text-center border-t border-gray-100">
+                                    <Link href="/categories" className="text-xs font-bold text-brand-orange hover:underline">
+                                        View All Categories
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Nav Links mapping - Flex layout instead of absolute centering to prevent overlap */}
                     <nav className="hidden lg:flex flex-1 justify-center items-center gap-4 lg:gap-6 xl:gap-8 text-gray-700 font-medium text-xs md:text-sm">
-                        {NAV_ITEMS.map((item, index) => (
+                        {NAV_ITEMS.slice(0, 8).map((item, index) => (
                             <div
                                 key={index}
-                                className="relative group py-2"
+                                className={`relative group py-2 
+                                    ${index > 3 ? 'hidden xl:block' : ''} 
+                                    ${index > 5 ? 'xl:hidden 2xl:block' : ''}
+                                `}
                                 onMouseEnter={() => setActiveDropdown(item.label)}
                                 onMouseLeave={() => setActiveDropdown(null)}
                             >

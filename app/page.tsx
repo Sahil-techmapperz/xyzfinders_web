@@ -1,4 +1,5 @@
 import PromoGrid from '@/components/home/PromoGrid';
+import CategoryGrid from '@/components/home/CategoryGrid';
 import GoogleAdBanner from '@/components/home/GoogleAdBanner';
 import WeeklyDeals from '@/components/home/WeeklyDeals';
 import MobileBanner from '@/components/home/MobileBanner';
@@ -15,6 +16,7 @@ export default function Home() {
     <>
       <GoogleAdBanner />
       <PromoGrid />
+      <CategoryGrid />
       <GoogleAdBanner />
       <WeeklyDeals />
       <MobileBanner />

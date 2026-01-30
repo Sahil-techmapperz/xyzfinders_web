@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 import DashboardHeader from './DashboardHeader';
 import { useRouter, usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
@@ -76,6 +77,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     if (isLoggedIn && isDashboardRoute) {
         return (
             <div className="flex h-screen font-jost overflow-hidden">
+                <Toaster position="top-center" />
                 <Sidebar />
                 <div className="flex-1 flex flex-col ml-64 min-w-0">
                     <DashboardHeader />
@@ -91,6 +93,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
     return (
         <div className="flex flex-col min-h-screen font-jost">
+            <Toaster position="top-center" />
             <Header />
             <main className="flex-1 bg-white">{children}</main>
             <Footer />

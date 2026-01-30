@@ -1,6 +1,6 @@
 export const NAV_ITEMS = [
     {
-        label: "Property",
+        label: "Real Estate",
         link: "/real-estate",
         badge: "NEW",
         dropdown: {
@@ -31,6 +31,31 @@ export const NAV_ITEMS = [
         }
     },
     {
+        label: "Mobile & Tablet",
+        link: "/mobiles",
+        dropdown: {
+            cols: [
+                {
+                    title: "Mobiles",
+                    items: [
+                        { label: "Apple iPhones", link: "/mobiles?brand=apple" },
+                        { label: "Samsung", link: "/mobiles?brand=samsung" },
+                        { label: "OnePlus", link: "/mobiles?brand=oneplus" },
+                        { label: "Google Pixel", link: "/mobiles?brand=google" },
+                    ]
+                },
+                {
+                    title: "Accessories",
+                    items: [
+                        { label: "Tablets", link: "/mobiles?type=tablet" },
+                        { label: "Wearables", link: "/mobiles?type=wearable" },
+                        { label: "Accessories", link: "/mobiles?type=accessory" },
+                    ]
+                }
+            ]
+        }
+    },
+    {
         label: "Automobiles",
         link: "/automobiles",
         dropdown: {
@@ -55,29 +80,24 @@ export const NAV_ITEMS = [
         }
     },
     {
-        label: "Mobile & Tablet",
-        link: "/mobiles",
-        dropdown: {
-            cols: [
-                {
-                    title: "Mobiles",
-                    items: [
-                        { label: "Apple iPhones", link: "/mobiles?brand=apple" },
-                        { label: "Samsung", link: "/mobiles?brand=samsung" },
-                        { label: "OnePlus", link: "/mobiles?brand=oneplus" },
-                        { label: "Google Pixel", link: "/mobiles?brand=google" },
-                    ]
-                },
-                {
-                    title: "Accessories",
-                    items: [
-                        { label: "Tablets", link: "/mobiles?type=tablet" },
-                        { label: "Wearables", link: "/mobiles?type=wearable" },
-                        { label: "Accessories", link: "/mobiles?type=accessory" },
-                    ]
-                }
-            ]
-        }
+        label: "Services",
+        link: "/services",
+    },
+    {
+        label: "Learning & Education",
+        link: "/education",
+    },
+    {
+        label: "Gadgets & Electronics",
+        link: "/gadgets",
+    },
+    {
+        label: "Pets & Animals Accessories",
+        link: "/pets",
+    },
+    {
+        label: "Beauty & Well being",
+        link: "/beauty",
     },
     {
         label: "Furniture & Appliance",
@@ -105,18 +125,26 @@ export const NAV_ITEMS = [
         }
     },
     {
-        label: "More",
-        link: "/categories"
+        label: "Local Events",
+        link: "/events",
+    },
+    {
+        label: "Job's",
+        link: "/jobs",
     }
 ];
 
 export const BROWSE_CATEGORIES = [
-    { name: "Real Estate", icon: "ri-building-line", link: "/real-estate" },
-    { name: "Automobiles", icon: "ri-car-line", link: "/automobiles" },
-    { name: "Mobiles", icon: "ri-smartphone-line", link: "/mobiles" },
-    { name: "Furniture", icon: "ri-sofa-line", link: "/furniture" },
-    { name: "Electronics", icon: "ri-macbook-line", link: "/gadgets" },
-    { name: "Beauty", icon: "ri-sparkling-line", link: "/beauty" },
-    { name: "Services", icon: "ri-service-line", link: "/seller/place-ad/services/create" },
-    { name: "Education", icon: "ri-book-open-line", link: "/seller/place-ad/education/create" },
+    { name: "Real Estate", icon: "/categories/properties.png", link: "/real-estate", isImage: true },
+    { name: "Mobile & Tablet", icon: "/categories/mobiles.png", link: "/electronics/mobiles", isImage: true },
+    { name: "Automobiles", icon: "/categories/cars.png", link: "/automobiles", isImage: true },
+    { name: "Services", icon: "/categories/services.png", link: "/services", isImage: true },
+    { name: "Learning & Education", icon: "/categories/education.png", link: "/education", isImage: true },
+    { name: "Gadgets & Electronics", icon: "/categories/gadgets.png", link: "/electronics", isImage: true },
+    { name: "Pets & Animals Accessories", icon: "/categories/pets.png", link: "/pets", isImage: true },
+    { name: "Fashions", icon: "/categories/fashion.png", link: "/fashion", isImage: true },
+    { name: "Beauty & Well being", icon: "/categories/beauty.png", link: "/beauty", isImage: true },
+    { name: "Furniture & Appliance", icon: "/categories/furniture.png", link: "/furniture", isImage: true },
+    { name: "Local Events", icon: "/categories/events.png", link: "/events", isImage: true },
+    { name: "Job's", icon: "/categories/jobs.png", link: "/jobs", isImage: true },
 ];

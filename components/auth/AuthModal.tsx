@@ -10,11 +10,11 @@ interface AuthModalProps {
     initialView?: 'login' | 'signup';
 }
 
-type AuthView = 'selection' | 'email_login' | 'email_signup';
+type AuthView = 'login' | 'signup';
 
 export default function AuthModal({ isOpen, onClose, initialView = 'login' }: AuthModalProps) {
     const router = useRouter();
-    const [view, setView] = useState<AuthView>('selection');
+    const [view, setView] = useState<AuthView>('login');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -23,11 +23,12 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
 
     // Initial view handler
     useEffect(() => {
         if (isOpen) {
-            setView('selection');
+            setView('login');
             setError('');
             setEmail('');
             setPassword('');
@@ -91,7 +92,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
                     email,
                     password,
                     password_confirmation: password,
-                    phone: '0000000000', // Placeholder as required by API currently, or make optional in API
+                    phone: '0000000000', // Placeholder
                     user_type: 'buyer' // Defaulting to buyer
                 }),
             });
@@ -119,76 +120,10 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
         window.location.href = '/api/auth/google?returnUrl=' + encodeURIComponent(window.location.pathname);
     };
 
-    const handleFacebookLogin = () => {
-        window.location.href = '/api/auth/facebook?returnUrl=' + encodeURIComponent(window.location.pathname);
-    };
-
-    const handleAppleLogin = () => {
-        window.location.href = '/api/auth/apple?returnUrl=' + encodeURIComponent(window.location.pathname);
-    };
-
-    // View Components
-    const renderSelectionView = () => (
-        <div className="p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-8 font-jost">
-                Log in to call the seller
-            </h2>
-
-            <div className="space-y-3">
-                <button onClick={handleFacebookLogin} className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition relative group">
-                    {/* Facebook Icon Placeholder */}
-                    <div className="w-6 h-6 text-blue-600 bg-transparent flex items-center justify-center text-xl">
-                        <i className="ri-facebook-circle-fill"></i>
-                    </div>
-                    <span className="font-semibold text-gray-700">Continue with Facebook</span>
-                </button>
-
-                <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition relative group">
-                    {/* Google Icon */}
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-                    <span className="font-semibold text-gray-700">Continue with Google</span>
-                </button>
-
-                <button onClick={handleAppleLogin} className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition relative group">
-                    {/* Apple Icon */}
-                    <div className="w-5 h-5 text-black flex items-center justify-center text-xl">
-                        <i className="ri-apple-fill"></i>
-                    </div>
-                    <span className="font-semibold text-gray-700">Continue with Apple</span>
-                </button>
-
-                <button onClick={() => setView('email_login')} className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition relative group">
-                    <div className="w-5 h-5 text-red-500 flex items-center justify-center text-xl">
-                        <i className="ri-mail-fill"></i>
-                    </div>
-                    <span className="font-semibold text-gray-700">Continue with Email</span>
-                </button>
-            </div>
-
-            <div className="mt-8 text-center">
-                <p className="text-brand-orange font-semibold cursor-pointer hover:underline" onClick={() => setView('email_signup')}>
-                    Don't have an account? Create one
-                </p>
-
-                <p className="mt-6 text-xs text-gray-400 leading-relaxed">
-                    By signing up I agree to the <a href="#" className="text-blue-500">Terms and Conditions</a> and <a href="#" className="text-blue-500">Privacy Policy</a>
-                </p>
-            </div>
-        </div>
-    );
-
     const renderLoginView = () => (
-        <div className="p-6 md:p-8">
-            <div className="flex items-center justify-between mb-8">
-                <button onClick={() => setView('selection')} className="text-2xl text-gray-400 hover:text-gray-600">
-                    <i className="ri-arrow-left-line"></i>
-                </button>
-                {/* Close button handles via parent, but visual placeholder if needed */}
-                <div className="w-6"></div>
-            </div>
-
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-8 font-jost">
-                Log in with your email
+        <div className="p-6 md:px-8 md:pb-8 pt-2">
+            <h2 className="text-xl md:text-2xl font-bold text-center text-gray-800 mb-6 font-jost">
+                Log in to call the seller
             </h2>
 
             {error && (
@@ -200,10 +135,10 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
             <form onSubmit={handleLogin} className="space-y-4">
                 <div>
                     <input
-                        type="email"
+                        type="email" // Changed from text to email for better validation
                         required
-                        placeholder="Email"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange outline-none transition"
+                        placeholder="Email Address" // Simplified placeholder based on standard UX, mock said "Email Address & Phone Numbers"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange outline-none transition text-gray-700 placeholder-gray-400 italic"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
@@ -212,38 +147,88 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
                     <input
                         type={showPassword ? "text" : "password"}
                         required
-                        placeholder="Password"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange outline-none transition"
+                        placeholder="Password*"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange outline-none transition text-gray-700 placeholder-gray-400 italic"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <button
+                    {/* <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
                         <i className={showPassword ? "ri-eye-line" : "ri-eye-off-line"}></i>
+                    </button> */}
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                    <label className="flex items-center gap-2 cursor-pointer text-gray-500">
+                        <input
+                            type="checkbox"
+                            className="w-4 h-4 rounded border-gray-300 text-brand-orange focus:ring-brand-orange"
+                            checked={rememberMe}
+                            onChange={(e) => setRememberMe(e.target.checked)}
+                        />
+                        <span>Remember me</span>
+                    </label>
+                    <button type="button" className="text-gray-700 font-bold hover:underline">
+                        Forgot Password ?
                     </button>
                 </div>
 
-                <div className="pt-4">
+                {/* Login Button removed from here as per visual flow? No, form needs explicit submit usually, but the mock doesn't show a big "LOGIN" button above the "or login with". 
+                    Wait, looking at the mock (uploaded image):
+                    - Inputs
+                    - Remember me | Forgot Password
+                    - (Separator) "or login with"
+                    - Social Icons
+                    - "Don't have an account? Create one"
+                    - Footer
+
+                    WHERE IS THE LOGIN BUTTON?
+                    Usually in such designs, the "Enter" key works, or there IS a button that might be missing or scrolling?
+                    Actually, most designs MUST have a Login button.
+                    Maybe it's below "Forgot Password"?
+                    I will add a Login button because it's non-functional without it for many users.
+                    I'll place it before the separator.
+                */}
+                <div className="pt-2">
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-gray-200 hover:bg-brand-orange hover:text-white text-gray-700 font-bold py-3.5 rounded-lg transition-colors disabled:opacity-70"
+                        className="w-full bg-brand-orange hover:bg-[#e07a46] text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-70 shadow-md"
                     >
                         {loading ? 'Logging in...' : 'Log In'}
                     </button>
                 </div>
 
-                <div className="text-center pt-2">
-                    <button type="button" className="text-red-500 font-bold text-sm hover:underline">
-                        Forgot your password?
-                    </button>
+                <div className="relative flex py-2 items-center">
+                    <div className="flex-grow border-t border-gray-300"></div>
+                    <span className="flex-shrink-0 mx-4 text-gray-600 font-medium">or login with</span>
+                    <div className="flex-grow border-t border-gray-300"></div>
                 </div>
 
-                <div className="mt-8 text-center text-xs text-gray-400 leading-relaxed">
-                    By signing up I agree to the <a href="#" className="text-blue-500">Terms and Conditions</a> and <a href="#" className="text-blue-500">Privacy Policy</a>
+                <div className="flex justify-center gap-4">
+                    <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition shadow-sm"
+                    >
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" />
+                    </button>
+                    {/* Facebook removed as per previous instruction, but if user wants it back based on image, I can uncomment. 
+                        User said "remove the facbook", keeping it off.
+                    */}
+                </div>
+
+                <div className="text-center pt-4">
+                    <p className="text-brand-orange font-semibold cursor-pointer text-lg bg-red-50 py-2 rounded" onClick={() => setView('signup')}>
+                        Don&apos;t have an account ? <span className="text-brand-orange">Create one</span>
+                    </p>
+                </div>
+
+                <div className="mt-4 text-center text-[10px] text-gray-500 leading-relaxed max-w-xs mx-auto">
+                    By Signing up I agree to the <a href="#" className="text-blue-500">Terms & Conditions</a> and <a href="#" className="text-blue-500">Privacy policy</a>
                 </div>
             </form>
         </div>
@@ -252,8 +237,8 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
     const renderSignupView = () => (
         <div className="p-6 md:p-8">
             <div className="flex items-center justify-between mb-6">
-                <button onClick={() => setView('selection')} className="text-2xl text-gray-400 hover:text-gray-600">
-                    <i className="ri-arrow-left-line"></i>
+                <button onClick={() => setView('login')} className="text-xl text-gray-400 hover:text-gray-600 flex items-center gap-1">
+                    <i className="ri-arrow-left-line"></i> Back
                 </button>
             </div>
 
@@ -272,8 +257,8 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
                     <input
                         type="text"
                         required
-                        placeholder="First Name"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange outline-none transition"
+                        placeholder="Full Name"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange outline-none transition text-gray-700 placeholder-gray-400 italic"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
@@ -282,8 +267,8 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
                     <input
                         type="email"
                         required
-                        placeholder="Email"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange outline-none transition"
+                        placeholder="Email Address"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange outline-none transition text-gray-700 placeholder-gray-400 italic"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
@@ -292,59 +277,53 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
                     <input
                         type={showPassword ? "text" : "password"}
                         required
-                        placeholder="Password"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange outline-none transition"
+                        placeholder="Password*"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange outline-none transition text-gray-700 placeholder-gray-400 italic"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                        <i className={showPassword ? "ri-eye-line" : "ri-eye-off-line"}></i>
-                    </button>
-                </div>
-
-                {/* Password Validation Checklist (Visual only for now matching UI) */}
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                    <ValidationItem label="At least 7 characters long" valid={password.length >= 7} />
-                    <ValidationItem label="One upper and one lower case letter" valid={/[a-z]/.test(password) && /[A-Z]/.test(password)} />
-                    <ValidationItem label="Must contain a number" valid={/\d/.test(password)} />
-                    <ValidationItem label="At least one special character" valid={/[!@#$%^&*(),.?":{}|<>]/.test(password)} />
-                    <ValidationItem label="Must not include your name" valid={name ? !password.toLowerCase().includes(name.toLowerCase()) : true} />
                 </div>
 
                 <div className="pt-2">
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-gray-200 hover:bg-brand-orange hover:text-white text-gray-700 font-bold py-3.5 rounded-lg transition-colors disabled:opacity-70"
+                        className="w-full bg-brand-orange hover:bg-[#e07a46] text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-70 shadow-md"
                     >
-                        {loading ? 'Signing up...' : 'Sign Up'}
+                        {loading ? 'Sign Up' : 'Sign Up'}
                     </button>
-                </div>
-
-                <div className="mt-6 text-center text-xs text-gray-400 leading-relaxed">
-                    By signing up I agree to the <a href="#" className="text-blue-500">Terms and Conditions</a> and <a href="#" className="text-blue-500">Privacy Policy</a>
                 </div>
             </form>
         </div>
     );
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-200">
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-10"
-                >
-                    <i className="ri-close-line text-2xl"></i>
-                </button>
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
-                {view === 'selection' && renderSelectionView()}
-                {view === 'email_login' && renderLoginView()}
-                {view === 'email_signup' && renderSignupView()}
+            {/* Scrollable Container */}
+            <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                <div
+                    className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 w-full max-w-[90%] sm:max-w-md animate-in zoom-in-95 duration-200"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-10"
+                    >
+                        <i className="ri-close-line text-2xl"></i>
+                    </button>
+
+                    {/* Banner Image - Only ensure it exists in public folder */}
+                    {/* Banner Image */}
+                    <div className="w-full flex justify-center pt-8 px-6 md:px-8 pb-0">
+                        <img src="/login_call_banner.png" alt="Welcome" className="w-40 md:w-48 h-auto object-contain mx-auto" />
+                    </div>
+
+                    {view === 'login' && renderLoginView()}
+                    {view === 'signup' && renderSignupView()}
+                </div>
             </div>
         </div>
     );
