@@ -18,6 +18,7 @@ const SELLER_SIDEBAR_ITEMS = [
     { label: 'My Ads', icon: 'ri-file-list-3-line', link: '/seller/my-ads' },
     { label: 'Post Ad', icon: 'ri-add-circle-line', link: '/seller/place-ad' },
     { label: 'Messages', icon: 'ri-message-2-line', link: '/seller/messages' },
+    { label: 'Profile', icon: 'ri-user-3-line', link: '/seller/profile' },
     { label: 'Settings', icon: 'ri-settings-4-line', link: '/seller/settings' },
 ];
 
@@ -62,9 +63,24 @@ export default function Sidebar() {
                         const currentUserRaw = localStorage.getItem('user');
                         if (currentUserRaw) {
                             const currentUser = JSON.parse(currentUserRaw);
-                            // Only write if changed
+
+                            // Update seller status
+                            let changed = false;
                             if (currentUser.is_seller !== data.isSeller) {
                                 currentUser.is_seller = data.isSeller;
+                                changed = true;
+                            }
+                            // Update avatars if provided from API
+                            if (data.avatar && currentUser.avatar !== data.avatar) {
+                                currentUser.avatar = data.avatar;
+                                changed = true;
+                            }
+                            if (data.brand_logo && currentUser.brand_logo !== data.brand_logo) {
+                                currentUser.brand_logo = data.brand_logo;
+                                changed = true;
+                            }
+
+                            if (changed) {
                                 localStorage.setItem('user', JSON.stringify(currentUser));
                                 setUser(currentUser); // Update state
                             }
@@ -188,8 +204,13 @@ export default function Sidebar() {
             <div className="p-4 border-t border-gray-100">
                 {user && (
                     <div className="bg-gray-50 rounded-xl p-3 mb-3 flex items-center gap-3">
-                        {user.avatar ? (
-                            <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                        {/* Show Seller Logo if in Seller Mode, else User Avatar */}
+                        {(isSellerContext && user.brand_logo) || (!isSellerContext && user.avatar) ? (
+                            <img
+                                src={isSellerContext ? user.brand_logo : user.avatar}
+                                alt={user.name}
+                                className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                            />
                         ) : (
                             <div className="w-10 h-10 bg-brand-orange/10 rounded-full flex items-center justify-center text-brand-orange border border-brand-orange/20 font-bold">
                                 {user.name?.charAt(0) || 'U'}

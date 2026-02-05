@@ -22,12 +22,22 @@ interface BeautyCardProps {
 }
 
 export default function BeautyCard({ item }: BeautyCardProps) {
+    // Create SEO-friendly slug from title
+    const createSlug = (title: string) => {
+        return title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+    };
+
+    const seoUrl = `/beauty/${item.id}-${createSlug(item.title)}`;
+
     return (
         <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden group flex flex-col md:flex-row h-auto md:h-72">
 
             {/* Image Section */}
-            <div className="relative w-full md:w-[45%] h-56 md:h-full bg-gray-100 overflow-hidden cursor-pointer">
-                <Link href={`/beauty/${item.id}`}>
+            <div className="relative w-full md:w-[40%] h-56 md:h-full bg-gray-100 overflow-hidden cursor-pointer">
+                <Link href={seoUrl}>
                     <img
                         src={item.image}
                         alt={item.title}
@@ -52,7 +62,7 @@ export default function BeautyCard({ item }: BeautyCardProps) {
             <div className="flex-1 p-5 lg:p-6 flex flex-col justify-between">
                 <div>
                     <div className="flex justify-between items-start">
-                        <Link href={`/beauty/${item.id}`}>
+                        <Link href={seoUrl}>
                             <h3 className="font-bold text-lg md:text-xl text-gray-800 leading-tight mb-1 hover:text-brand-orange transition-colors">
                                 {item.title}
                             </h3>

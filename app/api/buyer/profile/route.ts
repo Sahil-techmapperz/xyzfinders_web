@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { processUploadedImage, bufferToDataUrl } from '@/lib/image-utils';
 
 export async function GET(request: NextRequest) {
     try {
@@ -19,56 +20,65 @@ export async function GET(request: NextRequest) {
 
         // Fetch buyer profile
         const buyers = await query(`
-            SELECT b.*, u.name, u.email 
+            SELECT b.*, u.name, u.email
             FROM buyers b 
             JOIN users u ON b.user_id = u.id 
             WHERE b.user_id = ?
         `, [userId]);
 
         if (!buyers || buyers.length === 0) {
-            // Fallback: If no buyer entry exists yet (shouldn't happen if properly initialized)
-            // Return basic user info without avatar
+            // Fallback: If no buyer entry exists yet
             const users = await query('SELECT name, email, location FROM users WHERE id = ?', [userId]);
             if (users && users.length > 0) {
-                // Auto-create buyer entry for consistency?
+                // Auto-create buyer entry for consistency
                 await query('INSERT INTO buyers (user_id) VALUES (?)', [userId]);
 
+                const user = users[0];
                 return NextResponse.json({
                     buyer: {
-                        name: users[0].name,
-                        email: users[0].email,
+                        name: user.name,
+                        email: user.email,
                         avatar: null,
-                        location: users[0].location
+                        location: user.location
                     }
                 });
             }
             return NextResponse.json({ message: 'Profile not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ buyer: buyers[0] });
+        const buyer = buyers[0];
+
+        // Handle avatar: It could be a Buffer (new blob storage) or String (legacy path/url)
+        let avatarSource = null;
+        if (buyer.avatar) {
+            console.log('Avatar type check:', typeof buyer.avatar, 'Is Buffer:', Buffer.isBuffer(buyer.avatar));
+
+            if (Buffer.isBuffer(buyer.avatar)) {
+                avatarSource = bufferToDataUrl(buyer.avatar, 'image/webp');
+            } else if (typeof buyer.avatar === 'object') {
+                // If it's an object but not a "Buffer" instance properly, try to convert
+                try {
+                    const buf = Buffer.from(buyer.avatar);
+                    avatarSource = bufferToDataUrl(buf, 'image/webp');
+                } catch (e) {
+                    console.error('Failed to convert avatar object to buffer:', e);
+                }
+            } else {
+                avatarSource = buyer.avatar;
+            }
+        }
+
+        const responseBuyer = {
+            ...buyer,
+            avatar: avatarSource
+        };
+
+        return NextResponse.json({ buyer: responseBuyer });
 
     } catch (error) {
         console.error('Get buyer profile error:', error);
         return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
     }
-}
-
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-
-// Helper to handle file uploads
-async function saveFile(file: File, folder: string): Promise<string> {
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const uploadDir = join(process.cwd(), 'public', 'uploads', folder);
-    await mkdir(uploadDir, { recursive: true });
-
-    const filename = `${Date.now()}-${file.name.replace(/\s/g, '-')}`;
-    const filePath = join(uploadDir, filename);
-    await writeFile(filePath, buffer);
-
-    return `/uploads/${folder}/${filename}`;
 }
 
 export async function PUT(request: NextRequest) {
@@ -95,8 +105,19 @@ export async function PUT(request: NextRequest) {
 
         // Update Avatar if provided
         if (avatarFile && avatarFile.size > 0) {
-            const avatarPath = await saveFile(avatarFile, 'avatars');
-            await query('UPDATE buyers SET avatar = ?, updated_at = NOW() WHERE user_id = ?', [avatarPath, userId]);
+            console.log('Processing avatar update for user:', userId);
+
+            // Process image using shared utility (Validates & Converts to WebP)
+            const result = await processUploadedImage(avatarFile);
+
+            if (!result.valid) {
+                return NextResponse.json({ message: result.error || 'Invalid image' }, { status: 400 });
+            }
+
+            // Save binary data to BUYERS table 'avatar' column (DB Storage)
+            // User confirmed column is now BLOB/LONGBLOB
+            await query('UPDATE buyers SET avatar = ?, updated_at = NOW() WHERE user_id = ?', [result.buffer, userId]);
+            console.log('Avatar updated in BUYERS table (Blob)');
         }
 
         // Update other fields in buyers table
@@ -112,11 +133,33 @@ export async function PUT(request: NextRequest) {
         );
 
         // Fetch updated buyer
-        const buyers = await query('SELECT * FROM buyers WHERE user_id = ?', [userId]);
+        const buyers = await query(`
+            SELECT b.*, u.name, u.email
+            FROM buyers b 
+            JOIN users u ON b.user_id = u.id 
+            WHERE b.user_id = ?
+        `, [userId]);
+
+        const buyer = buyers[0];
+
+        // Resolve avatar source again for the response
+        let avatarSource = null;
+        if (buyer.avatar) {
+            if (Buffer.isBuffer(buyer.avatar)) {
+                avatarSource = bufferToDataUrl(buyer.avatar, 'image/webp');
+            } else {
+                avatarSource = buyer.avatar;
+            }
+        }
+
+        const responseBuyer = {
+            ...buyer,
+            avatar: avatarSource
+        };
 
         return NextResponse.json({
             message: 'Profile updated successfully',
-            buyer: buyers[0]
+            buyer: responseBuyer
         });
 
     } catch (error) {

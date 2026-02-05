@@ -1,6 +1,6 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import JobsHero from '@/components/jobs/JobsHero';
-import JobListings from '@/components/jobs/JobListings';
+import JobsLanding from '@/components/jobs/JobsLanding';
 
 export const metadata: Metadata = {
     title: 'Job Listings | XYZ Finders',
@@ -9,9 +9,10 @@ export const metadata: Metadata = {
 
 export default function JobListingPage() {
     return (
-        <main className="bg-[#FFFBF0] font-jost min-h-screen">
-            <JobsHero />
-            <JobListings />
-        </main>
+        <Suspense fallback={<div className="min-h-screen bg-[#FFFBF0] flex items-center justify-center">
+            <div className="w-8 h-8 border-4 border-[#FF8A65] border-t-transparent rounded-full animate-spin"></div>
+        </div>}>
+            <JobsLanding />
+        </Suspense>
     );
 }

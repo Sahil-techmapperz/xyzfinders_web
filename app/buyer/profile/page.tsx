@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export default function UserProfile() {
     const router = useRouter();
-    const [user, setUser] = useState<{ id?: number; name: string; email: string; avatar?: string } | null>(null);
+    const [user, setUser] = useState<{ id?: number; name: string; email: string; avatar?: string | null } | null>(null);
     const [userData, setUserData] = useState({
         name: '',
         email: '',
@@ -14,6 +14,7 @@ export default function UserProfile() {
         location: 'Not Specified'
     });
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [previewAvatar, setPreviewAvatar] = useState<string | null>(null);
 
@@ -46,6 +47,15 @@ export default function UserProfile() {
                             phone: data.buyer.phone || '',
                             location: data.buyer.location || ''
                         });
+
+                        // Sync local storage if name changed externally
+                        const storedUserRaw = localStorage.getItem('user');
+                        if (storedUserRaw) {
+                            const parsed = JSON.parse(storedUserRaw);
+                            if (parsed.name !== data.buyer.name || parsed.avatar !== data.buyer.avatar) {
+                                // Optional: Update silent sync
+                            }
+                        }
                     }
                 }
             } catch (error) {
@@ -58,6 +68,7 @@ export default function UserProfile() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsUpdating(true);
         try {
             const token = localStorage.getItem('token');
             const formData = new FormData();
@@ -81,25 +92,34 @@ export default function UserProfile() {
                 alert('Profile updated successfully!');
 
                 // Update local storage
-                const storedUserRaw = localStorage.getItem('user');
-                if (storedUserRaw) {
-                    const parsed = JSON.parse(storedUserRaw);
-                    parsed.name = userData.name;
-                    // If avatar was updated, update it in local storage
-                    if (data.buyer && data.buyer.avatar) {
-                        parsed.avatar = data.buyer.avatar;
+                try {
+                    const storedUserRaw = localStorage.getItem('user');
+                    if (storedUserRaw) {
+                        const parsed = JSON.parse(storedUserRaw);
+                        parsed.name = userData.name;
+                        // If avatar was updated, update it in local storage
+                        // Note: Data URLs can be large, be mindful of LocalStorage limits (5MB)
+                        if (data.buyer && data.buyer.avatar) {
+                            parsed.avatar = data.buyer.avatar;
+                        }
+                        localStorage.setItem('user', JSON.stringify(parsed));
                     }
-                    localStorage.setItem('user', JSON.stringify(parsed));
+                } catch (lsError) {
+                    console.error('Failed to update local storage:', lsError);
+                    // Continue even if LS update fails
                 }
 
-                // Refresh page
+                // Refresh page to propagate changes to Header/Sidebar
                 window.location.reload();
             } else {
-                alert('Failed to update profile.');
+                const errorData = await res.json();
+                alert(errorData.message || 'Failed to update profile.');
             }
         } catch (error) {
             console.error('Update error:', error);
             alert('An error occurred.');
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -141,7 +161,7 @@ export default function UserProfile() {
         { label: 'Active Chats', value: '0', icon: 'ri-chat-3-line', link: '/buyer/messages' },
     ];
 
-    if (!user) return null;
+    if (!user) return <div className="min-h-screen bg-[#FFFBF7] flex items-center justify-center">Loading...</div>;
 
     return (
         <div className="min-h-screen bg-[#FFFBF7] font-jost">
@@ -168,7 +188,7 @@ export default function UserProfile() {
                             <div className="relative group mx-auto w-24 h-24 mb-4">
                                 <div className="w-full h-full rounded-full overflow-hidden border-2 border-brand-orange/20">
                                     {previewAvatar || user.avatar ? (
-                                        <img src={previewAvatar || user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                        <img src={previewAvatar || user.avatar || undefined} alt={user.name} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full bg-brand-orange/10 flex items-center justify-center text-brand-orange text-3xl font-bold">
                                             {user.name?.charAt(0) || 'U'}
@@ -281,9 +301,10 @@ export default function UserProfile() {
                                 <div className="flex gap-3 pt-4">
                                     <button
                                         type="submit"
-                                        className="flex-1 bg-brand-orange text-white py-3 rounded-xl font-semibold hover:bg-[#e07a46] transition shadow-sm"
+                                        disabled={isUpdating}
+                                        className="flex-1 bg-brand-orange text-white py-3 rounded-xl font-semibold hover:bg-[#e07a46] transition shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
-                                        Save Changes
+                                        {isUpdating ? 'Saving Changes...' : 'Save Changes'}
                                     </button>
                                 </div>
                             </form>

@@ -1,57 +1,10 @@
 "use client";
 
 import EventsCard, { EventData } from './EventsCard';
+import { MOCK_EVENTS } from '@/data/mock-data';
 
-const EVENTS_DATA: EventData[] = [
-    {
-        id: 1,
-        title: "Arijit Singh Live Concert - India Tour",
-        category: "Music",
-        image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop",
-        date: "15 OCT",
-        time: "6:00 PM Onwards",
-        location: "JLN Stadium, New Delhi",
-        price: "₹ 1,500 onwards",
-        organizer: "Star Events",
-        description: "Experience the magic of Arijit Singh live in concert. A night full of soulful melodies and chart-topping hits. Book your tickets now!"
-    },
-    {
-        id: 2,
-        title: "Delhi Food Carnival 2024",
-        category: "Food & Drink",
-        image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1974&auto=format&fit=crop",
-        date: "20 OCT",
-        time: "12:00 PM - 10:00 PM",
-        location: "Dilli Haat, INA",
-        price: "Entry Free",
-        organizer: "Delhi Tourism",
-        description: "A celebration of flavors! Taste dishes from over 50 renowned food stalls. Live music, games, and fun for the whole family."
-    },
-    {
-        id: 3,
-        title: "Standup Comedy Special - Zakir Khan",
-        category: "Comedy",
-        image: "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?q=80&w=2070&auto=format&fit=crop",
-        date: "22 OCT",
-        time: "8:00 PM",
-        location: "Siri Fort Auditorium",
-        price: "₹ 999 onwards",
-        organizer: "Comedy High",
-        description: "Laugh your heart out with the 'Sakht Launda' himself. Brand new material, never performed before specials."
-    },
-    {
-        id: 4,
-        title: "Startup Founders Meetup",
-        category: "Networking",
-        image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=2070&auto=format&fit=crop",
-        date: "25 OCT",
-        time: "5:00 PM - 8:00 PM",
-        location: "WeWork, Cyber City",
-        price: "Free (Reg. Req.)",
-        organizer: "Tech Circle",
-        description: "Connect with fellow founders, investors, and tech enthusiasts. Panel discussions on scaling and fundraising."
-    }
-];
+// Use MOCK_EVENTS directly - it already matches EventData interface
+const EVENTS_DATA: EventData[] = MOCK_EVENTS;
 
 export default function EventsListings() {
     return (

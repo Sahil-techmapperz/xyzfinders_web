@@ -20,17 +20,20 @@ export interface Product {
     original_price?: number;
     category_id: number;
     category?: Category;
+    category_name?: string;  // Added for API responses
     user_id: number;
     seller?: User;
     location_id: number;
     location?: Location;
-    images: string[];
+    city?: string;  // Added for API responses
+    images: any[];  // Changed from string[] to match actual API response
     condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor';
     status: 'active' | 'sold' | 'inactive';
-    is_featured: boolean;
+    is_featured: number | boolean;  // Support both API (number) and frontend (boolean)
     is_boosted: boolean;
     views_count: number;
     favorites_count: number;
+    product_attributes?: any;  // JSON column for category-specific attributes
     created_at: string;
     updated_at: string;
 }

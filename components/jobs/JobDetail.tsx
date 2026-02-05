@@ -1,46 +1,121 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-// Mock Data for a single job (matching the reference image)
-const JOB_DETAIL = {
-    id: 1,
-    title: "OPERATION EXECUTIVE / SALES COORDINATOR",
-    company: "Company Name",
-    salary: "17,000 - 23,000/ Month",
-    location: "Tower B4, SPAZE ITECH PARK, UN 616, Badshahpur Sohna Rd, Sector 49, Gurugram, Haryana...",
-    type: "Full-time",
-    experience: "1-2 Years",
-    gender: "Male/Female Candidate",
-    qualification: "Bachelors Degree",
-    applicants: 156,
-    postedTime: "14hr ago",
-    description: "DTC Group is a diversified conglomerate with operations across real estate development, mining, construction chemicals, and interior design. With over 65 lakh square feet of developed and ongoing projects, the Group is steadily strengthening its digital presence to support brand building and lead generation across business verticals.",
-    lookingFor: "We are looking to expand our in-house digital marketing team with a skilled and motivated professional.",
-    responsibilities: [
-        "Plan, manage, and optimise social media marketing across LinkedIn, Instagram, and Facebook",
-        "Execute and monitor Google Ads and Meta (Facebook/Instagram) Ads campaigns",
-        "Support SEO and SEM activities, including keyword research and on-page optimisation",
-        "Track, analyse, and report performance using Google Analytics and platform insights",
-        "Assist in content planning for digital campaigns and brand communication",
-        "Coordinate with internal teams and external agencies for campaign execution",
-        "Stay updated with current digital marketing trends and best practices"
-    ],
-    benefits: [
-        "Cell Phone Reimbursement",
-        "Commuter Assistance",
-        "Health Insurance",
-        "Internet Reimbursement",
-        "Leave Encashment",
-        "Life Insurance",
-        "Provident Fund"
-    ]
-};
+interface JobDetailData {
+    id: number;
+    title: string;
+    company: string;
+    salary: string;
+    location: string;
+    type: string;
+    experience: string;
+    gender: string;
+    qualification: string;
+    applicants: string | number;
+    postedTime: string;
+    description: string;
+    lookingFor: string;
+    responsibilities: string[];
+    benefits: string[];
+}
 
 export default function JobDetail({ id }: { id: string }) {
-    // In a real app, use id to fetch data. Using mock data for now.
-    const job = JOB_DETAIL;
+    const [job, setJob] = useState<JobDetailData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!id) return;
+
+        async function fetchJobDetail() {
+            try {
+                const response = await fetch(`/api/products/${id}`);
+                if (!response.ok) {
+                    if (response.status === 404) throw new Error('Job not found');
+                    throw new Error('Failed to fetch job details');
+                }
+
+                const result = await response.json();
+                const data = result.data;
+
+                // Transform API data
+                const specs = data.product_attributes?.specs || {};
+                const attributes = data.product_attributes || {};
+
+                // Default benefits and responsibilities if not in data
+                const defaultResponsibilities = [
+                    "Plan, manage, and optimise social media marketing",
+                    "Execute and monitor ad campaigns",
+                    "Support SEO and SEM activities",
+                    "Track, analyse, and report performance"
+                ];
+
+                const defaultBenefits = [
+                    "Health Insurance",
+                    "Provident Fund",
+                    "Leave Encashment"
+                ];
+
+                setJob({
+                    id: data.id,
+                    title: data.title.toUpperCase(),
+                    company: attributes.company || 'Unknown Company',
+                    salary: specs.salary || 'Not Disclosed',
+                    location: data.location || data.city || 'Location N/A',
+                    type: specs.type || 'Full Time',
+                    experience: specs.experience || 'Freshers',
+                    gender: specs.gender || "Male/Female Candidate",
+                    qualification: specs.qualification || 'Any Graduate',
+                    applicants: attributes.applicants || Math.floor(Math.random() * 50) + 1,
+                    postedTime: getTimeAgo(new Date(data.created_at)),
+                    description: data.description || 'No description available.',
+                    lookingFor: attributes.lookingFor || "We are looking to expand our team with a skilled and motivated professional.",
+                    responsibilities: attributes.responsibilities || defaultResponsibilities,
+                    benefits: attributes.benefits || defaultBenefits
+                });
+
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'An error occurred');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchJobDetail();
+    }, [id]);
+
+    function getTimeAgo(date: Date): string {
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+        if (hours > 0) return `${hours} hr${hours > 1 ? 's' : ''} ago`;
+        return 'just now';
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </div>
+        );
+    }
+
+    if (error || !job) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+                <i className="ri-error-warning-line text-4xl text-red-500 mb-2"></i>
+                <p className="text-gray-800 font-bold text-lg mb-2">{error || 'Job not found'}</p>
+                <Link href="/jobs" className="text-blue-500 underline font-medium">
+                    Back to Jobs
+                </Link>
+            </div>
+        );
+    }
 
     return (
         <section className="container mx-auto px-4 py-8  min-h-screen font-jost">
@@ -125,33 +200,37 @@ export default function JobDetail({ id }: { id: string }) {
                             <p className="text-sm">{job.lookingFor}</p>
                         </div>
 
-                        <div>
-                            <h3 className="font-bold text-gray-900 mb-2">Key Responsibilities:</h3>
-                            <ul className="list-disc pl-5 space-y-1 text-sm marker:text-gray-400">
-                                {job.responsibilities.map((item, idx) => (
-                                    <li key={idx}>{item}</li>
-                                ))}
-                            </ul>
-                        </div>
+                        {job.responsibilities.length > 0 && (
+                            <div>
+                                <h3 className="font-bold text-gray-900 mb-2">Key Responsibilities:</h3>
+                                <ul className="list-disc pl-5 space-y-1 text-sm marker:text-gray-400">
+                                    {job.responsibilities.map((item, idx) => (
+                                        <li key={idx}>{item}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
 
-                        <div>
-                            <h3 className="font-bold text-gray-900 mb-2">Benefits</h3>
-                            <ul className="list-disc pl-5 space-y-1 text-sm marker:text-gray-400">
-                                {job.benefits.map((item, idx) => (
-                                    <li key={idx}>{item}</li>
-                                ))}
-                            </ul>
-                        </div>
+                        {job.benefits.length > 0 && (
+                            <div>
+                                <h3 className="font-bold text-gray-900 mb-2">Benefits</h3>
+                                <ul className="list-disc pl-5 space-y-1 text-sm marker:text-gray-400">
+                                    {job.benefits.map((item, idx) => (
+                                        <li key={idx}>{item}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
 
                 </div>
 
                 {/* Right Column: Sidebar Ads */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-gray-200 w-full h-full rounded-xl flex items-center justify-center text-gray-400 font-bold text-xl border border-gray-300">
+                    <div className="bg-gray-200 w-full h-full rounded-xl flex items-center justify-center text-gray-400 font-bold text-xl border border-gray-300 min-h-[500px]">
                         Google Ads
                     </div>
-                    
+
                 </div>
 
             </div>

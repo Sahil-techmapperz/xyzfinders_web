@@ -2,7 +2,7 @@ import Skyline_Banner from "@/public/Skyline_Banner.png";
 import Image from "next/image";
 export default function ApartmentSearch() {
     return (
-        <section className="mb-12 relative">
+        <section className="hidden md:block mb-12 relative">
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
                 <Image src={Skyline_Banner} alt="Background" className="w-full h-full object-cover" />

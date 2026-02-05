@@ -33,7 +33,7 @@ class ApiClient {
                     // Handle token refresh or redirect to login
                     this.clearToken();
                     if (typeof window !== 'undefined') {
-                        window.location.href = '/login';
+                        window.location.href = '/';
                     }
                 }
                 return Promise.reject(error);

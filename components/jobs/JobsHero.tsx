@@ -1,11 +1,127 @@
 "use client";
 
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import JobFilterPopup, { AdvancedFilters } from './JobFilterPopup';
 import Link from 'next/link';
-import { useState } from 'react';
-import JobFilterPopup from './JobFilterPopup';
 
 export default function JobsHero() {
     const [showFilters, setShowFilters] = useState(false);
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Search state initialized from URL
+    const [searchQuery, setSearchQuery] = useState({
+        jobRole: searchParams.get('search') || '',
+        location: searchParams.get('location') || '',
+        qualification: searchParams.get('qualification') || '',
+        jobType: searchParams.get('job_type') || '',
+        experience: searchParams.get('experience') || ''
+    });
+
+    // Advanced filters state initialized from URL
+    const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
+        keywords: searchParams.get('keywords') || '',
+        jobTypes: searchParams.get('job_types')?.split(',').filter(Boolean) || [],
+        experienceLevels: searchParams.get('experience_levels')?.split(',').filter(Boolean) || [],
+        salaryRanges: searchParams.get('salary_ranges')?.split(',').filter(Boolean) || [],
+        workModes: searchParams.get('work_modes')?.split(',').filter(Boolean) || [],
+        jobRoles: searchParams.get('job_roles')?.split(',').filter(Boolean) || []
+    });
+
+    // Update state when URL changes
+    useEffect(() => {
+        setSearchQuery({
+            jobRole: searchParams.get('search') || '',
+            location: searchParams.get('location') || '',
+            qualification: searchParams.get('qualification') || '',
+            jobType: searchParams.get('job_type') || '',
+            experience: searchParams.get('experience') || ''
+        });
+
+        setAdvancedFilters({
+            keywords: searchParams.get('keywords') || '',
+            jobTypes: searchParams.get('job_types')?.split(',').filter(Boolean) || [],
+            experienceLevels: searchParams.get('experience_levels')?.split(',').filter(Boolean) || [],
+            salaryRanges: searchParams.get('salary_ranges')?.split(',').filter(Boolean) || [],
+            workModes: searchParams.get('work_modes')?.split(',').filter(Boolean) || [],
+            jobRoles: searchParams.get('job_roles')?.split(',').filter(Boolean) || []
+        });
+    }, [searchParams]);
+
+    const handleSearch = () => {
+        const params = new URLSearchParams();
+
+        // Basic search fields
+        if (searchQuery.jobRole.trim()) {
+            params.set('search', searchQuery.jobRole.trim());
+        }
+        if (searchQuery.location.trim()) {
+            params.set('location', searchQuery.location.trim());
+        }
+        if (searchQuery.qualification.trim()) {
+            params.set('qualification', searchQuery.qualification.trim());
+        }
+        if (searchQuery.jobType.trim()) {
+            params.set('job_type', searchQuery.jobType.trim());
+        }
+        if (searchQuery.experience.trim()) {
+            params.set('experience', searchQuery.experience.trim());
+        }
+
+        // Advanced filters from popup
+        if (advancedFilters.keywords.trim()) {
+            params.set('keywords', advancedFilters.keywords.trim());
+        }
+        if (advancedFilters.jobTypes.length > 0) {
+            params.set('job_types', advancedFilters.jobTypes.join(','));
+        }
+        if (advancedFilters.experienceLevels.length > 0) {
+            params.set('experience_levels', advancedFilters.experienceLevels.join(','));
+        }
+        if (advancedFilters.salaryRanges.length > 0) {
+            params.set('salary_ranges', advancedFilters.salaryRanges.join(','));
+        }
+        if (advancedFilters.workModes.length > 0) {
+            params.set('work_modes', advancedFilters.workModes.join(','));
+        }
+        if (advancedFilters.jobRoles.length > 0) {
+            params.set('job_roles', advancedFilters.jobRoles.join(','));
+        }
+
+        const queryString = params.toString();
+        router.push(`/jobs/listing${queryString ? `?${queryString}` : ''}`);
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
+    const handleApplyFilters = (filters: AdvancedFilters) => {
+        const params = new URLSearchParams();
+
+        // Basic search fields (from current state)
+        if (searchQuery.jobRole.trim()) params.set('search', searchQuery.jobRole.trim());
+        if (searchQuery.location.trim()) params.set('location', searchQuery.location.trim());
+        if (searchQuery.qualification.trim()) params.set('qualification', searchQuery.qualification.trim());
+        if (searchQuery.jobType.trim()) params.set('job_type', searchQuery.jobType.trim());
+        if (searchQuery.experience.trim()) params.set('experience', searchQuery.experience.trim());
+
+        // Advanced filters (from argument)
+        if (filters.keywords.trim()) params.set('keywords', filters.keywords.trim());
+        if (filters.jobTypes.length > 0) params.set('job_types', filters.jobTypes.join(','));
+        if (filters.experienceLevels.length > 0) params.set('experience_levels', filters.experienceLevels.join(','));
+        if (filters.salaryRanges.length > 0) params.set('salary_ranges', filters.salaryRanges.join(','));
+        if (filters.workModes.length > 0) params.set('work_modes', filters.workModes.join(','));
+        if (filters.jobRoles.length > 0) params.set('job_roles', filters.jobRoles.join(','));
+
+        setAdvancedFilters(filters);
+        const queryString = params.toString();
+        router.push(`/jobs/listing${queryString ? `?${queryString}` : ''}`);
+        // No timeout needed
+    };
 
     return (
         <section className="relative w-full bg-[#EA580C] min-h-[500px] z-20">
@@ -45,84 +161,178 @@ export default function JobsHero() {
                 </h1>
 
                 {/* Search Bar Container */}
-                <div className="w-full max-w-6xl bg-white rounded-2xl shadow-xl p-3 md:p-4 mx-auto transform translate-y-8 md:translate-y-12">
-                    <div className="flex flex-col md:flex-row items-center divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl p-6 mx-auto transform translate-y-8 md:translate-y-12">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
 
                         {/* Job Role */}
-                        <div className="w-full md:w-[20%] p-2 md:px-4">
-                            <label className="block text-sm font-extrabold text-gray-800 mb-1">Job Role</label>
-                            <div className="flex items-center justify-between">
+                        <div className="lg:col-span-2">
+                            <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                                Job Role
+                            </label>
+                            <div className="relative">
+                                <i className="ri-briefcase-line absolute left-3 top-1/2 -translate-y-1/2 text-[#FF8A65] text-lg"></i>
                                 <input
                                     type="text"
                                     placeholder="Enter Title"
-                                    className="w-full text-xs text-gray-500 font-medium focus:outline-none placeholder-gray-400"
+                                    value={searchQuery.jobRole}
+                                    onChange={(e) => setSearchQuery({ ...searchQuery, jobRole: e.target.value })}
+                                    onKeyPress={handleKeyPress}
+                                    className="w-full pl-10 pr-3 py-3 text-sm text-gray-800 font-medium bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#FF8A65] focus:bg-white placeholder-gray-400 transition-all"
                                 />
-                                <i className="ri-arrow-down-s-line text-gray-300"></i>
                             </div>
                         </div>
 
                         {/* Location */}
-                        <div className="w-full md:w-[20%] p-2 md:px-4">
-                            <label className="block text-sm font-extrabold text-gray-800 mb-1">Location</label>
-                            <div className="flex items-center justify-between">
+                        <div className="lg:col-span-2">
+                            <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                                Location
+                            </label>
+                            <div className="relative">
+                                <i className="ri-map-pin-line absolute left-3 top-1/2 -translate-y-1/2 text-[#FF8A65] text-lg"></i>
                                 <input
                                     type="text"
                                     placeholder="Location"
-                                    className="w-full text-xs text-gray-500 font-medium focus:outline-none placeholder-gray-400"
+                                    value={searchQuery.location}
+                                    onChange={(e) => setSearchQuery({ ...searchQuery, location: e.target.value })}
+                                    onKeyPress={handleKeyPress}
+                                    className="w-full pl-10 pr-3 py-3 text-sm text-gray-800 font-medium bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#FF8A65] focus:bg-white placeholder-gray-400 transition-all"
                                 />
-                                <i className="ri-map-pin-line text-gray-300"></i>
                             </div>
                         </div>
 
                         {/* Qualification */}
-                        <div className="w-full md:w-[20%] p-2 md:px-4">
-                            <label className="block text-sm font-extrabold text-gray-800 mb-1">Qualification</label>
-                            <div className="flex items-center justify-between">
+                        <div className="lg:col-span-2">
+                            <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                                Qualification
+                            </label>
+                            <div className="relative">
+                                <i className="ri-graduation-cap-line absolute left-3 top-1/2 -translate-y-1/2 text-[#FF8A65] text-lg"></i>
                                 <input
                                     type="text"
                                     placeholder="Enter Qualification"
-                                    className="w-full text-xs text-gray-500 font-medium focus:outline-none placeholder-gray-400"
+                                    value={searchQuery.qualification}
+                                    onChange={(e) => setSearchQuery({ ...searchQuery, qualification: e.target.value })}
+                                    onKeyPress={handleKeyPress}
+                                    className="w-full pl-10 pr-3 py-3 text-sm text-gray-800 font-medium bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#FF8A65] focus:bg-white placeholder-gray-400 transition-all"
                                 />
-                                <i className="ri-arrow-down-s-line text-gray-300"></i>
                             </div>
                         </div>
 
                         {/* Job Type */}
-                        <div className="w-full md:w-[15%] p-2 md:px-4">
-                            <label className="block text-sm font-extrabold text-gray-800 mb-1">Job type</label>
-                            <div className="flex items-center justify-between cursor-pointer">
-                                <span className="text-xs text-gray-400 font-medium truncate">Enter Job type</span>
-                                <i className="ri-arrow-down-s-line text-gray-300"></i>
+                        <div className="lg:col-span-2">
+                            <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                                Job Type
+                            </label>
+                            <div className="relative">
+                                <i className="ri-briefcase-line absolute left-3 top-1/2 -translate-y-1/2 text-[#FF8A65] text-lg"></i>
+                                <input
+                                    type="text"
+                                    placeholder="Enter Job type"
+                                    value={searchQuery.jobType}
+                                    onChange={(e) => setSearchQuery({ ...searchQuery, jobType: e.target.value })}
+                                    onKeyPress={handleKeyPress}
+                                    className="w-full pl-10 pr-3 py-3 text-sm text-gray-800 font-medium bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#FF8A65] focus:bg-white placeholder-gray-400 transition-all"
+                                />
                             </div>
                         </div>
 
                         {/* Experience */}
-                        <div className="w-full md:w-[13%] p-2 md:px-4">
-                            <label className="block text-sm font-extrabold text-gray-800 mb-1">Experience</label>
-                            <div className="flex items-center justify-between cursor-pointer">
-                                <span className="text-xs text-gray-400 font-medium truncate">Any</span>
-                                <i className="ri-arrow-down-s-line text-gray-300"></i>
+                        <div className="lg:col-span-2">
+                            <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                                Experience
+                            </label>
+                            <div className="relative">
+                                <i className="ri-award-line absolute left-3 top-1/2 -translate-y-1/2 text-[#FF8A65] text-lg"></i>
+                                <input
+                                    type="text"
+                                    placeholder="Any"
+                                    value={searchQuery.experience}
+                                    onChange={(e) => setSearchQuery({ ...searchQuery, experience: e.target.value })}
+                                    onKeyPress={handleKeyPress}
+                                    className="w-full pl-10 pr-3 py-3 text-sm text-gray-800 font-medium bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#FF8A65] focus:bg-white placeholder-gray-400 transition-all"
+                                />
                             </div>
                         </div>
 
-                        {/* Filters */}
-                        <div className="w-full md:w-[15%] p-2 md:px-4 relative">
-                            <label className="block text-sm font-extrabold text-gray-800 mb-1">Filters</label>
-                            <div
-                                className="flex items-center justify-between cursor-pointer"
-                                onClick={() => setShowFilters(!showFilters)}
-                            >
-                                <span className="text-xs text-gray-500 font-medium truncate">More...</span>
-                                <i className="ri-arrow-down-s-line text-gray-300"></i>
+                        {/* Filters & Search Button Combined */}
+                        <div className="lg:col-span-2 grid grid-cols-2 gap-2">
+                            {/* Filters Button */}
+                            <div className="relative">
+                                <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                                    Filters
+                                </label>
+                                <button
+                                    onClick={() => setShowFilters(!showFilters)}
+                                    className="w-full bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 text-gray-700 font-medium text-sm py-3 px-3 rounded-xl transition-all flex items-center justify-center gap-1"
+                                >
+                                    <i className="ri-filter-3-line text-[#FF8A65]"></i>
+                                    <span className="text-xs">More</span>
+                                </button>
+                                {showFilters && (
+                                    <JobFilterPopup
+                                        onClose={() => setShowFilters(false)}
+                                        onApply={handleApplyFilters}
+                                        initialFilters={advancedFilters}
+                                    />
+                                )}
                             </div>
-                            {showFilters && <JobFilterPopup onClose={() => setShowFilters(false)} />}
-                        </div>
 
-                        {/* Search Button */}
-                        <div className="w-full md:w-[12%] p-2 flex justify-end">
-                            <button className="w-full bg-[#FF8A65] hover:bg-[#FF7043] text-white font-bold text-sm py-3 px-4 rounded-lg shadow-md transition-all">
-                                Search Now
-                            </button>
+                            {/* Search Button */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide opacity-0">
+                                    Search
+                                </label>
+                                <button
+                                    onClick={handleSearch}
+                                    className="w-full bg-linear-to-r from-[#FF8A65] to-[#FF7043] hover:from-[#FF7043] hover:to-[#F4511E] text-white font-bold text-sm py-3 px-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-1 group"
+                                >
+                                    <i className="ri-search-line text-lg group-hover:scale-110 transition-transform"></i>
+                                    <span className="hidden xl:inline">Search</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Quick Filters */}
+                    <div className="mt-6 pt-5 border-t border-gray-100">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Quick Filters:</span>
+                            <Link href="/jobs/listing?work_modes=Remote">
+                                <button
+                                    className="px-4 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-[#FF8A65] hover:text-white rounded-full transition-all"
+                                >
+                                    Remote Jobs
+                                </button>
+                            </Link>
+
+                            <Link href="/jobs/listing?job_types=Full Time">
+                                <button
+
+                                    className="px-4 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-[#FF8A65] hover:text-white rounded-full transition-all"
+                                >
+                                    Full Time
+                                </button>
+                            </Link>
+
+                            <Link href="/jobs/listing?job_types=Internship">
+                                <button
+
+                                    className="px-4 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-[#FF8A65] hover:text-white rounded-full transition-all"
+                                >
+                                    Internship
+                                </button>
+
+                            </Link>
+
+
+                            <Link href="/jobs/listing?experience_levels=Fresher">
+                                <button
+
+                                    className="px-4 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-[#FF8A65] hover:text-white rounded-full transition-all"
+                                >
+                                    Fresher Jobs
+                                </button>
+                            </Link>
                         </div>
                     </div>
                 </div>

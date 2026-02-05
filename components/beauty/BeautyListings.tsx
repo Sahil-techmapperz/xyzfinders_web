@@ -1,104 +1,7 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import BeautyCard, { BeautyData } from './BeautyCard';
-
-const BEAUTY_DATA: BeautyData[] = [
-    {
-        id: 1,
-        title: "Premium Bridal Makeup & Hair Styling Package",
-        category: "Bridal Makeup",
-        image: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?q=80&w=2071&auto=format&fit=crop",
-        specs: {
-            serviceFor: "FEMALE",
-            type: "HOME SERVICE",
-            duration: "3-4 Hours",
-            rating: "4.8"
-        },
-        price: "₹ 15,000/-",
-        location: "South Delhi, New Delhi, Delhi",
-        postedTime: "Posted 30 min ago",
-        verified: true
-    },
-    {
-        id: 2,
-        title: "Full Body Massage & Spa - Relaxation Therapy",
-        category: "Spa & Massage",
-        image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=2070&auto=format&fit=crop",
-        specs: {
-            serviceFor: "UNISEX",
-            type: "AT CENTER",
-            duration: "60-90 Min",
-            rating: "4.9"
-        },
-        price: "₹ 2,500/-",
-        location: "Greater Kailash, New Delhi, Delhi",
-        postedTime: "Posted 1 hr ago",
-        verified: true
-    },
-    {
-        id: 3,
-        title: "Men's Grooming - Haircut, Beard Trim & Facial",
-        category: "Men's Salon",
-        image: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=2070&auto=format&fit=crop",
-        specs: {
-            serviceFor: "MALE",
-            type: "AT SALON",
-            duration: "45-60 Min",
-            rating: "4.7"
-        },
-        price: "₹ 800/-",
-        location: "Connaught Place, New Delhi, Delhi",
-        postedTime: "Posted 2 hr ago",
-        verified: true
-    },
-    {
-        id: 4,
-        title: "Hair Spa & Deep Conditioning Treatment",
-        category: "Hair Care",
-        image: "https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop",
-        specs: {
-            serviceFor: "UNISEX",
-            type: "AT CENTER",
-            duration: "90 Min"
-        },
-        price: "₹ 1,200/-",
-        location: "Saket, New Delhi, Delhi",
-        postedTime: "Posted 3 hr ago",
-        verified: false
-    },
-    {
-        id: 5,
-        title: "Professional Makeup for Party & Events",
-        category: "Party Makeup",
-        image: "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=2070&auto=format&fit=crop",
-        specs: {
-            serviceFor: "FEMALE",
-            type: "HOME SERVICE",
-            duration: "1-2 Hours",
-            rating: "4.6"
-        },
-        price: "₹ 3,500/-",
-        location: "Rohini, New Delhi, Delhi",
-        postedTime: "Posted 5 hr ago",
-        verified: true
-    },
-    {
-        id: 6,
-        title: "Body Polishing & Skin Whitening Treatment",
-        category: "Skin Care",
-        image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=2070&auto=format&fit=crop",
-        specs: {
-            serviceFor: "UNISEX",
-            type: "AT CENTER",
-            duration: "120 Min",
-            rating: "4.5"
-        },
-        price: "₹ 4,000/-",
-        location: "Dwarka, New Delhi, Delhi",
-        postedTime: "Posted 6 hr ago",
-        verified: true
-    }
-];
 
 const SERVICES = [
     { name: "Bridal Makeup", active: true },
@@ -111,6 +14,61 @@ const SERVICES = [
 ];
 
 export default function BeautyListings() {
+    const [beautyData, setBeautyData] = useState<BeautyData[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        async function fetchBeautyData() {
+            try {
+                // Fetch beauty products from API (category_id=6 for Beauty)
+                const response = await fetch('/api/products?category_id=6&per_page=100');
+                if (!response.ok) throw new Error('Failed to fetch data');
+
+                const result = await response.json();
+                const products = result.data || [];
+
+                // Transform API data to BeautyData format
+                const transformed: BeautyData[] = products.map((product: any) => ({
+                    id: product.id,
+                    title: product.title,
+                    category: product.product_attributes?.category || 'Beauty',
+                    image: product.images?.[0]?.image ? `data:image/jpeg;base64,${product.images[0].image}` : '',
+                    specs: {
+                        serviceFor: product.product_attributes?.specs?.serviceFor?.toUpperCase() || 'ALL',
+                        type: product.product_attributes?.specs?.type?.toUpperCase() || 'SALON',
+                        duration: product.product_attributes?.specs?.duration || 'N/A',
+                        rating: product.product_attributes?.specs?.rating?.replace('/5', '') || '5.0'
+                    },
+                    price: `₹ ${product.price.toLocaleString('en-IN')}/-`,
+                    location: product.product_attributes?.location || product.city || 'New Delhi',
+                    postedTime: `Posted ${getTimeAgo(new Date(product.created_at))}`,
+                    verified: product.product_attributes?.verified || false
+                }));
+
+                setBeautyData(transformed);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'An error occurred');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchBeautyData();
+    }, []);
+
+    // Helper function to get time ago
+    function getTimeAgo(date: Date): string {
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+        if (hours > 0) return `${hours} hr${hours > 1 ? 's' : ''} ago`;
+        return 'just now';
+    }
+
     return (
         <section className="container mx-auto px-4 py-8 font-jost">
 
@@ -118,7 +76,7 @@ export default function BeautyListings() {
             <div className="mb-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <h1 className="text-2xl font-bold text-gray-900">
-                        Beauty & Wellness Services in New Delhi - <span className="text-gray-500 font-normal">1,542 available</span>
+                        Beauty & Wellness Services in New Delhi - <span className="text-gray-500 font-normal">{beautyData.length} available</span>
                     </h1>
                     <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-gray-600">Sort By :</span>
@@ -156,21 +114,28 @@ export default function BeautyListings() {
 
                 {/* Left: Listings */}
                 <div className="xl:col-span-2 grid grid-cols-1 gap-6">
-                    {BEAUTY_DATA.map(item => (
+                    {loading && (
+                        <div className="text-center py-12">
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF8A65]"></div>
+                            <p className="mt-4 text-gray-600">Loading beauty services...</p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="text-center py-12 text-red-600">
+                            <p>Error: {error}</p>
+                        </div>
+                    )}
+
+                    {!loading && !error && beautyData.length === 0 && (
+                        <div className="text-center py-12 text-gray-600">
+                            <p>No beauty services found.</p>
+                        </div>
+                    )}
+
+                    {!loading && !error && beautyData.map((item: BeautyData) => (
                         <BeautyCard key={item.id} item={item} />
                     ))}
-
-                    {/* Pagination */}
-                    <div className="flex items-center justify-center gap-2 pt-8">
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors"><i className="ri-arrow-left-double-line"></i></button>
-                        <button className="w-8 h-8 flex items-center justify-center bg-[#FF8A65] text-white font-bold rounded-lg shadow-sm">1</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">2</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">3</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">4</button>
-                        <span className="text-gray-300">...</span>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">6</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors"><i className="ri-arrow-right-double-line"></i></button>
-                    </div>
                 </div>
 
                 {/* Right: Ad Banner */}

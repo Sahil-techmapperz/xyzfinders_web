@@ -1,9 +1,9 @@
 export default function GoogleAdBanner() {
     return (
-        <section className="container mx-auto px-4 mb-12">
+        <section className=" container mx-auto px-4 md:mb-12">
             <div className="flex justify-center">
                 {/* Google Ad Placeholder */}
-                <div className="w-full h-auto bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm relative group">
+                <div className="w-full h-20 md:h-auto bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm relative group">
                     <img
                         src="https://placehold.co/1200x200/004c87/FFFFFF?text=Managed+WordPress+Hosting+-+Ad+Banner+Placeholder"
                         alt="Google Ad Banner"

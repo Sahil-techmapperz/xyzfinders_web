@@ -18,6 +18,12 @@ export async function GET(request: NextRequest) {
         const condition = searchParams.get('condition');
         const status = searchParams.get('status') || 'active';
 
+        // Job-specific filters
+        const job_type = searchParams.get('job_type');
+        const experience = searchParams.get('experience');
+        const min_salary = searchParams.get('min_salary');
+        const work_mode = searchParams.get('work_mode');
+
         let sql = `
       SELECT p.*, 
         u.name as seller_name,
@@ -61,8 +67,49 @@ export async function GET(request: NextRequest) {
             params.push(condition);
         }
 
+        // Job-specific filters using JSON queries
+        if (job_type) {
+            const types = job_type.split(',');
+            sql += ' AND (';
+            const typeConditions = types.map(() =>
+                "JSON_UNQUOTE(JSON_EXTRACT(p.product_attributes, '$.specs.type')) LIKE ?"
+            ).join(' OR ');
+            sql += typeConditions + ')';
+            types.forEach(type => params.push(`%${type}%`));
+        }
+
+        if (experience) {
+            const experiences = experience.split(',');
+            sql += ' AND (';
+            const expConditions = experiences.map(() =>
+                "JSON_UNQUOTE(JSON_EXTRACT(p.product_attributes, '$.specs.experience')) LIKE ?"
+            ).join(' OR ');
+            sql += expConditions + ')';
+            experiences.forEach(exp => params.push(`%${exp}%`));
+        }
+
+        if (min_salary) {
+            // Filter by price as a proxy for salary (in LPA * 100000)
+            const salaryInRupees = parseFloat(min_salary) * 100000 / 12; // Convert LPA to monthly
+            sql += ' AND p.price >= ?';
+            params.push(salaryInRupees);
+        }
+
+        if (work_mode) {
+            const modes = work_mode.split(',');
+            sql += ' AND (';
+            const modeConditions = modes.map(() =>
+                "(JSON_UNQUOTE(JSON_EXTRACT(p.product_attributes, '$.specs.type')) LIKE ? OR JSON_UNQUOTE(JSON_EXTRACT(p.product_attributes, '$.location')) LIKE ?)"
+            ).join(' OR ');
+            sql += modeConditions + ')';
+            modes.forEach(mode => {
+                params.push(`%${mode}%`);
+                params.push(`%${mode}%`);
+            });
+        }
+
         // Count total
-        const countSql = sql.replace(/SELECT p\.\*.*FROM/, 'SELECT COUNT(*) as total FROM');
+        const countSql = sql.replace(/SELECT p\.\*[\s\S]*?FROM/, 'SELECT COUNT(*) as total FROM');
         const countResult = await query<{ total: number }>(countSql, params);
         const total = countResult[0]?.total || 0;
 

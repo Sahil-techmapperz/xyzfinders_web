@@ -80,7 +80,7 @@ const products: Product[] = [
 
 export default function WeeklyDeals() {
     return (
-        <section className="bg-brand-orange py-12 mb-8">
+        <section className="hidden md:block bg-brand-orange py-12 mb-8">
             <div className="container mx-auto px-4">
 
                 {/* Header */}
@@ -98,24 +98,24 @@ export default function WeeklyDeals() {
                     <button className="px-5 py-2 rounded-full border border-white/50 text-white font-medium text-sm whitespace-nowrap hover:bg-white hover:text-brand-orange transition">Gadgets & Electronics</button>
                 </div>
 
-                {/* Product Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
+                {/* Product Grid / Mobile Scroll */}
+                <div className="flex overflow-x-auto pb-4 gap-4 md:grid md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 md:gap-4 md:mb-12 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
                     {products.map((product) => (
-                        <div key={product.id} className="bg-white rounded-xl p-3 shadow-md group relative overflow-hidden transition-all duration-300 hover:shadow-xl">
+                        <div key={product.id} className="min-w-[70%] md:min-w-0 flex-shrink-0 snap-start bg-white rounded-xl p-3 shadow-md group relative overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100 cursor-pointer">
 
                             {/* Image Container with Hover Effect */}
-                            <div className="h-40 rounded-lg mb-3 relative overflow-hidden bg-gray-100 flex items-center justify-center">
+                            <div className="h-40 md:h-40 rounded-lg mb-3 relative overflow-hidden bg-gray-100 flex items-center justify-center">
                                 {/* Image 1 (Default) */}
                                 <img
                                     src={product.image1}
                                     alt={product.name}
-                                    className="w-full h-full object-contain transition-opacity duration-300 opacity-100 group-hover:opacity-0 absolute inset-0"
+                                    className="w-full h-full object-cover transition-opacity duration-300 opacity-100 group-hover:opacity-0 absolute inset-0"
                                 />
                                 {/* Image 2 (Hover) */}
                                 <img
                                     src={product.image2}
                                     alt={`${product.name} Hover`}
-                                    className="w-full h-full object-contain transition-opacity duration-300 opacity-0 group-hover:opacity-100 absolute inset-0"
+                                    className="w-full h-full object-cover transition-opacity duration-300 opacity-0 group-hover:opacity-100 absolute inset-0"
                                 />
                             </div>
 
@@ -123,34 +123,35 @@ export default function WeeklyDeals() {
                             {product.brand && <div className="text-xs text-brand-orange font-semibold mb-1">{product.brand}</div>}
 
                             {/* Title */}
-                            <h3 className="font-bold text-sm text-gray-800 leading-tight mb-1 line-clamp-2 min-h-[2.5em]">
+                            <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-2 min-h-[2.5em] leading-tight">
                                 {product.name}: {product.specs}
                             </h3>
 
-                            {/* Meta Info */}
-                            <div className="text-[10px] text-gray-500 mb-2 flex items-center gap-1">
-                                <i className="ri-time-line"></i> {product.condition} • {product.warranty}
-                            </div>
+                            {/* Meta Info (Condition/Warranty) as Details */}
+                            <ul className="flex flex-wrap gap-2 text-xs text-gray-400 mb-3">
+                                <li className="flex items-center gap-1"><i className="ri-time-line text-gray-300 text-xs"></i> <span className="text-gray-500">{product.condition}</span></li>
+                                <li className="flex items-center gap-1"><i className="ri-shield-check-line text-gray-300 text-xs"></i> <span className="text-gray-500">{product.warranty}</span></li>
+                            </ul>
 
                             {/* Rating and Price Container */}
-                            <div className="transition-all duration-300 group-hover:opacity-0 group-hover:translate-y-4">
-                                {/* Rating */}
-                                <div className="flex items-center text-yellow-400 text-xs mb-2">
-                                    {[...Array(5)].map((_, i) => (
-                                        <i key={i} className={`ri-star-${i < Math.floor(product.rating) ? 'fill' : i < product.rating ? 'half-fill' : 'line'}`}></i>
-                                    ))}
-                                    <span className="text-gray-400 ml-1">({product.reviews})</span>
+                            <div className="relative h-14 w-full">
+                                <div className="absolute inset-0 flex flex-col justify-between transition-all duration-300 ease-in-out group-hover:opacity-0 group-hover:translate-y-2">
+                                    {/* Rating (replaces Location line in other cards) */}
+                                    <div className="flex items-center text-yellow-400 text-xs gap-1">
+                                        {[...Array(5)].map((_, i) => (
+                                            <i key={i} className={`ri-star-${i < Math.floor(product.rating) ? 'fill' : i < product.rating ? 'half-fill' : 'line'}`}></i>
+                                        ))}
+                                        <span className="text-gray-400">({product.reviews})</span>
+                                    </div>
+                                    <div className="text-[#FF4D4D] font-bold text-lg mt-1">{product.price}</div>
                                 </div>
 
-                                {/* Price */}
-                                <div className="text-brand-orange font-bold text-lg">{product.price}</div>
-                            </div>
-
-                            {/* Hover Button Overlay */}
-                            <div className="absolute inset-x-0 bottom-4 flex justify-center translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-10">
-                                <button className="bg-brand-teal text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg hover:bg-teal-700 transition-colors">
-                                    View Detail
-                                </button>
+                                {/* Hover Button Overlay */}
+                                <div className="absolute inset-x-0 bottom-0 flex justify-center translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-10">
+                                    <button className="bg-brand-teal text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg hover:bg-teal-700 transition-colors w-full">
+                                        View Detail
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}

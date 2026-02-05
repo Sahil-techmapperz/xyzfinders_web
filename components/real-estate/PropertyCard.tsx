@@ -28,8 +28,8 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden group flex flex-col md:flex-row h-auto md:h-72">
 
             {/* Image Section */}
-            <div className="relative w-full md:w-[45%] h-56 md:h-full bg-gray-100 overflow-hidden cursor-pointer">
-                <Link href={`/real-estate/${property.id}`}>
+            <div className="relative w-full md:w-[40%] h-56 md:h-full bg-gray-100 overflow-hidden cursor-pointer">
+                <Link href={`/real-estate/${property.id}-${property.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}>
                     <img
                         src={property.image}
                         alt={property.title}

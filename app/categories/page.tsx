@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { ALL_LISTINGS } from '@/data/mock-data';
 import GlobalFilterSidebar from '@/components/shared/GlobalFilterSidebar';
 import PropertyCard from '@/components/real-estate/PropertyCard';
 import AutomobileCard from '@/components/automobiles/AutomobileCard';
@@ -12,132 +11,306 @@ import EducationCard from '@/components/education/EducationCard';
 import EventsCard from '@/components/events/EventsCard';
 import ServicesCard from '@/components/services/ServicesCard';
 
+interface Product {
+    id: number;
+    title: string;
+    description: string;
+    price: number;
+    category_id: number;
+    category_name: string;
+    location_id: number;
+    city: string;
+    seller_name: string;
+    images: Array<{
+        id: number;
+        image: string;
+        is_primary: boolean;
+    }>;
+    condition?: string;
+    created_at: string;
+    is_featured?: number;
+    product_attributes?: any;
+}
+
 function GlobalListingsContent() {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    // Initialize State from URL Params
-    const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
-    const [selectedCategory, setSelectedCategory] = useState<string[]>(() => {
-        const categories = searchParams.getAll('category');
-        return categories.length > 0 ? categories : ['All'];
-    });
-    const [priceRange, setPriceRange] = useState<[number, number]>(() => {
-        const min = searchParams.get('minPrice');
-        const max = searchParams.get('maxPrice');
-        return [min ? parseInt(min) : 0, max ? parseInt(max) : 100000000];
-    });
-    const [verifiedOnly, setVerifiedOnly] = useState(() => searchParams.get('verified') === 'true');
-    const [premiumOnly, setPremiumOnly] = useState(() => searchParams.get('premium') === 'true');
-    const [locationFilter, setLocationFilter] = useState(() => searchParams.get('location') || '');
-    const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'recommended');
-    const [currentPage, setCurrentPage] = useState(() => {
-        const page = searchParams.get('page');
-        return page ? parseInt(page) : 1;
-    });
+    // Fetch initial params
+    const initialSearch = searchParams.get('search') || searchParams.get('q') || '';
+    const initialLocation = searchParams.get('location') || '';
+    const initialCategories = searchParams.getAll('category');
 
-    const itemsPerPage = 9;
+    // State
+    const [searchQuery, setSearchQuery] = useState(initialSearch);
+    const [selectedCategory, setSelectedCategory] = useState<string[]>(
+        initialCategories.length > 0 ? initialCategories : ['All']
+    );
+    const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000000]);
+    const [verifiedOnly, setVerifiedOnly] = useState(false);
+    const [premiumOnly, setPremiumOnly] = useState(false);
+    const [locationFilter, setLocationFilter] = useState(initialLocation);
+    const [sortBy, setSortBy] = useState('recommended');
+    const [currentPage, setCurrentPage] = useState(1);
 
-    // Sync State to URL
+    // API State
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [totalProducts, setTotalProducts] = useState(0);
+    const [categories, setCategories] = useState<any[]>([]);
+
+    const itemsPerPage = 20;
+
+    // Fetch categories on mount
+    useEffect(() => {
+        fetch('/api/categories')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setCategories(data.data);
+                }
+            })
+            .catch(err => console.error('Failed to fetch categories:', err));
+    }, []);
+
+    // Fetch products whenever filters change
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setLoading(true);
+            try {
+                const params = new URLSearchParams();
+                params.set('page', currentPage.toString());
+                params.set('per_page', itemsPerPage.toString());
+
+                if (searchQuery) params.set('search', searchQuery);
+                if (locationFilter) params.set('search', `${searchQuery} ${locationFilter}`.trim());
+
+                // Map category names to IDs
+                if (!selectedCategory.includes('All') && categories.length > 0) {
+                    selectedCategory.forEach(catName => {
+                        const cat = categories.find(c => c.name === catName);
+                        if (cat) {
+                            params.set('category_id', cat.id.toString());
+                        }
+                    });
+                }
+
+                if (priceRange[0] > 0) params.set('min_price', priceRange[0].toString());
+                if (priceRange[1] < 100000000) params.set('max_price', priceRange[1].toString());
+
+                const response = await fetch(`/api/products?${params.toString()}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    setProducts(data.data || []);
+                    setTotalProducts(data.pagination?.total || 0);
+                } else {
+                    setProducts([]);
+                    setTotalProducts(0);
+                }
+            } catch (error) {
+                console.error('Failed to fetch products:', error);
+                setProducts([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, [searchQuery, selectedCategory, priceRange, locationFilter, currentPage, categories]);
+
+    // Sync state to URL
     useEffect(() => {
         const params = new URLSearchParams();
-        if (searchQuery) params.set('q', searchQuery);
-
+        if (searchQuery) params.set('search', searchQuery);
         if (!selectedCategory.includes('All')) {
             selectedCategory.forEach(c => params.append('category', c));
-        } else {
-            params.set('category', 'All');
         }
-
         if (priceRange[0] > 0) params.set('minPrice', priceRange[0].toString());
         if (priceRange[1] < 100000000) params.set('maxPrice', priceRange[1].toString());
-        if (verifiedOnly) params.set('verified', 'true');
-        if (premiumOnly) params.set('premium', 'true');
         if (locationFilter) params.set('location', locationFilter);
         if (sortBy !== 'recommended') params.set('sort', sortBy);
         if (currentPage > 1) params.set('page', currentPage.toString());
 
         router.replace(`${pathname}?${params.toString()}`);
-    }, [searchQuery, selectedCategory, priceRange, verifiedOnly, premiumOnly, locationFilter, sortBy, currentPage, pathname, router]);
+    }, [searchQuery, selectedCategory, priceRange, locationFilter, sortBy, currentPage]);
 
-    // Reset pagination when filters change
-    useMemo(() => {
+    // Reset to page 1 when filters change
+    useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, selectedCategory, priceRange, verifiedOnly, premiumOnly, locationFilter, sortBy]);
+    }, [searchQuery, selectedCategory, priceRange, locationFilter, sortBy]);
 
-    // Filter Logic
-    const filteredListings = useMemo(() => {
-        let result = ALL_LISTINGS.filter(item => {
-            // Search
-            const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                item.location.toLowerCase().includes(searchQuery.toLowerCase());
+    // Client-side sorting (since API doesn't support all sort options)
+    const sortedProducts = [...products].sort((a, b) => {
+        if (sortBy === 'price-low') return a.price - b.price;
+        if (sortBy === 'price-high') return b.price - a.price;
+        if (sortBy === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return 0;
+    });
 
-            // Category mapping
-            let matchesCategory = true;
-            if (!selectedCategory.includes('All')) {
-                matchesCategory = selectedCategory.some(cat => {
-                    if (cat === 'Real Estate') return item.listingType === 'property';
-                    if (cat === 'Automobiles') return item.listingType === 'automobile';
-                    if (cat === 'Mobile & Tablet' || cat === 'Mobiles') return item.listingType === 'mobile';
-                    if (cat === 'Pets & Animals Accessories') return item.listingType === 'pet';
-                    if (cat === 'Learning & Education') return item.listingType === 'education';
-                    if (cat === 'Local Events') return item.listingType === 'event';
-                    if (cat === 'Services') return item.listingType === 'service';
-                    return false;
-                });
+    const totalPages = Math.ceil(totalProducts / itemsPerPage);
+
+    // Map products to listing card format
+    const mapProductToCard = (product: Product) => {
+        const imageUrl = product.images?.[0]?.image
+            ? `data:image/jpeg;base64,${product.images[0].image}`
+            : '/placeholder.jpg';
+
+        const categoryType = getCategoryType(product.category_name);
+
+        // Parse product_attributes if it's a string (from JSON column)
+        let attrs = null;
+        if (product.product_attributes) {
+            try {
+                attrs = typeof product.product_attributes === 'string'
+                    ? JSON.parse(product.product_attributes)
+                    : product.product_attributes;
+            } catch (e) {
+                console.warn('Failed to parse product_attributes:', e);
             }
-
-            // Price 
-            const rawPrice = (item as any).price || (item as any).fees || "0";
-            const priceNum = parseInt(rawPrice.toString().replace(/[^\d]/g, '')) || 0;
-            const matchesPrice = priceNum >= priceRange[0] && priceNum <= priceRange[1];
-
-            // Badges
-            const matchesVerified = verifiedOnly ? (item as any).verified : true;
-            const matchesPremium = premiumOnly ? (item as any).premium : true;
-
-            // Location Filter
-            const matchesLocation = locationFilter ? item.location.toLowerCase().includes(locationFilter.toLowerCase()) : true;
-
-            return matchesSearch && matchesCategory && matchesPrice && matchesVerified && matchesPremium && matchesLocation;
-        });
-
-        // Sorting Logic
-        if (sortBy === 'price-low') {
-            result.sort((a, b) => {
-                const priceAStr = (a as any).price || (a as any).fees || "0";
-                const priceBStr = (b as any).price || (b as any).fees || "0";
-                const priceA = parseInt(priceAStr.toString().replace(/[^\d]/g, '')) || 0;
-                const priceB = parseInt(priceBStr.toString().replace(/[^\d]/g, '')) || 0;
-                return priceA - priceB;
-            });
-        } else if (sortBy === 'price-high') {
-            result.sort((a, b) => {
-                const priceAStr = (a as any).price || (a as any).fees || "0";
-                const priceBStr = (b as any).price || (b as any).fees || "0";
-                const priceA = parseInt(priceAStr.toString().replace(/[^\d]/g, '')) || 0;
-                const priceB = parseInt(priceBStr.toString().replace(/[^\d]/g, '')) || 0;
-                return priceB - priceA;
-            });
-        } else if (sortBy === 'newest') {
-            result.sort((a, b) => b.id - a.id);
         }
 
-        return result;
-    }, [searchQuery, selectedCategory, priceRange, verifiedOnly, premiumOnly, locationFilter, sortBy]);
+        // Base card data
+        const baseCard = {
+            id: product.id,
+            title: product.title,
+            price: `₹${product.price.toLocaleString()}`,
+            location: product.city || 'Unknown',
+            image: imageUrl,
+            verified: false,
+            premium: product.is_featured === 1,
+            listingType: categoryType,
+        };
 
-    // Pagination Logic
-    const totalPages = Math.ceil(filteredListings.length / itemsPerPage);
-    const paginatedListings = filteredListings.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+        // Add category-specific properties from product_attributes
+        if (categoryType === 'property') {
+            return {
+                ...baseCard,
+                category: 'Real Estate',
+                type: attrs?.type || '',
+                tags: attrs?.tags || [],
+                specs: {
+                    bedroom: attrs?.specs?.bedroom || '',
+                    kitchen: attrs?.specs?.kitchen || '',
+                    bathroom: attrs?.specs?.bathroom || '',
+                    sharing: attrs?.specs?.sharing || ''
+                },
+                description: product.description || ''
+            };
+        }
+
+        if (categoryType === 'automobile') {
+            return {
+                ...baseCard,
+                category: 'Automobiles',
+                make: attrs?.make || '',
+                model: attrs?.model || '',
+                variant: attrs?.variant || '',
+                year: attrs?.year || '',
+                kms: attrs?.kms || '',
+                fuel: attrs?.fuel || '',
+                transmission: attrs?.transmission || ''
+            };
+        }
+
+        if (categoryType === 'mobile') {
+            return {
+                ...baseCard,
+                category: 'Mobile & Tablet',
+                brand: attrs?.brand || '',
+                specs: {
+                    age: attrs?.specs?.age || 'Used',
+                    model: attrs?.specs?.model || product.title.split(' ').slice(0, 2).join(' ') || 'Unknown Model',
+                    storage: attrs?.specs?.storage || '64GB',
+                    colour: attrs?.specs?.colour || 'Black'
+                },
+                postedTime: 'Recently',
+                description: product.description || ''
+            };
+        }
+
+        if (categoryType === 'pet') {
+            return {
+                ...baseCard,
+                category: 'Pets & Animals',
+                type: attrs?.type || '',
+                specs: {
+                    age: attrs?.specs?.age || 'N/A',
+                    breed: attrs?.specs?.breed || 'Mixed',
+                    gender: attrs?.specs?.gender || 'N/A',
+                    vaccinated: attrs?.specs?.vaccinated || 'No'
+                },
+                postedTime: 'Recently',
+                description: product.description || ''
+            };
+        }
+
+        if (categoryType === 'education') {
+            return {
+                ...baseCard,
+                category: 'Learning & Education',
+                subject: attrs?.subject || '',
+                specs: {
+                    mode: attrs?.specs?.mode || 'Online/Offline',
+                    level: attrs?.specs?.level || 'All Levels',
+                    duration: attrs?.specs?.duration || 'Flexible',
+                    language: attrs?.specs?.language || 'English'
+                },
+                fees: `₹${product.price.toLocaleString()}`,
+                postedTime: 'Recently',
+                description: product.description || ''
+            };
+        }
+
+        if (categoryType === 'event') {
+            return {
+                ...baseCard,
+                category: 'Local Events',
+                date: attrs?.date || '',
+                time: attrs?.time || '',
+                organizer: attrs?.organizer || '',
+                description: product.description || ''
+            };
+        }
+
+        if (categoryType === 'service') {
+            return {
+                ...baseCard,
+                category: 'Services',
+                subcategory: attrs?.subcategory || '',
+                rating: attrs?.rating || 0,
+                reviews: attrs?.reviews || 0,
+                provider: attrs?.provider || '',
+                description: product.description || ''
+            };
+        }
+
+        // For other types, just return base card with description
+        return {
+            ...baseCard,
+            category: product.category_name || 'Other',
+            description: product.description || ''
+        } as any;
+    };
+
+    const getCategoryType = (categoryName: string): string => {
+        const mapping: Record<string, string> = {
+            'Real Estate': 'property',
+            'Automobiles': 'automobile',
+            'Mobile & Tablet': 'mobile',
+            'Mobiles': 'mobile',
+            'Pets & Animals Accessories': 'pet',
+            'Learning & Education': 'education',
+            'Local Events': 'event',
+            'Services': 'service'
+        };
+        return mapping[categoryName] || 'property';
+    };
 
     return (
         <div className="bg-gray-50 min-h-screen py-8 font-jost">
             <div className="container mx-auto px-4">
-
                 {/* Top Search Bar */}
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4 items-center mb-8 sticky top-0 z-40">
                     <div className="flex-1 flex items-center bg-gray-50 rounded-lg px-4 py-3 border border-gray-200 focus-within:border-brand-orange focus-within:ring-1 focus-within:ring-brand-orange/20 transition-all">
@@ -150,14 +323,17 @@ function GlobalListingsContent() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <button className="bg-brand-orange text-white px-8 py-3 rounded-lg font-bold hover:bg-[#e07a46] transition shadow-md hidden md:block">
+                    <button
+                        onClick={() => setSearchQuery(searchQuery)}
+                        className="bg-brand-orange text-white px-8 py-3 rounded-lg font-bold hover:bg-[#e07a46] transition shadow-md hidden md:block"
+                    >
                         Search
                     </button>
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Sidebar */}
-                    <aside className="w-full lg:w-72 flex-shrink-0">
+                    <aside className="w-full lg:w-72 shrink-0">
                         <GlobalFilterSidebar
                             selectedCategory={selectedCategory}
                             setSelectedCategory={setSelectedCategory}
@@ -177,7 +353,7 @@ function GlobalListingsContent() {
                         <div className="mb-4 flex items-center justify-between">
                             <h2 className="text-xl font-bold text-gray-800">
                                 {selectedCategory.includes('All') ? 'All Listings' : `${selectedCategory.join(', ')} Listings`}
-                                <span className="text-gray-400 text-sm font-normal ml-2">({filteredListings.length} found)</span>
+                                <span className="text-gray-400 text-sm font-normal ml-2">({totalProducts} found)</span>
                             </h2>
                             {/* Sort Dropdown */}
                             <select
@@ -192,52 +368,71 @@ function GlobalListingsContent() {
                             </select>
                         </div>
 
-                        {paginatedListings.length > 0 ? (
+                        {loading ? (
+                            <div className="flex items-center justify-center py-20">
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-orange"></div>
+                            </div>
+                        ) : sortedProducts.length > 0 ? (
                             <>
                                 <div className="grid grid-cols-1 gap-6">
-                                    {paginatedListings.map((item: any) => {
-                                        if (item.listingType === 'property') return <PropertyCard key={`${item.listingType}-${item.id}`} property={item} />;
-                                        if (item.listingType === 'automobile') return <AutomobileCard key={`${item.listingType}-${item.id}`} auto={item} />;
-                                        if (item.listingType === 'mobile') return <MobileCard key={`${item.listingType}-${item.id}`} item={item} />;
-                                        if (item.listingType === 'pet') return <PetsCard key={`${item.listingType}-${item.id}`} item={item} />;
-                                        if (item.listingType === 'education') return <EducationCard key={`${item.listingType}-${item.id}`} item={item} />;
-                                        if (item.listingType === 'event') return <EventsCard key={`${item.listingType}-${item.id}`} item={item} />;
-                                        if (item.listingType === 'service') return <ServicesCard key={`${item.listingType}-${item.id}`} item={item} />;
+                                    {sortedProducts.map((product) => {
+                                        const item = mapProductToCard(product);
+                                        if (item.listingType === 'property') return <PropertyCard key={product.id} property={item} />;
+                                        if (item.listingType === 'automobile') return <AutomobileCard key={product.id} auto={item} />;
+                                        if (item.listingType === 'mobile') return <MobileCard key={product.id} item={item} />;
+                                        if (item.listingType === 'pet') return <PetsCard key={product.id} item={item} />;
+                                        if (item.listingType === 'education') return <EducationCard key={product.id} item={item} />;
+                                        if (item.listingType === 'event') return <EventsCard key={product.id} item={item} />;
+                                        if (item.listingType === 'service') return <ServicesCard key={product.id} item={item} />;
                                         return null;
                                     })}
                                 </div>
 
                                 {/* Pagination Controls */}
-                                <div className="mt-8 flex justify-center items-center gap-2">
-                                    <button
-                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                        disabled={currentPage === 1}
-                                        className="w-10 h-10 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <i className="ri-arrow-left-s-line text-lg"></i>
-                                    </button>
-
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                {totalPages > 1 && (
+                                    <div className="mt-8 flex justify-center items-center gap-2">
                                         <button
-                                            key={page}
-                                            onClick={() => setCurrentPage(page)}
-                                            className={`w-10 h-10 rounded-lg border flex items-center justify-center font-medium transition-colors ${currentPage === page
-                                                ? 'bg-brand-orange border-brand-orange text-white'
-                                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                                                }`}
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className="w-10 h-10 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {page}
+                                            <i className="ri-arrow-left-s-line text-lg"></i>
                                         </button>
-                                    ))}
 
-                                    <button
-                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                        disabled={currentPage === totalPages}
-                                        className="w-10 h-10 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <i className="ri-arrow-right-s-line text-lg"></i>
-                                    </button>
-                                </div>
+                                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                            let page;
+                                            if (totalPages <= 5) {
+                                                page = i + 1;
+                                            } else if (currentPage <= 3) {
+                                                page = i + 1;
+                                            } else if (currentPage >= totalPages - 2) {
+                                                page = totalPages - 4 + i;
+                                            } else {
+                                                page = currentPage - 2 + i;
+                                            }
+                                            return (
+                                                <button
+                                                    key={page}
+                                                    onClick={() => setCurrentPage(page)}
+                                                    className={`w-10 h-10 rounded-lg border flex items-center justify-center font-medium transition-colors ${currentPage === page
+                                                        ? 'bg-brand-orange border-brand-orange text-white'
+                                                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                                                        }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            );
+                                        })}
+
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="w-10 h-10 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <i className="ri-arrow-right-s-line text-lg"></i>
+                                        </button>
+                                    </div>
+                                )}
                             </>
                         ) : (
                             <div className="bg-white rounded-xl p-10 text-center border border-gray-100">
@@ -260,7 +455,6 @@ function GlobalListingsContent() {
                                     Clear all filters
                                 </button>
                             </div>
-
                         )}
                     </main>
                 </div>

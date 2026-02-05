@@ -13,9 +13,9 @@ export async function POST(request: NextRequest) {
         const { name, email, phone, password, password_confirmation, user_type } = body;
 
         // Validation
-        if (!name || !email || !phone || !password || !user_type) {
-            console.log('[REGISTER ERROR] Missing fields:', { name: !!name, email: !!email, phone: !!phone, password: !!password, user_type: !!user_type });
-            return errorResponse('All fields are required');
+        if (!name || !email || !password || !user_type) {
+            console.log('[REGISTER ERROR] Missing fields:', { name: !!name, email: !!email, password: !!password, user_type: !!user_type });
+            return errorResponse('Name, email, password and user type are required');
         }
 
         if (password !== password_confirmation) {
@@ -29,14 +29,23 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if user already exists
-        const existingUser = await queryOne<User>(
-            'SELECT * FROM users WHERE email = ? OR phone = ?',
-            [email, phone]
-        );
+        let sql = 'SELECT * FROM users WHERE email = ?';
+        const params: any[] = [email];
+
+        if (phone) {
+            sql += ' OR phone = ?';
+            params.push(phone);
+        }
+
+        const existingUser = await queryOne<User>(sql, params);
 
         if (existingUser) {
-            console.log('[REGISTER ERROR] User already exists:', { email: existingUser.email, phone: existingUser.phone });
-            return errorResponse('User with this email or phone already exists');
+            if (existingUser.email === email) {
+                return errorResponse('User with this email already exists');
+            }
+            if (phone && existingUser.phone === phone) {
+                return errorResponse('User with this phone already exists');
+            }
         }
 
         // Hash password
@@ -46,7 +55,7 @@ export async function POST(request: NextRequest) {
         const result: any = await query(
             `INSERT INTO users (name, email, phone, password, user_type, created_at, updated_at) 
        VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-            [name, email, phone, hashedPassword, user_type]
+            [name, email, phone || null, hashedPassword, user_type]
         );
 
         const userId = result.insertId;

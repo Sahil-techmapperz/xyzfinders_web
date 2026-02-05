@@ -58,9 +58,34 @@ export async function GET(
         // Increment view count
         await query('UPDATE products SET views = views + 1 WHERE id = ?', [productId]);
 
+        // Fetch similar products (same category, excluding current product)
+        const similarProducts = await query<Product>(
+            `SELECT p.id, p.title, p.price, p.location_id, p.user_id, p.product_attributes,
+             l.name as city, u.name as seller_name
+             FROM products p
+             LEFT JOIN locations l ON p.location_id = l.id
+             LEFT JOIN users u ON p.user_id = u.id
+             WHERE p.category_id = ? AND p.id != ?
+             LIMIT 5`,
+            [product.category_id, productId]
+        );
+
+        // Fetch images for similar products
+        const similarProductsWithImages = await Promise.all(similarProducts.map(async (p) => {
+            const result = await query<{ image_data: Buffer }>(
+                'SELECT image_data FROM product_images WHERE product_id = ? ORDER BY is_primary DESC LIMIT 1',
+                [p.id]
+            );
+            return {
+                ...p,
+                image: result.length > 0 ? result[0].image_data.toString('base64') : null
+            };
+        }));
+
         return successResponse({
             ...product,
-            images: productImages
+            images: productImages,
+            similarProducts: similarProductsWithImages
         });
     } catch (error) {
         console.error('Get product error:', error);

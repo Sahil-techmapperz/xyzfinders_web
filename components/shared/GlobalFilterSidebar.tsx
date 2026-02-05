@@ -1,3 +1,7 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+
 export default function GlobalFilterSidebar({
     selectedCategory,
     setSelectedCategory,
@@ -21,7 +25,37 @@ export default function GlobalFilterSidebar({
     locationFilter: string,
     setLocationFilter: (l: string) => void
 }) {
-    const CATEGORIES = ["All", "Real Estate", "Automobiles", "Mobiles", "Furniture", "Electronics", "Beauty", "Jobs", "Pets & Animals Accessories", "Learning & Education", "Local Events", "Services"];
+    const [categories, setCategories] = useState<string[]>(['All']);
+
+    // Fetch categories from API
+    useEffect(() => {
+        fetch('/api/categories')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    const categoryNames = data.data.map((cat: any) => cat.name);
+                    setCategories(['All', ...categoryNames]);
+                }
+            })
+            .catch(err => {
+                console.error('Failed to fetch categories:', err);
+                // Fallback to default categories
+                setCategories([
+                    'All',
+                    'Real Estate',
+                    'Automobiles',
+                    'Mobiles',
+                    'Furniture',
+                    'Electronics',
+                    'Beauty',
+                    'Jobs',
+                    'Pets & Animals Accessories',
+                    'Learning & Education',
+                    'Local Events',
+                    'Services'
+                ]);
+            });
+    }, []);
 
     const handleCategoryChange = (cat: string) => {
         if (cat === 'All') {
@@ -76,7 +110,7 @@ export default function GlobalFilterSidebar({
             <div className="mb-8">
                 <h4 className="font-semibold text-sm text-gray-900 mb-4 uppercase tracking-wider">Category</h4>
                 <div className="space-y-2">
-                    {CATEGORIES.map(cat => {
+                    {categories.map(cat => {
                         const isSelected = selectedCategory.includes(cat);
                         return (
                             <label key={cat} className="flex items-center gap-3 cursor-pointer group">

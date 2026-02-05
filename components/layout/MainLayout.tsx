@@ -7,6 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Footer from './Footer';
+import MobileBottomNav from './MobileBottomNav';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     // ... (existing state code)
@@ -50,7 +51,32 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         } else {
             const token = localStorage.getItem('token');
             if (token) {
-                setIsLoggedIn(true);
+                try {
+                    // Check if token is expired
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+
+                    const decoded = JSON.parse(jsonPayload);
+                    const currentTime = Date.now() / 1000;
+
+                    if (decoded.exp && decoded.exp < currentTime) {
+                        // Token expired
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        setIsLoggedIn(false);
+                        window.location.href = '/';
+                    } else {
+                        setIsLoggedIn(true);
+                    }
+                } catch (e) {
+                    console.error("Invalid token format", e);
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    setIsLoggedIn(false);
+                }
             }
         }
 
@@ -96,6 +122,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             <Toaster position="top-center" />
             <Header />
             <main className="flex-1 bg-white">{children}</main>
+            <MobileBottomNav />
             <Footer />
         </div>
     );

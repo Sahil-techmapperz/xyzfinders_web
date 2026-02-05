@@ -23,7 +23,7 @@ export default function EventsCard({ item }: { item: EventData }) {
 
             {/* Image Section */}
             <div className="relative w-full md:w-[40%] h-48 md:h-full bg-gray-100 overflow-hidden cursor-pointer">
-                <Link href={`/events/${item.id}`}>
+                <Link href={`/events/${item.id}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}>
                     <img
                         src={item.image}
                         alt={item.title}
@@ -46,7 +46,7 @@ export default function EventsCard({ item }: { item: EventData }) {
             <div className="flex-1 p-5 flex flex-col justify-between">
                 <div>
                     <h3 className="font-bold text-lg text-gray-800 leading-tight mb-2 line-clamp-2 hover:text-[#FF6E40] transition-colors cursor-pointer">
-                        <Link href={`/events/${item.id}`}>{item.title}</Link>
+                        <Link href={`/events/${item.id}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}>{item.title}</Link>
                     </h3>
 
                     {/* Meta Row */}

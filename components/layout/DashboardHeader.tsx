@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import NotificationBell from './NotificationBell';
 
 export default function DashboardHeader() {
     const pathname = usePathname();
@@ -53,11 +54,8 @@ export default function DashboardHeader() {
                         <i className="ri-home-line text-xl"></i>
                     </Link>
 
-                    {/* Notifications (Placeholder) */}
-                    <button className="p-2 text-gray-500 hover:text-brand-orange hover:bg-orange-50 rounded-full transition relative">
-                        <i className="ri-notification-3-line text-xl"></i>
-                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                    </button>
+                    {/* Notifications */}
+                    <NotificationBell />
 
                     {/* User Avatar (Mini) */}
                     {user && (

@@ -1,38 +1,144 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ContactSellerButton from '../shared/ContactSellerButton';
 
-export default function FurnitureDetail({ id }: { id?: string }) {
-    const furniture = {
-        title: "Modern L-Shaped Sofa Set - 6 Seater with Premium Fabric",
-        description: "Beautiful L-shaped sofa in excellent condition. Made with high-quality fabric and solid wooden frame. Perfect for modern living rooms. Very comfortable with thick cushioning.",
-        price: "₹ 45,000/-",
-        category: "Sofa",
-        postedTime: "Posted 1 hr ago",
-        location: "Saket, New Delhi, Delhi",
-        specs: [
-            { label: "Category", value: "Sofa" },
-            { label: "Material", value: "Fabric & Wood" },
-            { label: "Condition", value: "Like New" },
-            { label: "Dimensions", value: "240x180 cm" },
-            { label: "Age", value: "6 Months" },
-            { label: "Color", value: "Grey" },
-            { label: "Seating Capacity", value: "6 Seater" },
-            { label: "Warranty", value: "No" },
-        ],
-        features: [
-            "Premium fabric upholstery",
-            "Solid wooden frame",
-            "Removable cushion covers",
-            "Easy to clean"
-        ],
-        seller: {
-            name: "Priya Gupta",
-            verified: true,
-            memberSince: "2021"
-        }
+interface FurnitureDetailData {
+    id: number;
+    title: string;
+    description: string;
+    price: string;
+    category: string;
+    image: string;
+    images: string[];
+    postedTime: string;
+    location: string;
+    specs: { label: string; value: string }[];
+    features: string[];
+    seller: {
+        name: string;
+        verified: boolean;
+        memberSince: string;
     };
+}
+
+interface SimilarProduct {
+    id: number;
+    title: string;
+    price: number | string;
+    image: string;
+}
+
+export default function FurnitureDetail({ id }: { id?: string }) {
+    const [furniture, setFurniture] = useState<FurnitureDetailData | null>(null);
+    const [similarProducts, setSimilarProducts] = useState<SimilarProduct[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!id) return;
+
+        async function fetchFurnitureDetail() {
+            try {
+                const response = await fetch(`/api/products/${id}`);
+                if (!response.ok) {
+                    if (response.status === 404) throw new Error('Product not found');
+                    throw new Error('Failed to fetch product details');
+                }
+
+                const result = await response.json();
+                const data = result.data;
+
+                // Transform API data
+                const specs = data.product_attributes?.specs || {};
+                const transformedSpecs = [
+                    { label: "Category", value: data.category_name || 'Furniture' },
+                    { label: "Material", value: data.product_attributes?.material || 'N/A' },
+                    { label: "Condition", value: specs.condition || 'Good' },
+                    { label: "Dimensions", value: specs.dimensions || 'N/A' },
+                    { label: "Age", value: specs.age || 'N/A' },
+                    { label: "Color", value: specs.color || 'N/A' },
+                ].filter(s => s.value !== 'N/A');
+
+                const features = data.description ? data.description.split('.').filter((f: string) => f.trim().length > 0).slice(0, 4) : [];
+
+                const mainImage = data.images?.[0]?.image ? `data:image/jpeg;base64,${data.images[0].image}` : '';
+                const allImages = data.images?.map((img: any) => `data:image/jpeg;base64,${img.image}`) || [mainImage];
+
+                setFurniture({
+                    id: data.id,
+                    title: data.title,
+                    description: data.description || 'No description available.',
+                    price: `₹ ${Number(data.price).toLocaleString('en-IN')}`,
+                    category: data.category_name || 'Furniture',
+                    image: mainImage,
+                    images: allImages,
+                    postedTime: getTimeAgo(new Date(data.created_at)),
+                    location: data.location || data.city || 'New Delhi',
+                    specs: transformedSpecs,
+                    features: features,
+                    seller: {
+                        name: data.seller_name || 'Seller',
+                        verified: data.product_attributes?.verified || false,
+                        memberSince: new Date(data.created_at).getFullYear().toString() // Aproximation
+                    }
+                });
+
+                // Transform similar products
+                if (data.similarProducts) {
+                    setSimilarProducts(data.similarProducts.map((p: any) => ({
+                        id: p.id,
+                        title: p.title,
+                        price: `₹ ${Number(p.price).toLocaleString('en-IN')}`,
+                        image: p.image ? `data:image/jpeg;base64,${p.image}` : ''
+                    })));
+                }
+
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'An error occurred');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchFurnitureDetail();
+    }, [id]);
+
+    function getTimeAgo(date: Date): string {
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+        if (hours > 0) return `${hours} hr${hours > 1 ? 's' : ''} ago`;
+        return 'just now';
+    }
+
+    const createSlug = (title: string) => {
+        return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#FFFBF7] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8D6E63]"></div>
+            </div>
+        );
+    }
+
+    if (error || !furniture) {
+        return (
+            <div className="min-h-screen bg-[#FFFBF7] flex flex-col items-center justify-center p-4 text-center">
+                <i className="ri-error-warning-line text-4xl text-red-500 mb-2"></i>
+                <p className="text-gray-800 font-bold text-lg mb-2">{error || 'Product not found'}</p>
+                <Link href="/furniture" className="text-[#8D6E63] underline font-medium">
+                    Back to Furniture
+                </Link>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#FFFBF7] min-h-screen pb-20 font-jost">
@@ -40,33 +146,43 @@ export default function FurnitureDetail({ id }: { id?: string }) {
 
                 {/* Image Gallery */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 h-[400px] md:h-[500px]">
-                    <div className="md:col-span-2 relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer">
-                        <img
-                            src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070&auto=format&fit=crop"
-                            alt={furniture.title}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
+                    <div className="md:col-span-2 relative h-full rounded-2xl overflow-hidden group cursor-pointer bg-white">
+                        {furniture.image ? (
+                            <img
+                                src={furniture.image}
+                                alt={furniture.title}
+                                className="w-full h-full object-contain md:object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
+                                <i className="ri-image-line text-4xl"></i>
+                            </div>
+                        )}
                         {furniture.seller.verified && (
                             <div className="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-2">
                                 <i className="ri-shield-check-fill"></i> VERIFIED SELLER
                             </div>
                         )}
                     </div>
-                    <div className="flex flex-col gap-2 h-full">
-                        <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer">
-                            <img
-                                src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?q=80&w=2070&auto=format&fit=crop"
-                                alt="Detail view"
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
-                        </div>
-                        <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer">
-                            <img
-                                src="https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=2070&auto=format&fit=crop"
-                                alt="Side view"
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
-                        </div>
+
+                    {/* Secondary Images (if any, else placeholders or duplicates) */}
+                    <div className="flex flex-col gap-2 h-full hidden md:flex">
+                        {/* Display next 2 images if available, or placeholders */}
+                        {[1, 2].map((idx) => (
+                            <div key={idx} className="relative h-1/2 rounded-2xl overflow-hidden group cursor-pointer bg-white">
+                                {furniture.images[idx] ? (
+                                    <img
+                                        src={furniture.images[idx]}
+                                        alt={`View ${idx}`}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50 border border-gray-100">
+                                        <i className="ri-image-2-line text-2xl"></i>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
@@ -90,7 +206,7 @@ export default function FurnitureDetail({ id }: { id?: string }) {
                                 </div>
                             </div>
 
-                            <p className="text-gray-500 text-sm mb-6 leading-relaxed max-w-3xl">
+                            <p className="text-gray-500 text-sm mb-6 leading-relaxed max-w-3xl whitespace-pre-line">
                                 {furniture.description}
                             </p>
 
@@ -138,29 +254,17 @@ export default function FurnitureDetail({ id }: { id?: string }) {
                             </div>
                         </div>
 
-                        {/* Description & Features */}
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                            <h2 className="text-lg font-bold text-gray-900 mb-4">Product Details</h2>
-
-                            <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                                {furniture.description}
-                            </p>
-
-                            <div className="mb-6">
-                                <h3 className="text-sm font-bold text-gray-900 mb-3">Key Features</h3>
+                        {/* Key Features (if generated from description) */}
+                        {furniture.features.length > 0 && (
+                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                                <h2 className="text-lg font-bold text-gray-900 mb-4">Key Highlights</h2>
                                 <ul className="space-y-2 text-sm text-gray-600">
                                     {furniture.features.map((feature, idx) => (
-                                        <li key={idx}>- {feature}</li>
+                                        <li key={idx}>- {feature.trim()}</li>
                                     ))}
                                 </ul>
                             </div>
-
-                            <div className="flex flex-wrap gap-2">
-                                <span className="bg-[#FFF0F0] text-[#FF6E40] text-xs font-medium px-3 py-1 rounded">
-                                    {furniture.category}
-                                </span>
-                            </div>
-                        </div>
+                        )}
 
                     </div>
 
@@ -218,67 +322,65 @@ export default function FurnitureDetail({ id }: { id?: string }) {
                                     </li>
                                 </ul>
                             </div>
-
-                            {/* Google Ads */}
-                            <div className="bg-gray-200 rounded-none md:rounded-2xl flex items-center justify-center text-gray-400 font-bold text-xl border border-gray-300 min-h-[500px]">
-                                Google Ads
-                            </div>
-
                         </div>
                     </div>
 
                 </div>
 
                 {/* Similar Products */}
-                <div className="mt-16 relative">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-lg font-bold text-gray-900">Similar Products</h2>
-                        <div className="flex gap-2">
-                            <button
-                                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition"
-                                onClick={() => {
-                                    const container = document.getElementById('similar-furniture-carousel');
-                                    if (container) container.scrollBy({ left: -300, behavior: 'smooth' });
-                                }}
-                            >
-                                <i className="ri-arrow-left-s-line"></i>
-                            </button>
-                            <button
-                                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition"
-                                onClick={() => {
-                                    const container = document.getElementById('similar-furniture-carousel');
-                                    if (container) container.scrollBy({ left: 300, behavior: 'smooth' });
-                                }}
-                            >
-                                <i className="ri-arrow-right-s-line"></i>
-                            </button>
+                {similarProducts.length > 0 && (
+                    <div className="mt-16 relative">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-lg font-bold text-gray-900">Similar Products</h2>
+                            <div className="flex gap-2">
+                                <button
+                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition"
+                                    onClick={() => {
+                                        const container = document.getElementById('similar-furniture-carousel');
+                                        if (container) container.scrollBy({ left: -300, behavior: 'smooth' });
+                                    }}
+                                >
+                                    <i className="ri-arrow-left-s-line"></i>
+                                </button>
+                                <button
+                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition"
+                                    onClick={() => {
+                                        const container = document.getElementById('similar-furniture-carousel');
+                                        if (container) container.scrollBy({ left: 300, behavior: 'smooth' });
+                                    }}
+                                >
+                                    <i className="ri-arrow-right-s-line"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="similar-furniture-carousel" className="flex gap-6 overflow-x-auto pb-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                            {similarProducts.map((item) => (
+                                <Link key={item.id} href={`/furniture/${item.id}-${createSlug(item.title)}`}>
+                                    <div className="min-w-[280px] md:min-w-[320px] bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer snap-start shrink-0">
+                                        <div className="h-48 bg-gray-100 relative">
+                                            {item.image ? (
+                                                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                                    <i className="ri-image-line text-2xl"></i>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-2">{item.title}</h3>
+                                            <div className="text-[#FF6E40] font-bold text-base">{item.price}</div>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
                         </div>
                     </div>
-
-                    <div id="similar-furniture-carousel" className="flex gap-6 overflow-x-auto pb-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                        {[
-                            { id: 2, title: "King Size Bed - Solid Wood", price: "₹ 32,000/-", image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=2070&auto=format&fit=crop" },
-                            { id: 3, title: "Samsung Washing Machine", price: "₹ 18,500/-", image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?q=80&w=2070&auto=format&fit=crop" },
-                            { id: 4, title: "LG Refrigerator 260L", price: "₹ 25,000/-", image: "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?q=80&w=2070&auto=format&fit=crop" },
-                            { id: 5, title: "6 Seater Dining Table", price: "₹ 28,000/-", image: "https://images.unsplash.com/photo-1617806118233-18e1de247200?q=80&w=2070&auto=format&fit=crop" },
-                            { id: 6, title: "Office Chair - Ergonomic", price: "₹ 8,500/-", image: "https://images.unsplash.com/photo-1592078615290-033ee584e267?q=80&w=2070&auto=format&fit=crop" },
-                        ].map((product) => (
-                            <Link key={product.id} href={`/furniture/${product.id}`}>
-                                <div className="min-w-[280px] md:min-w-[320px] bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer snap-start shrink-0">
-                                    <div className="h-48 bg-gray-100 relative">
-                                        <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-2">{product.title}</h3>
-                                        <div className="text-[#FF6E40] font-bold text-base">{product.price}</div>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
+                )}
 
             </div>
         </div>
     );
 }
+
+

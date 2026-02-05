@@ -18,18 +18,41 @@ export async function GET(request: NextRequest) {
         const userId = decoded.userId;
 
         // Check if user exists in sellers table
-        // Map sellers.avatar to brand_logo for frontend compatibility
-        const sellers = await query('SELECT id, avatar as brand_logo FROM sellers WHERE user_id = ?', [userId]);
+        const sellers = await query('SELECT id, avatar FROM sellers WHERE user_id = ?', [userId]);
         const buyers = await query('SELECT avatar FROM buyers WHERE user_id = ?', [userId]);
 
         const isSeller = sellers.length > 0;
-        const brandLogo = sellers.length > 0 ? sellers[0].brand_logo : null;
-        const buyerAvatar = buyers.length > 0 ? buyers[0].avatar : null;
+
+        let sellerLogo = null;
+        if (isSeller && sellers[0].avatar) {
+            // Handle binary avatar for seller
+            const rawAvatar = sellers[0].avatar;
+            if (Buffer.isBuffer(rawAvatar)) {
+                // Import bufferToDataUrl dynamically or duplicate simple logic if needed, 
+                // but we should use the one from lib/image-utils if available.
+                // Since we didn't import it at top, let's do it safely or implement simple conversion
+                const base64 = rawAvatar.toString('base64');
+                sellerLogo = `data:image/webp;base64,${base64}`;
+            } else {
+                sellerLogo = rawAvatar;
+            }
+        }
+
+        let buyerAvatar = null;
+        if (buyers.length > 0 && buyers[0].avatar) {
+            const raw = buyers[0].avatar;
+            if (Buffer.isBuffer(raw)) {
+                const base64 = raw.toString('base64');
+                buyerAvatar = `data:image/webp;base64,${base64}`;
+            } else {
+                buyerAvatar = raw;
+            }
+        }
 
         return NextResponse.json({
             isSeller,
             userId,
-            brand_logo: brandLogo,
+            brand_logo: sellerLogo,
             avatar: buyerAvatar
         });
 

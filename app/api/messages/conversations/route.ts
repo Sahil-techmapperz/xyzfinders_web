@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         p.id as product_id,
         p.title as product_title,
         p.price as product_price,
-        p.images as product_images,
+        (SELECT id FROM product_images WHERE product_id = p.id LIMIT 1) as product_image,
         sender.id as sender_id,
         sender.name as sender_name,
         receiver.id as receiver_id,

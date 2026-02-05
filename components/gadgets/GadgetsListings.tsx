@@ -1,116 +1,7 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import GadgetCard, { GadgetData } from './GadgetCard';
-
-const GADGET_DATA: GadgetData[] = [
-    {
-        id: 1,
-        title: "Sony WH-1000XM5 Wireless Noise Cancelling Headphones",
-        category: "Headphones",
-        image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=2065&auto=format&fit=crop",
-        specs: {
-            brand: "SONY",
-            condition: "LIKE NEW",
-            warranty: "IN WARRANTY",
-            age: "6 MONTHS"
-        },
-        price: "₹ 18,500/-",
-        location: "Connaught Place, New Delhi, Delhi",
-        postedTime: "Posted 2 hr ago",
-        verified: true,
-        premium: true,
-        description: "Sony WH-1000XM5 wireless noise cancelling headphones with industry-leading noise cancellation, exceptional sound quality, and crystal-clear hands-free calling. Barely used."
-    },
-    {
-        id: 2,
-        title: "Dell XPS 15 9520 - i7 12th Gen, 16GB RAM, 512GB SSD",
-        category: "Laptop",
-        image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?q=80&w=2070&auto=format&fit=crop",
-        specs: {
-            brand: "DELL",
-            condition: "EXCELLENT",
-            warranty: "IN WARRANTY",
-            age: "1 YEAR"
-        },
-        price: "₹ 85,000/-",
-        location: "Saket, New Delhi, Delhi",
-        postedTime: "Posted 5 hr ago",
-        verified: true,
-        premium: true,
-        description: "Dell XPS 15 9520 in excellent condition. 12th Gen Intel Core i7, 16GB RAM, 512GB SSD, NVIDIA RTX 3050 Ti. Stunning 3.5K OLED display. Original charger included."
-    },
-    {
-        id: 3,
-        title: "Canon EOS R6 Mark II Mirrorless Camera Body",
-        category: "Camera",
-        image: "https://images.unsplash.com/photo-1606980702021-66026c71f90a?q=80&w=2070&auto=format&fit=crop",
-        specs: {
-            brand: "CANON",
-            condition: "LIKE NEW",
-            warranty: "IN WARRANTY"
-        },
-        price: "₹ 1,85,000/-",
-        location: "Greater Kailash, New Delhi, Delhi",
-        postedTime: "Posted 1 day ago",
-        verified: true,
-        premium: false,
-        description: "Canon EOS R6 Mark II mirrorless camera body. Like new condition, barely used shutter count < 2000. Under warranty until Dec 2026. Box and all accessories available."
-    },
-    {
-        id: 4,
-        title: "PlayStation 5 Console with Extra Controller",
-        category: "Gaming Console",
-        image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?q=80&w=2070&auto=format&fit=crop",
-        specs: {
-            brand: "SONY",
-            condition: "GOOD",
-            warranty: "OUT OF WARRANTY",
-            age: "2 YEARS"
-        },
-        price: "₹ 42,000/-",
-        location: "Vasant Kunj, New Delhi, Delhi",
-        postedTime: "Posted 3 hr ago",
-        verified: false,
-        premium: false,
-        description: "PS5 Disc Edition console in good working condition. Comes with 2 DualSense controllers and 3 games (Spider-Man 2, God of War Ragnarok, FIFA 24). Original box not available."
-    },
-    {
-        id: 5,
-        title: "Apple Watch Series 9 GPS 45mm Midnight Aluminum",
-        category: "Smartwatch",
-        image: "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?q=80&w=2070&auto=format&fit=crop",
-        specs: {
-            brand: "APPLE",
-            condition: "LIKE NEW",
-            warranty: "IN WARRANTY",
-            age: "3 MONTHS"
-        },
-        price: "₹ 35,000/-",
-        location: "Rohini, New Delhi, Delhi",
-        postedTime: "Posted 12 hr ago",
-        verified: true,
-        premium: true,
-        description: "Apple Watch Series 9 45mm GPS model in Midnight Aluminum. Scratch-free screen and body. Battery health 100%. Comes with original Midnight Sport Band and charger."
-    },
-    {
-        id: 6,
-        title: "JBL Flip 6 Portable Bluetooth Speaker - Black",
-        category: "Speaker",
-        image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?q=80&w=2070&auto=format&fit=crop",
-        specs: {
-            brand: "JBL",
-            condition: "GOOD",
-            warranty: "OUT OF WARRANTY",
-            age: "1 YEAR"
-        },
-        price: "₹ 6,500/-",
-        location: "Dwarka, New Delhi, Delhi",
-        postedTime: "Posted 8 hr ago",
-        verified: false,
-        premium: false,
-        description: "JBL Flip 6 portable bluetooth speaker. Powerful sound and deep bass. IP67 waterproof and dustproof. Battery life holds up to 10 hours. Minor scratches on the body but works perfectly."
-    }
-];
 
 const BRANDS = [
     { name: "Sony", active: true },
@@ -125,6 +16,62 @@ const BRANDS = [
 ];
 
 export default function GadgetsListings() {
+    const [gadgetData, setGadgetData] = useState<GadgetData[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        async function fetchGadgetData() {
+            try {
+                // Fetch electronics products from API (category_id=5 for Electronics)
+                const response = await fetch('/api/products?category_id=5&per_page=100');
+                if (!response.ok) throw new Error('Failed to fetch data');
+
+                const result = await response.json();
+                const products = result.data || [];
+
+                // Transform API data to GadgetData format
+                const transformed: GadgetData[] = products.map((product: any) => ({
+                    id: product.id,
+                    title: product.title,
+                    category: product.product_attributes?.category || 'Electronics',
+                    image: product.images?.[0]?.image ? `data:image/jpeg;base64,${product.images[0].image}` : '',
+                    specs: {
+                        brand: product.product_attributes?.brand?.toUpperCase() || 'N/A',
+                        condition: product.product_attributes?.specs?.condition?.toUpperCase() || 'GOOD',
+                        warranty: product.product_attributes?.specs?.warranty?.toUpperCase() || 'NO WARRANTY',
+                        age: product.product_attributes?.specs?.age?.toUpperCase() || 'N/A'
+                    },
+                    price: `₹ ${product.price.toLocaleString('en-IN')}/-`,
+                    location: product.product_attributes?.location || product.city || 'New Delhi',
+                    postedTime: `Posted ${getTimeAgo(new Date(product.created_at))}`,
+                    verified: product.product_attributes?.verified || false,
+                    premium: product.is_featured === 1,
+                    description: product.description || ''
+                }));
+
+                setGadgetData(transformed);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'An error occurred');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchGadgetData();
+    }, []);
+
+    function getTimeAgo(date: Date): string {
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+        if (hours > 0) return `${hours} hr${hours > 1 ? 's' : ''} ago`;
+        return 'just now';
+    }
+
     return (
         <section className="container mx-auto px-4 py-8 font-jost">
 
@@ -132,7 +79,7 @@ export default function GadgetsListings() {
             <div className="mb-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <h1 className="text-2xl font-bold text-gray-900">
-                        Electronics & Gadgets for sale in New Delhi - <span className="text-gray-500 font-normal">3,247 available</span>
+                        Electronics & Gadgets for sale in New Delhi - <span className="text-gray-500 font-normal">{gadgetData.length} available</span>
                     </h1>
                     <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-gray-600">Sort By :</span>
@@ -150,15 +97,15 @@ export default function GadgetsListings() {
                             <button
                                 key={i}
                                 className={`text-[10px] font-bold px-3 py-1 rounded-full transition-colors ${brand.active
-                                    ? "bg-[#FF8A65] text-white flex items-center gap-1"
-                                    : "text-gray-600 hover:text-[#FF8A65]"
+                                    ? "bg-[#00B8D4] text-white flex items-center gap-1"
+                                    : "text-gray-600 hover:text-[#00B8D4]"
                                     }`}
                             >
                                 {brand.name}
                                 {brand.active && <i className="ri-close-line"></i>}
                             </button>
                         ))}
-                        <button className="text-[10px] font-bold px-3 py-1 rounded-full border border-[#FF8A65] text-[#FF8A65] hover:bg-[#FF8A65] hover:text-white transition-colors">
+                        <button className="text-[10px] font-bold px-3 py-1 rounded-full border border-[#00B8D4] text-[#00B8D4] hover:bg-[#00B8D4] hover:text-white transition-colors">
                             View More
                         </button>
                     </div>
@@ -170,46 +117,51 @@ export default function GadgetsListings() {
 
                 {/* Left: Listings */}
                 <div className="xl:col-span-2 grid grid-cols-1 gap-6">
-                    {GADGET_DATA.map(item => (
+                    {loading && (
+                        <div className="text-center py-12">
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#00B8D4]"></div>
+                            <p className="mt-4 text-gray-600">Loading electronics...</p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="text-center py-12 text-red-600">
+                            <p>Error: {error}</p>
+                        </div>
+                    )}
+
+                    {!loading && !error && gadgetData.length === 0 && (
+                        <div className="text-center py-12 text-gray-600">
+                            <p>No electronics found.</p>
+                        </div>
+                    )}
+
+                    {!loading && !error && gadgetData.map((item: GadgetData) => (
                         <GadgetCard key={item.id} item={item} />
                     ))}
-
-                    <div className="flex items-center justify-center gap-2 pt-8">
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors"><i className="ri-arrow-left-double-line"></i></button>
-                        <button className="w-8 h-8 flex items-center justify-center bg-[#FF8A65] text-white font-bold rounded-lg shadow-sm">1</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">2</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">3</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">4</button>
-                        <span className="text-gray-300">...</span>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">8</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors"><i className="ri-arrow-right-double-line"></i></button>
-                    </div>
                 </div>
 
                 {/* Right: Ad Banner */}
                 <div className="hidden xl:block xl:col-span-1">
                     <div className="sticky top-24">
-                        <div className="bg-[#FFF0EB] rounded-2xl p-6 text-center border border-orange-100">
+                        <div className="bg-[#E0F7FA] rounded-2xl p-6 text-center border border-cyan-100">
                             <div className="text-xs font-bold text-gray-400 tracking-widest uppercase mb-1">HALFPAGE BANNER</div>
-                            <div className="text-xs text-gray-400 mb-8">Digital Marketing</div>
+                            <div className="text-xs text-gray-400 mb-8">Premium Gadgets</div>
 
-                            {/* Styled Ad Content Placeholder */}
-                            <div className="bg-[#FF8A65] rounded-xl overflow-hidden shadow-xl text-white relative min-h-[600px] flex flex-col pt-12">
-                                <h3 className="text-4xl font-extrabold leading-none mb-4 px-4 text-left text-gray-900 drop-shadow-sm">
-                                    Click,<br />Grow,<br />Repeat
+                            <div className="bg-[#00B8D4] rounded-xl overflow-hidden shadow-xl text-white relative min-h-[600px] flex flex-col pt-12">
+                                <h3 className="text-4xl font-extrabold leading-none mb-4 px-4 text-left drop-shadow-sm">
+                                    Latest<br />Tech<br />Deals
                                 </h3>
 
                                 <div className="px-6 mb-8">
-                                    <button className="w-full bg-[#FF8A65] border-2 border-white text-white font-bold py-3 rounded-lg shadow-lg hover:bg-white hover:text-[#FF8A65] transition-colors">
-                                        Get Started!
+                                    <button className="w-full bg-[#00B8D4] border-2 border-white text-white font-bold py-3 rounded-lg shadow-lg hover:bg-white hover:text-[#00B8D4] transition-colors">
+                                        Explore Now!
                                     </button>
                                 </div>
 
-                                {/* Abstract shapes/image placeholder */}
                                 <div className="mt-auto relative h-[400px]">
-                                    <div className="absolute inset-0 bg-linear-to-t from-[#B39DDB] to-[#9575CD]">
-                                        {/* Mock Person Image */}
-                                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=60" className="w-full h-full object-cover mix-blend-overlay opacity-50" alt="Marketing" />
+                                    <div className="absolute inset-0 bg-linear-to-t from-[#0288D1] to-[#0097A7]">
+                                        <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=500&auto=format&fit=crop&q=60" className="w-full h-full object-cover mix-blend-overlay opacity-50" alt="Electronics" />
                                     </div>
                                 </div>
                             </div>

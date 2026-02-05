@@ -92,7 +92,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
                     email,
                     password,
                     password_confirmation: password,
-                    phone: '0000000000', // Placeholder
+                    phone: '', // Optional
                     user_type: 'buyer' // Defaulting to buyer
                 }),
             });
@@ -203,9 +203,9 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
                 </div>
 
                 <div className="relative flex py-2 items-center">
-                    <div className="flex-grow border-t border-gray-300"></div>
-                    <span className="flex-shrink-0 mx-4 text-gray-600 font-medium">or login with</span>
-                    <div className="flex-grow border-t border-gray-300"></div>
+                    <div className="grow border-t border-gray-300"></div>
+                    <span className="shrink-0 mx-4 text-gray-600 font-medium">or login with</span>
+                    <div className="grow border-t border-gray-300"></div>
                 </div>
 
                 <div className="flex justify-center gap-4">

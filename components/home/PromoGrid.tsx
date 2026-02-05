@@ -31,7 +31,7 @@ export default function PromoGrid() {
     }, []);
 
     return (
-        <section className="container mx-auto px-4 py-8">
+        <section className="hidden md:block container mx-auto px-4 py-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Large Item: Carousel */}

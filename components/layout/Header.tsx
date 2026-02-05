@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { NAV_ITEMS, BROWSE_CATEGORIES } from '../../data/navigation';
 import AuthModal from '../auth/AuthModal';
 import toast from 'react-hot-toast';
+import NotificationBell from './NotificationBell';
 
 export default function Header() {
     const router = useRouter();
@@ -139,8 +140,11 @@ export default function Header() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle search functionality
-        console.log('Searching for:', searchQuery);
+        if (searchQuery.trim()) {
+            router.push(`/categories?search=${encodeURIComponent(searchQuery)}`);
+        } else {
+            router.push('/categories');
+        }
     };
 
     const handleLocationSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -151,6 +155,11 @@ export default function Header() {
             }
         }
     };
+
+    const [showLocationSearch, setShowLocationSearch] = useState(false);
+
+    // Quick Cities List
+    const POPULAR_CITIES = ['New Delhi', 'Mumbai', 'Bangalore', 'Kolkata', 'Chennai', 'Pune', 'Hyderabad', 'Ahmedabad', 'Gurgaon', 'Noida'];
 
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -168,204 +177,273 @@ export default function Header() {
             </div>
 
             {/* Main Header */}
-            <div className="container mx-auto px-2 md:px-4 py-3 md:py-4 flex flex-wrap md:flex-nowrap items-center justify-between gap-2 md:gap-4">
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 shrink-0">
-                    <img src="/logo.png" alt="XYZFinders Logo" className="h-8 md:h-10 lg:h-12 w-auto" />
-                </Link>
+            <div className="bg-[#FFFBF7] border-b border-gray-100">
+                <div className="container mx-auto px-4 py-3 md:py-4">
 
-                {/* Search Bar */}
-                <form onSubmit={handleSearch} className="order-last md:order-0 w-full md:w-auto flex-1 max-w-xl bg-gray-100 rounded-full flex items-center p-1 pl-3 lg:pl-6 gap-2 border border-gray-200 mt-2 md:mt-0">
-                    <input
-                        type="text"
-                        placeholder="Search Anything"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="bg-transparent border-none outline-none flex-1 w-full text-gray-600 placeholder-gray-400 text-xs md:text-sm lg:text-base min-w-0"
-                    />
-                    <button
-                        type="submit"
-                        className="bg-brand-orange text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full font-medium hover:bg-[#e07a46] transition shadow-sm whitespace-nowrap text-xs md:text-sm lg:text-base"
-                    >
-                        Search
-                    </button>
-                </form>
+                    {/* Top Row: Logo & Location (Mobile) / Logo & Search & Actions (Desktop) */}
+                    <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-4">
 
-                {/* Location - Hidden on small, visible on xl */}
-                <div className="hidden xl:flex items-center bg-gray-100 rounded-full px-3 py-1.5 lg:px-4 lg:py-2 gap-2 text-xs lg:text-sm text-gray-700 border border-gray-200">
-                    <i className="ri-map-pin-line text-brand-orange text-base lg:text-lg"></i>
-                    <input
-                        type="text"
-                        placeholder="Location"
-                        value={locationQuery}
-                        onChange={(e) => setLocationQuery(e.target.value)}
-                        onKeyDown={handleLocationSearch}
-                        className="bg-transparent border-none outline-none w-[100px] lg:w-[150px] text-gray-700 placeholder-gray-500 font-medium"
-                    />
-                </div>
+                        {/* Logo */}
+                        <Link href="/" className="flex items-center gap-2 shrink-0">
+                            <img src="/logo.png" alt="XYZFinders Logo" className="h-8 md:h-10 lg:h-12 w-auto" />
+                        </Link>
 
-                {/* User Actions */}
-                <div className="flex items-center gap-2 md:gap-4 lg:gap-6 shrink-0">
-                    {isLoggedIn && user ? (
-                        <div className="relative">
+                        {/* Location - Mobile Only (Right aligned) */}
+                        <div className="md:hidden relative">
                             <button
-                                onClick={() => setShowUserDropdown(!showUserDropdown)}
-                                className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded-full pr-2 md:pr-4 transition border border-transparent hover:border-gray-100"
+                                onClick={() => setShowLocationSearch(!showLocationSearch)}
+                                className="flex items-center gap-1 text-sm font-medium text-gray-800"
                             >
-                                {(currentMode === 'seller' && user.brand_logo) || user.avatar ? (
-                                    <img src={(currentMode === 'seller' && user.brand_logo) ? user.brand_logo : user.avatar} alt={user.name} className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border border-gray-200" />
-                                ) : (
-                                    <div className="w-8 h-8 md:w-10 md:h-10 bg-brand-orange/10 rounded-full flex items-center justify-center text-brand-orange overflow-hidden border border-brand-orange/20">
-                                        <i className="ri-user-smile-line text-lg md:text-xl"></i>
-                                    </div>
-                                )}
-                                <span className="text-xs md:text-sm font-medium text-gray-700 hidden sm:block max-w-[80px] md:max-w-[120px] truncate">
-                                    {user.name?.split(' ')[0] || user.email?.split('@')[0]}
-                                </span>
-                                <i className={`ri-arrow-down-s-line text-gray-400 transition ${showUserDropdown ? 'rotate-180' : ''}`}></i>
+                                <span className="max-w-[100px] truncate">{locationQuery || 'New Delhi'}</span>
+                                <i className={`ri-arrow-down-s-line transition-transform duration-200 ${showLocationSearch ? 'rotate-180' : ''}`}></i>
                             </button>
 
-                            {/* Dropdown Menu */}
-                            {showUserDropdown && (
-                                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-[100] animate-in slide-in-from-top-2 fade-in duration-200">
-                                    <div className="p-4 border-b border-gray-50 bg-gray-50/50">
-                                        <p className="font-bold text-gray-800 truncate">{user.name || 'User'}</p>
-                                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                                        {currentMode === 'seller' ? (
-                                            <span className="inline-block mt-1 text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Seller Mode</span>
-                                        ) : (
-                                            <span className="inline-block mt-1 text-[10px] font-bold bg-orange-100 text-brand-orange px-2 py-0.5 rounded-full uppercase tracking-wider">Buyer Mode</span>
-                                        )}
+                            {/* Mobile Location Dropdown */}
+                            {showLocationSearch && (
+                                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-50 animate-in slide-in-from-top-2 fade-in duration-200">
+                                    <div className="p-3 bg-gray-50 border-b border-gray-100">
+                                        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-2 py-1.5">
+                                            <i className="ri-search-line text-gray-400"></i>
+                                            <input
+                                                type="text"
+                                                placeholder="Search city..."
+                                                value={locationQuery}
+                                                onChange={(e) => setLocationQuery(e.target.value)}
+                                                className="w-full bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400"
+                                                autoFocus
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="p-2 space-y-1">
-                                        {currentMode === 'seller' ? (
-                                            <>
-                                                <Link href="/seller/dashboard" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
-                                                    <i className="ri-dashboard-line text-lg"></i>
-                                                    <span>Dashboard</span>
-                                                </Link>
-                                                <Link href="/seller/my-ads" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
-                                                    <i className="ri-file-list-3-line text-lg"></i>
-                                                    <span>My Ads</span>
-                                                </Link>
-                                                <Link href="/seller/place-ad" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
-                                                    <i className="ri-add-circle-line text-lg"></i>
-                                                    <span>Post Ad</span>
-                                                </Link>
-                                                <Link href="/seller/messages" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
-                                                    <i className="ri-message-3-line text-lg"></i>
-                                                    <span>Messages</span>
-                                                </Link>
-                                                <Link href="/seller/settings" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
-                                                    <i className="ri-settings-4-line text-lg"></i>
-                                                    <span>Settings</span>
-                                                </Link>
-                                                <div className="h-px bg-gray-100 my-1"></div>
-                                                <button
-                                                    onClick={() => handleSwitchMode('buyer')}
-                                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
-                                                >
-                                                    <i className="ri-shopping-bag-3-line text-lg"></i>
-                                                    <span>Switch to Buying</span>
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Link href="/buyer/profile" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
-                                                    <i className="ri-user-line text-lg"></i>
-                                                    <span>My Profile</span>
-                                                </Link>
-                                                <Link href="/buyer/inquiries" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
-                                                    <i className="ri-chat-1-line text-lg"></i>
-                                                    <span>My Inquiries</span>
-                                                </Link>
-                                                <Link href="/buyer/messages" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
-                                                    <i className="ri-message-3-line text-lg"></i>
-                                                    <span>Messages</span>
-                                                </Link>
-                                                <Link href="/buyer/wishlist" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
-                                                    <i className="ri-heart-line text-lg"></i>
-                                                    <span>Wishlist</span>
-                                                </Link>
-                                                <div className="h-px bg-gray-100 my-1"></div>
-
-                                                {/* Check if user is seller (using is_seller flag or fallback to user_type if older session) */}
-                                                {(user.is_seller || user.user_type === 'seller') ? (
-                                                    <button
-                                                        onClick={() => handleSwitchMode('seller')}
-                                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-purple-600 hover:bg-purple-50 rounded-lg transition"
-                                                    >
-                                                        <i className="ri-store-2-line text-lg"></i>
-                                                        <span>Switch to Selling</span>
-                                                    </button>
-                                                ) : (
-                                                    <Link href="/buyer/become-seller" className="flex items-center gap-3 px-3 py-2.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition">
-                                                        <i className="ri-briefcase-line text-lg"></i>
-                                                        <span>Become a Seller</span>
-                                                    </Link>
-                                                )}
-                                            </>
-                                        )}
-
-                                        <div className="h-px bg-gray-100 my-1"></div>
-                                        <button
-                                            onClick={handleLogout}
-                                            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-medium"
-                                        >
-                                            <i className="ri-logout-box-r-line text-lg"></i>
-                                            <span>Logout</span>
-                                        </button>
+                                    <div className="max-h-60 overflow-y-auto">
+                                        <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Popular Cities</div>
+                                        {POPULAR_CITIES.filter(city => city.toLowerCase().includes(locationQuery.toLowerCase())).map((city) => (
+                                            <button
+                                                key={city}
+                                                onClick={() => {
+                                                    setLocationQuery(city);
+                                                    setShowLocationSearch(false);
+                                                }}
+                                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange transition"
+                                            >
+                                                {city}
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             )}
                         </div>
-                    ) : (
-                        <button
-                            onClick={() => setIsAuthModalOpen(true)}
-                            className="flex items-center gap-2 text-gray-800 font-bold text-xs md:text-sm hover:text-brand-orange transition-colors"
-                        >
-                            <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 overflow-hidden border border-blue-200">
-                                <i className="ri-user-smile-line text-lg md:text-xl"></i>
-                            </div>
-                            <span className="hidden sm:inline">Log In \ Sign Up</span>
-                        </button>
-                    )}
 
-                    {(currentMode === 'seller' || !isLoggedIn) && (
-                        <>
-                            <Link
-                                href={isLoggedIn ? "/seller/settings" : "#"}
-                                onClick={(e) => {
-                                    if (!isLoggedIn) {
-                                        e.preventDefault();
-                                        toast.error("Please login to setup your store");
-                                        setIsAuthModalOpen(true);
-                                    }
-                                }}
-                                className="bg-white text-brand-orange border border-brand-orange px-3 md:px-5 py-2 md:py-2.5 rounded shadow-sm hover:bg-orange-50 transition font-semibold text-xs md:text-sm whitespace-nowrap"
+                        {/* Search Bar - Desktop Position (Hidden on Mobile) */}
+                        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl bg-gray-100 rounded-full items-center p-1 pl-6 gap-2 border border-gray-200">
+                            <input
+                                type="text"
+                                placeholder="Search Anything"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="bg-transparent border-none outline-none flex-1 w-full text-gray-600 placeholder-gray-400"
+                            />
+                            <button
+                                type="submit"
+                                className="bg-brand-orange text-white px-6 py-2 rounded-full font-medium hover:bg-[#e07a46] transition shadow-sm whitespace-nowrap"
                             >
-                                Setup Store
-                            </Link>
-                            <Link
-                                href={isLoggedIn ? "/seller/place-ad" : "#"}
-                                onClick={(e) => {
-                                    if (!isLoggedIn) {
-                                        e.preventDefault();
-                                        toast.error("Please login to list your shop");
-                                        setIsAuthModalOpen(true);
-                                    }
-                                }}
-                                className="bg-brand-orange text-white px-3 md:px-5 py-2 md:py-2.5 rounded shadow-md hover:bg-[#e07a46] transition font-semibold text-xs md:text-sm whitespace-nowrap"
-                            >
-                                List Your Shop
-                            </Link>
-                        </>
-                    )}
+                                Search
+                            </button>
+                        </form>
+
+                        {/* Location - Desktop (Hidden on Mobile) */}
+                        <div className="hidden xl:flex items-center bg-gray-100 rounded-full px-4 py-2 gap-2 text-sm text-gray-700 border border-gray-200">
+                            <i className="ri-map-pin-line text-brand-orange text-lg"></i>
+                            <input
+                                type="text"
+                                placeholder="Location"
+                                value={locationQuery}
+                                onChange={(e) => setLocationQuery(e.target.value)}
+                                onKeyDown={handleLocationSearch}
+                                className="bg-transparent border-none outline-none w-[150px] text-gray-700 placeholder-gray-500 font-medium"
+                            />
+                        </div>
+
+                        {/* User Actions - Hidden on Mobile, visible on Desktop */}
+                        <div className="hidden md:flex items-center gap-2 md:gap-4 lg:gap-6 shrink-0">
+                            {isLoggedIn && user ? (
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowUserDropdown(!showUserDropdown)}
+                                        className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded-full pr-2 md:pr-4 transition border border-transparent hover:border-gray-100"
+                                    >
+                                        {(currentMode === 'seller' && user.brand_logo) || user.avatar ? (
+                                            <img src={(currentMode === 'seller' && user.brand_logo) ? user.brand_logo : user.avatar} alt={user.name} className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border border-gray-200" />
+                                        ) : (
+                                            <div className="w-8 h-8 md:w-10 md:h-10 bg-brand-orange/10 rounded-full flex items-center justify-center text-brand-orange overflow-hidden border border-brand-orange/20">
+                                                <i className="ri-user-smile-line text-lg md:text-xl"></i>
+                                            </div>
+                                        )}
+                                        <span className="text-xs md:text-sm font-medium text-gray-700 hidden sm:block max-w-[80px] md:max-w-[120px] truncate">
+                                            {user.name?.split(' ')[0] || user.email?.split('@')[0]}
+                                        </span>
+                                        <i className={`ri-arrow-down-s-line text-gray-400 transition ${showUserDropdown ? 'rotate-180' : ''}`}></i>
+                                    </button>
+
+                                    {/* Dropdown Menu */}
+                                    {showUserDropdown && (
+                                        <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-100 animate-in slide-in-from-top-2 fade-in duration-200">
+                                            <div className="p-4 border-b border-gray-50 bg-gray-50/50">
+                                                <p className="font-bold text-gray-800 truncate">{user.name || 'User'}</p>
+                                                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                                {currentMode === 'seller' ? (
+                                                    <span className="inline-block mt-1 text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full uppercase tracking-wider">Seller Mode</span>
+                                                ) : (
+                                                    <span className="inline-block mt-1 text-[10px] font-bold bg-orange-100 text-brand-orange px-2 py-0.5 rounded-full uppercase tracking-wider">Buyer Mode</span>
+                                                )}
+                                            </div>
+                                            <div className="p-2 space-y-1">
+                                                {currentMode === 'seller' ? (
+                                                    <>
+                                                        <Link href="/seller/dashboard" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
+                                                            <i className="ri-dashboard-line text-lg"></i>
+                                                            <span>Dashboard</span>
+                                                        </Link>
+                                                        <Link href="/seller/my-ads" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
+                                                            <i className="ri-file-list-3-line text-lg"></i>
+                                                            <span>My Ads</span>
+                                                        </Link>
+                                                        <Link href="/seller/place-ad" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
+                                                            <i className="ri-add-circle-line text-lg"></i>
+                                                            <span>Post Ad</span>
+                                                        </Link>
+                                                        <Link href="/seller/messages" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
+                                                            <i className="ri-message-3-line text-lg"></i>
+                                                            <span>Messages</span>
+                                                        </Link>
+                                                        <Link href="/seller/settings" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition">
+                                                            <i className="ri-settings-4-line text-lg"></i>
+                                                            <span>Settings</span>
+                                                        </Link>
+                                                        <div className="h-px bg-gray-100 my-1"></div>
+                                                        <button
+                                                            onClick={() => handleSwitchMode('buyer')}
+                                                            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                                                        >
+                                                            <i className="ri-shopping-bag-3-line text-lg"></i>
+                                                            <span>Switch to Buying</span>
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Link href="/buyer/profile" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
+                                                            <i className="ri-user-line text-lg"></i>
+                                                            <span>My Profile</span>
+                                                        </Link>
+                                                        <Link href="/buyer/inquiries" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
+                                                            <i className="ri-chat-1-line text-lg"></i>
+                                                            <span>My Inquiries</span>
+                                                        </Link>
+                                                        <Link href="/buyer/messages" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
+                                                            <i className="ri-message-3-line text-lg"></i>
+                                                            <span>Messages</span>
+                                                        </Link>
+                                                        <Link href="/buyer/wishlist" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-brand-orange rounded-lg transition">
+                                                            <i className="ri-heart-line text-lg"></i>
+                                                            <span>Wishlist</span>
+                                                        </Link>
+                                                        <div className="h-px bg-gray-100 my-1"></div>
+
+                                                        {/* Check if user is seller (using is_seller flag or fallback to user_type if older session) */}
+                                                        {(user.is_seller || user.user_type === 'seller') ? (
+                                                            <button
+                                                                onClick={() => handleSwitchMode('seller')}
+                                                                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-purple-600 hover:bg-purple-50 rounded-lg transition"
+                                                            >
+                                                                <i className="ri-store-2-line text-lg"></i>
+                                                                <span>Switch to Selling</span>
+                                                            </button>
+                                                        ) : (
+                                                            <Link href="/buyer/become-seller" className="flex items-center gap-3 px-3 py-2.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                                                <i className="ri-briefcase-line text-lg"></i>
+                                                                <span>Become a Seller</span>
+                                                            </Link>
+                                                        )}
+                                                    </>
+                                                )}
+
+                                                <div className="h-px bg-gray-100 my-1"></div>
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-medium"
+                                                >
+                                                    <i className="ri-logout-box-r-line text-lg"></i>
+                                                    <span>Logout</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setIsAuthModalOpen(true)}
+                                    className="flex items-center gap-2 text-gray-800 font-bold text-xs md:text-sm hover:text-brand-orange transition-colors"
+                                >
+                                    <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 overflow-hidden border border-blue-200">
+                                        <i className="ri-user-smile-line text-lg md:text-xl"></i>
+                                    </div>
+                                    <span className="hidden sm:inline">Log In \ Sign Up</span>
+                                </button>
+                            )}
+
+                            {(currentMode === 'seller' || !isLoggedIn) && (
+                                <>
+                                    <Link
+                                        href={isLoggedIn ? "/seller/settings" : "#"}
+                                        onClick={(e) => {
+                                            if (!isLoggedIn) {
+                                                e.preventDefault();
+                                                toast.error("Please login to setup your store");
+                                                setIsAuthModalOpen(true);
+                                            }
+                                        }}
+                                        className="hidden md:block bg-white text-brand-orange border border-brand-orange px-3 md:px-5 py-2 md:py-2.5 rounded shadow-sm hover:bg-orange-50 transition font-semibold text-xs md:text-sm whitespace-nowrap"
+                                    >
+                                        Setup Store
+                                    </Link>
+                                    <Link
+                                        href={isLoggedIn ? "/seller/place-ad" : "#"}
+                                        onClick={(e) => {
+                                            if (!isLoggedIn) {
+                                                e.preventDefault();
+                                                toast.error("Please login to list your shop");
+                                                setIsAuthModalOpen(true);
+                                            }
+                                        }}
+                                        className="hidden md:block bg-brand-orange text-white px-3 md:px-5 py-2 md:py-2.5 rounded shadow-md hover:bg-[#e07a46] transition font-semibold text-xs md:text-sm whitespace-nowrap"
+                                    >
+                                        List Your Shop
+                                    </Link>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Mobile Search Bar - Row 2 */}
+                    <div className="md:hidden mt-3 w-full">
+                        <form onSubmit={handleSearch} className="w-full bg-gray-100 rounded-full flex items-center px-4 py-2 border border-gray-200 shadow-sm">
+                            <i className="ri-building-line text-brand-orange text-xl mr-3"></i>
+                            <input
+                                type="text"
+                                placeholder="Search Anything"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="bg-transparent border-none outline-none flex-1 text-gray-700 placeholder-gray-400 text-sm font-medium"
+                            />
+                            <button type="submit">
+                                <i className="ri-search-line text-gray-500 text-xl"></i>
+                            </button>
+                        </form>
+                    </div>
+
                 </div>
             </div>
-
             {/* Navigation Bar */}
-            <div className="border-t border-gray-200 bg-[#FFFBF7] shadow-sm relative z-40">
+            <div className="hidden md:block border-t border-gray-200 bg-[#FFFBF7] shadow-sm relative z-40">
                 <div className="container mx-auto px-2 md:px-4 py-2 md:py-3 flex items-center justify-between gap-4 relative">
                     {/* Browser Categories */}
                     <div className="group shrink-0">
@@ -464,6 +542,7 @@ export default function Header() {
 
                     {/* Right Icons */}
                     <div className="flex items-center gap-2 md:gap-3 text-gray-500 shrink-0">
+                        {isLoggedIn && <NotificationBell />}
                         <Link
                             href="/buyer/wishlist"
                             className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:bg-brand-orange hover:text-white transition hover:border-brand-orange"

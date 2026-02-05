@@ -1,10 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Footer() {
     const [email, setEmail] = useState('');
+    const [showScrollTop, setShowScrollTop] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowScrollTop(window.scrollY > 300);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const handleSubscribe = (e: React.FormEvent) => {
         e.preventDefault();
@@ -13,7 +23,7 @@ export default function Footer() {
     };
 
     return (
-        <footer className="bg-[#003B3A] text-white pt-16 pb-8">
+        <footer className="bg-[#003B3A] text-white pt-16 pb-24 md:pb-8">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12 justify-between">
                     {/* Column 1: Brand & Subscribe */}
@@ -75,7 +85,7 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    <div className="lg:col-span-2 flex justify-between">
+                    <div className="col-span-1 md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-8">
                         {/* Column 2: Information */}
                         <div>
                             <h3 className="text-xl font-bold mb-6">Information</h3>
@@ -179,6 +189,16 @@ export default function Footer() {
                     <p>Design and Development by - Techmapperz</p>
                 </div>
             </div>
+
+            {/* Scroll to Top Button */}
+            <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className={`fixed z-50 bottom-24 right-4 md:bottom-8 md:right-8 bg-[#FF8C42] hover:bg-[#E67026] text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
+                    }`}
+                aria-label="Scroll to top"
+            >
+                <i className="ri-arrow-up-line text-xl"></i>
+            </button>
         </footer>
     );
 }

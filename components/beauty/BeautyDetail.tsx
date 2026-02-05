@@ -1,37 +1,142 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-export default function BeautyDetail({ id }: { id?: string }) {
-    const service = {
-        title: "Premium Bridal Makeup & Hair Styling Package",
-        description: "Complete bridal transformation with professional makeup artist. Includes pre-bridal consultation, trial makeup session, and final bridal makeup with hairstyling on the wedding day.",
-        price: "₹ 15,000/-",
-        category: "Bridal Makeup",
-        postedTime: "Posted 30 min ago",
-        location: "South Delhi, New Delhi, Delhi",
-        specs: [
-            { label: "Service Category", value: "Bridal Makeup" },
-            { label: "Service For", value: "Female" },
-            { label: "Service Type", value: "Home Service" },
-            { label: "Duration", value: "3-4 Hours" },
-            { label: "Experience", value: "8+ Years" },
-            { label: "Rating", value: "4.8/5" },
-            { label: "Bookings", value: "150+ Completed" },
-            { label: "Availability", value: "Book in Advance" },
-        ],
-        features: [
-            "HD Airbrush makeup",
-            "Hair styling included",
-            "Free trial session",
-            "Premium branded products"
-        ],
-        seller: {
-            name: "Neha Sharma",
-            verified: true,
-            memberSince: "2019"
-        }
+interface BeautyDetailData {
+    id: number;
+    title: string;
+    description: string;
+    price: string;
+    category: string;
+    image: string;
+    postedTime: string;
+    location: string;
+    specs: { label: string; value: string }[];
+    features: string[];
+    seller: {
+        name: string;
+        verified: boolean;
+        memberSince: string;
     };
+}
+
+interface SimilarService {
+    id: number;
+    title: string;
+    price: number | string;
+    image: string;
+}
+
+export default function BeautyDetail({ id }: { id?: string }) {
+    const [service, setService] = useState<BeautyDetailData | null>(null);
+    const [similarServices, setSimilarServices] = useState<SimilarService[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!id) return;
+
+        async function fetchBeautyDetail() {
+            try {
+                const response = await fetch(`/api/products/${id}`);
+                if (!response.ok) {
+                    if (response.status === 404) throw new Error('Service not found');
+                    throw new Error('Failed to fetch service details');
+                }
+
+                const result = await response.json();
+                const data = result.data;
+
+                // Transform API data
+                const specs = data.product_attributes?.specs || {};
+                const transformedSpecs = [
+                    { label: "Service Category", value: data.category_name || 'Beauty' },
+                    { label: "Service For", value: specs.serviceFor || 'All' },
+                    { label: "Service Type", value: specs.type || 'Standard' },
+                    { label: "Duration", value: specs.duration || '60 mins' },
+                    { label: "Experience", value: specs.experience || "5+ Years" },
+                    { label: "Rating", value: specs.rating || "N/A" },
+                    { label: "Bookings", value: "100+ Completed" },
+                    { label: "Availability", value: "Book in Advance" },
+                ];
+
+                const features = data.description ? data.description.split('.').filter((f: string) => f.trim().length > 0).slice(0, 4) : [];
+
+                const mainImage = data.images?.[0]?.image ? `data:image/jpeg;base64,${data.images[0].image}` : '';
+
+                setService({
+                    id: data.id,
+                    title: data.title,
+                    description: data.description || 'No description available.',
+                    price: `₹ ${Number(data.price).toLocaleString('en-IN')}`,
+                    category: data.category_name || 'Beauty',
+                    image: mainImage,
+                    postedTime: getTimeAgo(new Date(data.created_at)),
+                    location: data.location || data.city || 'New Delhi',
+                    specs: transformedSpecs,
+                    features: features,
+                    seller: {
+                        name: data.seller_name || 'Professional',
+                        verified: data.product_attributes?.verified || false,
+                        memberSince: new Date(data.created_at).getFullYear().toString()
+                    }
+                });
+
+                // Transform similar services
+                if (data.similarProducts) {
+                    setSimilarServices(data.similarProducts.map((p: any) => ({
+                        id: p.id,
+                        title: p.title,
+                        price: `₹ ${Number(p.price).toLocaleString('en-IN')}`,
+                        image: p.image ? `data:image/jpeg;base64,${p.image}` : ''
+                    })));
+                }
+
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'An error occurred');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchBeautyDetail();
+    }, [id]);
+
+    function getTimeAgo(date: Date): string {
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+        if (hours > 0) return `${hours} hr${hours > 1 ? 's' : ''} ago`;
+        return 'just now';
+    }
+
+    const createSlug = (title: string) => {
+        return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#FFFBF7] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8D6E63]"></div>
+            </div>
+        );
+    }
+
+    if (error || !service) {
+        return (
+            <div className="min-h-screen bg-[#FFFBF7] flex flex-col items-center justify-center p-4 text-center">
+                <i className="ri-error-warning-line text-4xl text-red-500 mb-2"></i>
+                <p className="text-gray-800 font-bold text-lg mb-2">{error || 'Service not found'}</p>
+                <Link href="/beauty" className="text-[#8D6E63] underline font-medium">
+                    Back to Beauty Services
+                </Link>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#FFFBF7] min-h-screen pb-20 font-jost">
@@ -39,32 +144,30 @@ export default function BeautyDetail({ id }: { id?: string }) {
 
                 {/* Image Gallery */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 h-[400px] md:h-[500px]">
-                    <div className="md:col-span-2 relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer">
-                        <img
-                            src="https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?q=80&w=2071&auto=format&fit=crop"
-                            alt={service.title}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
+                    <div className="md:col-span-2 relative h-full rounded-2xl overflow-hidden group cursor-pointer bg-white">
+                        {service.image ? (
+                            <img
+                                src={service.image}
+                                alt={service.title}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
+                                <i className="ri-image-line text-4xl"></i>
+                            </div>
+                        )}
                         {service.seller.verified && (
                             <div className="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-2">
                                 <i className="ri-shield-check-fill"></i> VERIFIED PROFESSIONAL
                             </div>
                         )}
                     </div>
-                    <div className="flex flex-col gap-2 h-full">
-                        <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer">
-                            <img
-                                src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=2069&auto=format&fit=crop"
-                                alt="Portfolio 1"
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
+                    <div className="flex flex-col gap-2 h-full hidden md:flex">
+                        <div className="relative h-1/2 rounded-2xl overflow-hidden group cursor-pointer bg-gray-100">
+                            {/* Placeholder for additional images */}
                         </div>
-                        <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer">
-                            <img
-                                src="https://images.unsplash.com/photo-1457972729786-0411a3b2b626?q=80&w=2070&auto=format&fit=crop"
-                                alt="Portfolio 2"
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
+                        <div className="relative h-1/2 rounded-2xl overflow-hidden group cursor-pointer bg-gray-100">
+                            {/* Placeholder for additional images */}
                         </div>
                     </div>
                 </div>
@@ -89,7 +192,7 @@ export default function BeautyDetail({ id }: { id?: string }) {
                                 </div>
                             </div>
 
-                            <p className="text-gray-500 text-sm mb-6 leading-relaxed max-w-3xl">
+                            <p className="text-gray-500 text-sm mb-6 leading-relaxed max-w-3xl whitespace-pre-line">
                                 {service.description}
                             </p>
 
@@ -149,17 +252,15 @@ export default function BeautyDetail({ id }: { id?: string }) {
                                 <h3 className="text-sm font-bold text-gray-900 mb-3">Key Features</h3>
                                 <ul className="space-y-2 text-sm text-gray-600">
                                     {service.features.map((feature, idx) => (
-                                        <li key={idx}>- {feature}</li>
+                                        <li key={idx}>- {feature.trim()}</li>
                                     ))}
                                 </ul>
                             </div>
 
                             <div className="flex flex-wrap gap-2">
-                                {service.features.map((feature, idx) => (
-                                    <span key={idx} className="bg-[#FFF0F0] text-[#FF6E40] text-xs font-medium px-3 py-1 rounded">
-                                        {feature}
-                                    </span>
-                                ))}
+                                <span className="bg-[#FFF0F0] text-[#FF6E40] text-xs font-medium px-3 py-1 rounded">
+                                    {service.category}
+                                </span>
                             </div>
                         </div>
 
@@ -230,55 +331,58 @@ export default function BeautyDetail({ id }: { id?: string }) {
                 </div>
 
                 {/* Similar Services */}
-                <div className="mt-16 relative">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-lg font-bold text-gray-900">Similar Services</h2>
-                        <div className="flex gap-2">
-                            <button
-                                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition"
-                                onClick={() => {
-                                    const container = document.getElementById('similar-beauty-carousel');
-                                    if (container) container.scrollBy({ left: -300, behavior: 'smooth' });
-                                }}
-                            >
-                                <i className="ri-arrow-left-s-line"></i>
-                            </button>
-                            <button
-                                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition"
-                                onClick={() => {
-                                    const container = document.getElementById('similar-beauty-carousel');
-                                    if (container) container.scrollBy({ left: 300, behavior: 'smooth' });
-                                }}
-                            >
-                                <i className="ri-arrow-right-s-line"></i>
-                            </button>
+                {similarServices.length > 0 && (
+                    <div className="mt-16 relative">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-lg font-bold text-gray-900">Similar Services</h2>
+                            <div className="flex gap-2">
+                                <button
+                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition"
+                                    onClick={() => {
+                                        const container = document.getElementById('similar-beauty-carousel');
+                                        if (container) container.scrollBy({ left: -300, behavior: 'smooth' });
+                                    }}
+                                >
+                                    <i className="ri-arrow-left-s-line"></i>
+                                </button>
+                                <button
+                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#FF8A65] hover:text-white hover:border-[#FF8A65] transition"
+                                    onClick={() => {
+                                        const container = document.getElementById('similar-beauty-carousel');
+                                        if (container) container.scrollBy({ left: 300, behavior: 'smooth' });
+                                    }}
+                                >
+                                    <i className="ri-arrow-right-s-line"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="similar-beauty-carousel" className="flex gap-6 overflow-x-auto pb-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                            {similarServices.map((item) => (
+                                <Link key={item.id} href={`/beauty/${item.id}-${createSlug(item.title)}`}>
+                                    <div className="min-w-[280px] md:min-w-[320px] bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer snap-start shrink-0">
+                                        <div className="h-48 bg-gray-100 relative">
+                                            {item.image ? (
+                                                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                                    <i className="ri-image-line text-2xl"></i>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-2">{item.title}</h3>
+                                            <div className="text-[#FF6E40] font-bold text-base">{item.price}</div>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
                         </div>
                     </div>
-
-                    <div id="similar-beauty-carousel" className="flex gap-6 overflow-x-auto pb-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                        {[
-                            { id: 2, title: "Full Body Massage & Spa", price: "₹ 2,500/-", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=2070&auto=format&fit=crop" },
-                            { id: 3, title: "Men's Grooming Package", price: "₹ 800/-", image: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=2070&auto=format&fit=crop" },
-                            { id: 4, title: "Hair Spa Treatment", price: "₹ 1,200/-", image: "https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop" },
-                            { id: 5, title: "Party Makeup", price: "₹ 3,500/-", image: "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=2070&auto=format&fit=crop" },
-                            { id: 6, title: "Skin Whitening Treatment", price: "₹ 4,000/-", image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=2070&auto=format&fit=crop" },
-                        ].map((service) => (
-                            <Link key={service.id} href={`/beauty/${service.id}`}>
-                                <div className="min-w-[280px] md:min-w-[320px] bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition cursor-pointer snap-start shrink-0">
-                                    <div className="h-48 bg-gray-100 relative">
-                                        <img src={service.image} alt={service.title} className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="font-bold text-gray-800 text-sm mb-2 line-clamp-2">{service.title}</h3>
-                                        <div className="text-[#FF6E40] font-bold text-base">{service.price}</div>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
+                )}
 
             </div>
         </div>
     );
 }
+

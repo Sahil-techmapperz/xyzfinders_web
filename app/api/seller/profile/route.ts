@@ -1,23 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-
-// Helper to handle file uploads (duplicated from become-seller, could be refactored to utils)
-async function saveFile(file: File, folder: string): Promise<string> {
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const uploadDir = join(process.cwd(), 'public', 'uploads', folder);
-    await mkdir(uploadDir, { recursive: true });
-
-    const filename = `${Date.now()}-${file.name.replace(/\s/g, '-')}`;
-    const filePath = join(uploadDir, filename);
-    await writeFile(filePath, buffer);
-
-    return `/uploads/${folder}/${filename}`;
-}
+import { processUploadedImage, bufferToDataUrl } from '@/lib/image-utils';
 
 export async function GET(request: NextRequest) {
     try {
@@ -34,16 +18,12 @@ export async function GET(request: NextRequest) {
 
         const userId = decoded.userId;
 
-        // Fetch seller details joined with some user details (like email/name primarily from user table 
-        // but potentially overwritten by seller specific data if we decide to separate them further)
-        // For now, Name/Email come from Users. Business info comes from Sellers.
-
+        // Fetch seller details (joined with user for basic info)
         const sellers = await query(`
             SELECT 
                 s.*, 
                 u.name as user_name, 
-                u.email as user_email, 
-                s.avatar as user_avatar 
+                u.email as user_email
             FROM sellers s
             JOIN users u ON s.user_id = u.id
             WHERE s.user_id = ?
@@ -53,7 +33,33 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ message: 'Seller profile not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ seller: sellers[0] });
+        const seller = sellers[0];
+
+        // Handle avatar: Check if it's a buffer (new DB storage) or string (legacy)
+        let avatarSource = null;
+        if (seller.avatar) {
+            if (Buffer.isBuffer(seller.avatar)) {
+                avatarSource = bufferToDataUrl(seller.avatar, 'image/webp');
+            } else if (typeof seller.avatar === 'object') {
+                // Convert generic object to buffer if needed (robust check)
+                try {
+                    const buf = Buffer.from(seller.avatar);
+                    avatarSource = bufferToDataUrl(buf, 'image/webp');
+                } catch (e) {
+                    console.error('Failed to convert seller avatar object to buffer:', e);
+                }
+            } else {
+                // Legacy string path
+                avatarSource = seller.avatar;
+            }
+        }
+
+        const responseSeller = {
+            ...seller,
+            avatar: avatarSource
+        };
+
+        return NextResponse.json({ seller: responseSeller });
 
     } catch (error) {
         console.error('Get seller profile error:', error);
@@ -86,12 +92,33 @@ export async function PUT(request: NextRequest) {
         const website = formData.get('website') as string;
         const socialLinks = formData.get('social_links') as string;
 
+        // "profile_pic" is the key used in the seller page form
         const profilePic = formData.get('profile_pic') as File | null;
 
         // Update Avatar if provided
         if (profilePic && profilePic.size > 0) {
-            const avatarPath = await saveFile(profilePic, 'avatars');
-            await query('UPDATE sellers SET avatar = ? WHERE user_id = ?', [avatarPath, userId]);
+            console.log('Processing seller avatar update for user:', userId);
+            const result = await processUploadedImage(profilePic);
+
+            if (!result.valid) {
+                return NextResponse.json({ message: result.error || 'Invalid image' }, { status: 400 });
+            }
+
+            // Save binary data to SELLERS table 'avatar' column
+            await query('UPDATE sellers SET avatar = ?, updated_at = NOW() WHERE user_id = ?', [result.buffer, userId]);
+            console.log('Avatar updated in SELLERS table');
+        }
+
+        // Validate social_links JSON
+        let validSocialLinks = null;
+        if (socialLinks) {
+            try {
+                JSON.parse(socialLinks);
+                validSocialLinks = socialLinks;
+            } catch (e) {
+                console.error('Invalid social_links JSON received:', socialLinks);
+                validSocialLinks = null;
+            }
         }
 
         // Update Seller Info
@@ -106,31 +133,52 @@ export async function PUT(request: NextRequest) {
                 updated_at = NOW()
              WHERE user_id = ?`,
             [
-                phone,
-                address,
+                phone || null,
+                address || null,
                 companyName || null,
                 gstNumber || null,
                 website || null,
-                socialLinks || null,
+                validSocialLinks,
                 userId
             ]
         );
 
-        // Ideally we return the updated data
+        // Fetch updated data for response
         const sellers = await query(`
             SELECT 
                 s.*, 
                 u.name as user_name, 
-                u.email as user_email, 
-                s.avatar as user_avatar 
+                u.email as user_email
             FROM sellers s
             JOIN users u ON s.user_id = u.id
             WHERE s.user_id = ?
         `, [userId]);
 
+        const seller = sellers[0];
+
+        // Resolve avatar
+        let avatarSource = null;
+        if (seller.avatar) {
+            if (Buffer.isBuffer(seller.avatar)) {
+                avatarSource = bufferToDataUrl(seller.avatar, 'image/webp');
+            } else if (typeof seller.avatar === 'object') {
+                try {
+                    const buf = Buffer.from(seller.avatar);
+                    avatarSource = bufferToDataUrl(buf, 'image/webp');
+                } catch (e) { }
+            } else {
+                avatarSource = seller.avatar;
+            }
+        }
+
+        const responseSeller = {
+            ...seller,
+            avatar: avatarSource
+        };
+
         return NextResponse.json({
             message: 'Profile updated successfully',
-            seller: sellers[0]
+            seller: responseSeller
         });
 
     } catch (error) {

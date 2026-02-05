@@ -13,13 +13,6 @@ export async function GET(request: NextRequest) {
         let sql = 'SELECT * FROM categories WHERE 1=1';
         const params: any[] = [];
 
-        if (parent_id) {
-            sql += ' AND parent_id = ?';
-            params.push(parent_id);
-        } else if (parent_id === null) {
-            sql += ' AND parent_id IS NULL';
-        }
-
         if (featured === 'true') {
             sql += ' AND is_featured = 1';
         }

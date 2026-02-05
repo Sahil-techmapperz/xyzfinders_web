@@ -4,7 +4,7 @@ import Mobile_Banner from "@/public/mobile_banner.png";
 
 export default function MobileBanner() {
     return (
-        <section className="container mx-auto px-4 mb-12">
+        <section className="hidden md:block container mx-auto px-4 mb-12">
             <div className="rounded-xl overflow-hidden h-64 relative group">
                 <Image
                     src={Mobile_Banner}

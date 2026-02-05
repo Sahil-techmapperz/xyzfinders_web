@@ -22,7 +22,7 @@ export default function ServicesCard({ item }: { item: ServiceData }) {
 
             {/* Image Section */}
             <div className="relative w-full md:w-[40%] h-48 md:h-full bg-gray-100 overflow-hidden cursor-pointer">
-                <Link href={`/services/${item.id}`}>
+                <Link href={`/services/${item.id}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}>
                     <img
                         src={item.image}
                         alt={item.title}
@@ -50,7 +50,7 @@ export default function ServicesCard({ item }: { item: ServiceData }) {
                     </div>
 
                     <h3 className="font-bold text-lg text-gray-800 leading-tight mb-2 line-clamp-2 hover:text-[#00B0FF] transition-colors cursor-pointer">
-                        <Link href={`/services/${item.id}`}>{item.title}</Link>
+                        <Link href={`/services/${item.id}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}>{item.title}</Link>
                     </h3>
 
                     {/* Meta Row */}
