@@ -2,18 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import GadgetCard, { GadgetData } from './GadgetCard';
-
-const BRANDS = [
-    { name: "Sony", active: true },
-    { name: "Apple", active: false },
-    { name: "Dell", active: false },
-    { name: "Canon", active: false },
-    { name: "Samsung", active: false },
-    { name: "JBL", active: false },
-    { name: "Bose", active: false },
-    { name: "HP", active: false },
-    { name: "Lenovo", active: false },
-];
+import GadgetsFilterPopup from './GadgetsFilterPopup';
 
 export default function GadgetsListings() {
     const [gadgetData, setGadgetData] = useState<GadgetData[]>([]);
@@ -38,14 +27,16 @@ export default function GadgetsListings() {
                     image: product.images?.[0]?.image ? `data:image/jpeg;base64,${product.images[0].image}` : '',
                     specs: {
                         brand: product.product_attributes?.brand?.toUpperCase() || 'N/A',
+                        model: product.product_attributes?.model || product.title.split(' ').slice(0, 3).join(' '),
+                        storage: product.product_attributes?.storage || '256 GB', // Fallback for demo
                         condition: product.product_attributes?.specs?.condition?.toUpperCase() || 'GOOD',
                         warranty: product.product_attributes?.specs?.warranty?.toUpperCase() || 'NO WARRANTY',
                         age: product.product_attributes?.specs?.age?.toUpperCase() || 'N/A'
                     },
                     price: `₹ ${product.price.toLocaleString('en-IN')}/-`,
-                    location: product.product_attributes?.location || product.city || 'New Delhi',
+                    location: product.product_attributes?.location || product.city || 'Connaught Place, New Delhi',
                     postedTime: `Posted ${getTimeAgo(new Date(product.created_at))}`,
-                    verified: product.product_attributes?.verified || false,
+                    verified: product.product_attributes?.verified || true, // Fallback for demo
                     premium: product.is_featured === 1,
                     description: product.description || ''
                 }));
@@ -72,16 +63,33 @@ export default function GadgetsListings() {
         return 'just now';
     }
 
+    const [locations, setLocations] = useState([
+        { name: "Connaught Place", active: true },
+        { name: "Nehru Place", active: false },
+        { name: "Laxmi Nagar", active: false },
+        { name: "Janakpuri", active: false },
+        { name: "Gaffar Market", active: false },
+        { name: "Chandni Chowk", active: false },
+    ]);
+
+    const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
+
+    const toggleLocation = (name: string) => {
+        setLocations(prev => prev.map(loc =>
+            loc.name === name ? { ...loc, active: !loc.active } : loc
+        ));
+    };
+
     return (
         <section className="container mx-auto px-4 py-8 font-jost">
 
             {/* Header / Titles */}
-            <div className="mb-8">
+            <div className="mb-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Electronics & Gadgets for sale in New Delhi - <span className="text-gray-500 font-normal">{gadgetData.length} available</span>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                        Electronics & Gadgets in New Delhi <span className="text-gray-500 font-normal text-base">- {gadgetData.length}(Available)</span>
                     </h1>
-                    <div className="flex items-center gap-2">
+                    <div className="hidden md:flex items-center gap-2">
                         <span className="text-xs font-bold text-gray-600">Sort By :</span>
                         <button className="bg-[#FFF0EB] border border-[#FFCCBC] text-[#FF7043] text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1">
                             Popular <i className="ri-arrow-down-s-line"></i>
@@ -89,28 +97,35 @@ export default function GadgetsListings() {
                     </div>
                 </div>
 
-                {/* Brand Filters */}
-                <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs font-bold text-gray-900">Brand :</span>
-                    <div className="flex flex-wrap gap-2">
-                        {BRANDS.map((brand, i) => (
-                            <button
-                                key={i}
-                                className={`text-[10px] font-bold px-3 py-1 rounded-full transition-colors ${brand.active
-                                    ? "bg-[#00B8D4] text-white flex items-center gap-1"
-                                    : "text-gray-600 hover:text-[#00B8D4]"
-                                    }`}
-                            >
-                                {brand.name}
-                                {brand.active && <i className="ri-close-line"></i>}
-                            </button>
-                        ))}
-                        <button className="text-[10px] font-bold px-3 py-1 rounded-full border border-[#00B8D4] text-[#00B8D4] hover:bg-[#00B8D4] hover:text-white transition-colors">
-                            View More
+                {/* Location Filters (Pills Style) */}
+                <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                    {locations.map((loc, i) => (
+                        <button
+                            key={i}
+                            onClick={() => toggleLocation(loc.name)}
+                            className={`text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 ${loc.active
+                                ? "bg-[#FF8A65] text-white"
+                                : "bg-white border border-gray-200 text-gray-600 hover:border-[#FF8A65] hover:text-[#FF8A65]"
+                                }`}
+                        >
+                            {loc.name}
+                            {loc.active && (
+                                <i className="ri-close-line bg-white/20 rounded-full p-0.5 text-[10px]"></i>
+                            )}
                         </button>
-                    </div>
+                    ))}
+                    {/* View More Button */}
+                    <button
+                        onClick={() => setIsFilterPopupOpen(true)}
+                        className="text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 bg-gray-50 text-brand-orange border border-gray-200 hover:bg-orange-50 hover:border-brand-orange"
+                    >
+                        View More <i className="ri-equalizer-line"></i>
+                    </button>
                 </div>
             </div>
+
+            {/* Filter Popup */}
+            {isFilterPopupOpen && <GadgetsFilterPopup onClose={() => setIsFilterPopupOpen(false)} />}
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

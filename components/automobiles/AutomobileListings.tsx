@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from 'react';
 import AutomobileCard from './AutomobileCard';
+import FilterPopup from './FilterPopup';
 
 // Mock Data
 const AUTO_DATA = [
@@ -18,6 +20,11 @@ const AUTO_DATA = [
         price: "11,000",
         location: "Kundeshwari Rd, Kundeshwari, Kashipur, Uttarakhand",
         image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=2070&auto=format&fit=crop",
+        images: [
+            "https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1632245889029-e41bc59aaef7?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=2070&auto=format&fit=crop"
+        ],
         verified: true,
         premium: true
     },
@@ -91,65 +98,79 @@ const AUTO_DATA = [
     }
 ];
 
-const LOCATIONS = [
-    { name: "Sarjoni Nagar", active: true },
-    { name: "Greater Kailash", active: false },
-    { name: "Vasant Kunj", active: false },
-    { name: "Defence Colony", active: false },
-    { name: "Hauz Khas", active: false },
-    { name: "Shanti Niketan", active: false },
-    { name: "Gurugram", active: false },
-    { name: "Old Delhi", active: false },
-    { name: "Chanakyapuri", active: false },
-];
-
 export default function AutomobileListings() {
+    const [locations, setLocations] = useState([
+        { name: "Sarjoni Nagar", active: true },
+        { name: "Greater Kailash", active: false },
+        { name: "Vasant Kunj", active: false },
+        { name: "Defence Colony", active: false },
+        { name: "Hauz Khas", active: false },
+        { name: "Shanti Niketan", active: false },
+        { name: "Gurugram", active: false },
+        { name: "Old Delhi", active: false },
+        { name: "Chanakyapuri", active: false },
+    ]);
+
+    const [showFilters, setShowFilters] = useState(false);
+
+    const toggleLocation = (name: string) => {
+        setLocations(prev => prev.map(loc =>
+            loc.name === name ? { ...loc, active: !loc.active } : loc
+        ));
+    };
     return (
         <section className="container mx-auto px-4 py-8 bg-[#FFFBF0] min-h-screen font-jost">
 
             {/* Header Area */}
             <div className="mb-8">
+                {/* Mobile Link/Breadcrumb */}
                 <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
                     <i className="ri-home-4-line"></i>
-                    <span>Real Estate for Rent in New Delhi</span>
+                    <span>Automobiles</span>
                 </div>
 
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                        Used Automobiles for Sales in New Delhi - <span className="font-bold">26,056</span> <span className="text-gray-500 font-normal text-xl">available</span>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                        Used Automobiles in New Delhi <span className="text-gray-500 font-normal text-base">- 26,056(Available)</span>
                     </h1>
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-gray-700">Sort By :</span>
-                        <div className="relative">
-                            <button className="text-brand-orange text-sm font-medium flex items-center gap-1 border border-brand-orange/20 bg-brand-orange/5 px-3 py-1 rounded">
-                                Popular <i className="ri-arrow-down-s-line"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Location Filters */}
-                <div className="flex flex-wrap items-center gap-3 pb-4 border-b border-gray-100">
-                    <span className="font-bold text-sm text-gray-800">Location :-</span>
-                    <div className="flex flex-wrap gap-2">
-                        {LOCATIONS.map((loc, idx) => (
-                            <button
-                                key={idx}
-                                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${loc.active
-                                    ? "bg-[#FF8A65] text-white flex items-center gap-2 shadow-sm"
-                                    : "bg-transparent text-gray-600 hover:text-[#FF8A65] hover:bg-orange-50"
-                                    }`}
-                            >
-                                {loc.name}
-                                {loc.active && <i className="ri-close-line bg-white/20 rounded-full p-0.5"></i>}
-                            </button>
-                        ))}
-                        <button className="px-4 py-1.5 rounded-full text-xs font-medium text-[#FF8A65] border border-[#FF8A65] hover:bg-[#FF8A65] hover:text-white transition-all">
-                            View More
+                    <div className="hidden md:flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-600">Sort By :</span>
+                        <button className="bg-[#FFF0EB] border border-[#FFCCBC] text-[#FF7043] text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1">
+                            Popular <i className="ri-arrow-down-s-line"></i>
                         </button>
                     </div>
                 </div>
+
+                {/* Location Filters (Pills Style) */}
+                <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                    {locations.map((loc, i) => (
+                        <button
+                            key={i}
+                            onClick={() => toggleLocation(loc.name)}
+                            className={`text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 ${loc.active
+                                ? "bg-[#FF8A65] text-white"
+                                : "bg-white border border-gray-200 text-gray-600 hover:border-[#FF8A65] hover:text-[#FF8A65]"
+                                }`}
+                        >
+                            {loc.name}
+                            {loc.active && (
+                                <i className="ri-close-line bg-white/20 rounded-full p-0.5 text-[10px]"></i>
+                            )}
+                        </button>
+                    ))}
+                    {/* View More Button */}
+                    <button
+                        onClick={() => setShowFilters(true)}
+                        className="text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 bg-gray-50 text-brand-orange border border-gray-200 hover:bg-orange-50 hover:border-brand-orange"
+                    >
+                        View More <i className="ri-equalizer-line"></i>
+                    </button>
+                </div>
             </div>
+
+            {/* Filter Popup */}
+            {showFilters && <FilterPopup onClose={() => setShowFilters(false)} />}
 
             {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

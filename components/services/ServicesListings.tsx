@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from 'react';
 import ServicesCard, { ServiceData } from './ServicesCard';
+import ServicesFilterPopup from './ServicesFilterPopup';
 
 const SERVICES_DATA: ServiceData[] = [
     {
@@ -58,33 +60,70 @@ const SERVICES_DATA: ServiceData[] = [
 ];
 
 export default function ServicesListings() {
+    const [locations, setLocations] = useState([
+        { name: "Kalkaji", active: true },
+        { name: "Vasant Kunj", active: false },
+        { name: "Dwarka", active: false },
+        { name: "South Ex", active: false },
+        { name: "Lajpat Nagar", active: false },
+        { name: "Hauz Khas", active: false },
+    ]);
+
+    // Renamed to avoid potential ReferenceError/Shadowing issues
+    const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
+
+    const toggleLocation = (name: string) => {
+        setLocations(prev => prev.map(loc =>
+            loc.name === name ? { ...loc, active: !loc.active } : loc
+        ));
+    };
+
     return (
         <section className="container mx-auto px-4 py-8 font-jost">
 
             {/* Header */}
-            <div className="flex flex-col gap-4 mb-8">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Services in New Delhi
+            <div className="mb-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                        Services in New Delhi <span className="text-gray-500 font-normal text-base">- 482(Available)</span>
                     </h1>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-gray-600">Filter By:</span>
-                        <button className="bg-white border border-gray-200 text-gray-600 text-xs font-bold px-3 py-1.5 rounded hover:border-[#00B0FF] hover:text-[#00B0FF]">Verified Only</button>
-                        <button className="bg-white border border-gray-200 text-gray-600 text-xs font-bold px-3 py-1.5 rounded hover:border-[#00B0FF] hover:text-[#00B0FF]">High Rating</button>
-                        <button className="bg-white border border-gray-200 text-gray-600 text-xs font-bold px-3 py-1.5 rounded hover:border-[#00B0FF] hover:text-[#00B0FF]">Budget Friendly</button>
+                    <div className="hidden md:flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-600">Sort By :</span>
+                        <button className="bg-[#FFF0EB] border border-[#FFCCBC] text-[#FF7043] text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1">
+                            Recommended <i className="ri-arrow-down-s-line"></i>
+                        </button>
                     </div>
                 </div>
 
-                {/* Popular Services (Moved to Top) */}
+                {/* Location Filters (Pills Style) */}
                 <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                    <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Popular:</span>
-                    {["Cleaning", "Plumbing", "Electrician", "Salon", "Carpentry", "Painting", "Pest Control"].map((tag, i) => (
-                        <button key={i} className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-colors whitespace-nowrap">
-                            {tag}
+                    {locations.map((loc, i) => (
+                        <button
+                            key={i}
+                            onClick={() => toggleLocation(loc.name)}
+                            className={`text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 ${loc.active
+                                ? "bg-[#FF8A65] text-white"
+                                : "bg-white border border-gray-200 text-gray-600 hover:border-[#FF8A65] hover:text-[#FF8A65]"
+                                }`}
+                        >
+                            {loc.name}
+                            {loc.active && (
+                                <i className="ri-close-line bg-white/20 rounded-full p-0.5 text-[10px]"></i>
+                            )}
                         </button>
                     ))}
+                    {/* View More Button */}
+                    <button
+                        onClick={() => setIsFilterPopupOpen(true)}
+                        className="text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 bg-gray-50 text-brand-orange border border-gray-200 hover:bg-orange-50 hover:border-brand-orange"
+                    >
+                        View More <i className="ri-equalizer-line"></i>
+                    </button>
                 </div>
             </div>
+
+            {/* Filter Popup */}
+            {isFilterPopupOpen && <ServicesFilterPopup onClose={() => setIsFilterPopupOpen(false)} />}
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

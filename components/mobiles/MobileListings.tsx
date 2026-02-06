@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from 'react';
 import MobileCard, { MobileData } from './MobileCard';
+import MobileFilterPopup from './MobileFilterPopup';
 
 const MOBILE_DATA: MobileData[] = [
     {
@@ -9,6 +11,11 @@ const MOBILE_DATA: MobileData[] = [
         category: "iOS",
         brand: "APPLE",
         image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=2070&auto=format&fit=crop",
+        images: [
+            "https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1696446701796-da61225697cc?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1621330396173-e41b11d17718?q=80&w=2070&auto=format&fit=crop"
+        ],
         description: "EXCELLENT CONDITION 256GB STORAGE WITH ALL ACCESSORIES...",
         specs: {
             age: "6 MONTHS",
@@ -81,29 +88,44 @@ const MOBILE_DATA: MobileData[] = [
     }
 ];
 
-const LOCATIONS = [
-    { name: "Sarjoni Nagar", active: true },
-    { name: "Greater Kailash", active: false },
-    { name: "Vasant Kunj", active: false },
-    { name: "Defence Colony", active: false },
-    { name: "Hauz Khas", active: false },
-    { name: "Shanti Niketan", active: false },
-    { name: "Gurugram", active: false },
-    { name: "Old Delhi", active: false },
-    { name: "Chanakyapuri", active: false },
-];
-
 export default function MobileListings() {
+    const [locations, setLocations] = useState([
+        { name: "Sarjoni Nagar", active: true },
+        { name: "Greater Kailash", active: false },
+        { name: "Vasant Kunj", active: false },
+        { name: "Defence Colony", active: false },
+        { name: "Hauz Khas", active: false },
+        { name: "Shanti Niketan", active: false },
+        { name: "Gurugram", active: false },
+        { name: "Old Delhi", active: false },
+        { name: "Chanakyapuri", active: false },
+    ]);
+
+    const [showFilters, setShowFilters] = useState(false);
+
+    const toggleLocation = (name: string) => {
+        setLocations(prev => prev.map(loc =>
+            loc.name === name ? { ...loc, active: !loc.active } : loc
+        ));
+    };
     return (
         <section className="container mx-auto px-4 py-8 font-jost">
 
             {/* Header / Titles */}
-            <div className="mb-8">
+            <div className="mb-6">
+                {/* Breadcrumb (Mobile Style) */}
+                <div className="flex items-center gap-2 text-xs text-gray-500 mb-2 md:hidden">
+                    <i className="ri-home-4-line"></i>
+                    <span>Mobiles</span>
+                </div>
+
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        New and Used Mobile Phones for sale in New Delhi - <span className="text-gray-500 font-normal">8465 available</span>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                        Mobile Phones for Sale in New Delhi <span className="text-gray-500 font-normal text-base">- 8465(Available)</span>
                     </h1>
-                    <div className="flex items-center gap-2">
+
+                    {/* Sort By - Hidden on Mobile to match reference which focuses on pills, or keep small if needed. Keeping hidden for strict mobile match if requested, but let's keep it visible for desktop flexibility */}
+                    <div className="hidden md:flex items-center gap-2">
                         <span className="text-xs font-bold text-gray-600">Sort By :</span>
                         <button className="bg-[#FFF0EB] border border-[#FFCCBC] text-[#FF7043] text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1">
                             Popular <i className="ri-arrow-down-s-line"></i>
@@ -111,28 +133,35 @@ export default function MobileListings() {
                     </div>
                 </div>
 
-                {/* Brand / Location Filters */}
-                <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs font-bold text-gray-900">Brand :</span>
-                    <div className="flex flex-wrap gap-2">
-                        {LOCATIONS.map((loc, i) => (
-                            <button
-                                key={i}
-                                className={`text-[10px] font-bold px-3 py-1 rounded-full transition-colors ${loc.active
-                                    ? "bg-[#FF8A65] text-white flex items-center gap-1"
-                                    : "text-gray-600 hover:text-[#FF8A65]"
-                                    }`}
-                            >
-                                {loc.name}
-                                {loc.active && <i className="ri-close-line"></i>}
-                            </button>
-                        ))}
-                        <button className="text-[10px] font-bold px-3 py-1 rounded-full border border-[#FF8A65] text-[#FF8A65] hover:bg-[#FF8A65] hover:text-white transition-colors">
-                            View More
+                {/* Location Filters (Pills Style) */}
+                <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                    {locations.map((loc, i) => (
+                        <button
+                            key={i}
+                            onClick={() => toggleLocation(loc.name)}
+                            className={`text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 ${loc.active
+                                ? "bg-[#FF8A65] text-white"
+                                : "bg-white border border-gray-200 text-gray-600 hover:border-[#FF8A65] hover:text-[#FF8A65]"
+                                }`}
+                        >
+                            {loc.name}
+                            {loc.active && (
+                                <i className="ri-close-line bg-white/20 rounded-full p-0.5 text-[10px]"></i>
+                            )}
                         </button>
-                    </div>
+                    ))}
+                    {/* View More Button */}
+                    <button
+                        onClick={() => setShowFilters(true)}
+                        className="text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 bg-gray-50 text-brand-orange border border-gray-200 hover:bg-orange-50 hover:border-brand-orange"
+                    >
+                        View More <i className="ri-equalizer-line"></i>
+                    </button>
                 </div>
             </div>
+
+            {/* Filter Popup */}
+            {showFilters && <MobileFilterPopup onClose={() => setShowFilters(false)} />}
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

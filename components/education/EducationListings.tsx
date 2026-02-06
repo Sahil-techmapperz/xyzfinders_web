@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from 'react';
 import EducationCard, { EducationData } from './EducationCard';
+import EducationFilterPopup from './EducationFilterPopup';
 
 const EDUCATION_DATA: EducationData[] = [
     {
@@ -91,16 +93,35 @@ const LOCATIONS = [
 ];
 
 export default function EducationListings() {
+    const [locations, setLocations] = useState([
+        { name: "South Delhi", active: true },
+        { name: "North Delhi", active: false },
+        { name: "West Delhi", active: false },
+        { name: "East Delhi", active: false },
+        { name: "Noida", active: false },
+        { name: "Gurugram", active: false },
+    ]);
+
+    const [showFilters, setShowFilters] = useState(false);
+
+    const toggleLocation = (name: string) => {
+        setLocations(prev => prev.map(loc =>
+            loc.name === name ? { ...loc, active: !loc.active } : loc
+        ));
+    };
+
     return (
         <section className="container mx-auto px-4 py-8 font-jost">
 
             {/* Header / Titles */}
-            <div className="mb-8">
+            <div className="mb-6">
+                {/* Breadcrumb (Mobile Style - Optional/Placeholder if needed, or just standard header) */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Education & Learning in New Delhi - <span className="text-gray-500 font-normal">850 results</span>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                        Education & Learning in New Delhi <span className="text-gray-500 font-normal text-base">- 850(Available)</span>
                     </h1>
-                    <div className="flex items-center gap-2">
+
+                    <div className="hidden md:flex items-center gap-2">
                         <span className="text-xs font-bold text-gray-600">Sort By :</span>
                         <button className="bg-[#FFF0EB] border border-[#FFCCBC] text-[#FF7043] text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1">
                             Newest First <i className="ri-arrow-down-s-line"></i>
@@ -108,25 +129,35 @@ export default function EducationListings() {
                     </div>
                 </div>
 
-                {/* Filters */}
-                <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs font-bold text-gray-900">Location :</span>
-                    <div className="flex flex-wrap gap-2">
-                        {LOCATIONS.map((loc, i) => (
-                            <button
-                                key={i}
-                                className={`text-[10px] font-bold px-3 py-1 rounded-full transition-colors ${loc.active
-                                    ? "bg-[#FF8A65] text-white flex items-center gap-1"
-                                    : "text-gray-600 hover:text-[#FF8A65]"
-                                    }`}
-                            >
-                                {loc.name}
-                                {loc.active && <i className="ri-close-line"></i>}
-                            </button>
-                        ))}
-                    </div>
+                {/* Location Filters (Pills Style) */}
+                <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                    {locations.map((loc, i) => (
+                        <button
+                            key={i}
+                            onClick={() => toggleLocation(loc.name)}
+                            className={`text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 ${loc.active
+                                ? "bg-[#FF8A65] text-white"
+                                : "bg-white border border-gray-200 text-gray-600 hover:border-[#FF8A65] hover:text-[#FF8A65]"
+                                }`}
+                        >
+                            {loc.name}
+                            {loc.active && (
+                                <i className="ri-close-line bg-white/20 rounded-full p-0.5 text-[10px]"></i>
+                            )}
+                        </button>
+                    ))}
+                    {/* View More Button */}
+                    <button
+                        onClick={() => setShowFilters(true)}
+                        className="text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 bg-gray-50 text-brand-orange border border-gray-200 hover:bg-orange-50 hover:border-brand-orange"
+                    >
+                        View More <i className="ri-equalizer-line"></i>
+                    </button>
                 </div>
             </div>
+
+            {/* Filter Popup */}
+            {showFilters && <EducationFilterPopup onClose={() => setShowFilters(false)} />}
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

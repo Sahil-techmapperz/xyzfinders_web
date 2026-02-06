@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
 export interface ServiceData {
     id: number;
@@ -17,18 +18,62 @@ export interface ServiceData {
 }
 
 export default function ServicesCard({ item }: { item: ServiceData }) {
-    return (
-        <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden group flex flex-col md:flex-row h-auto md:h-64">
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    // Prepare for multiple images
+    const images = [item.image];
 
-            {/* Image Section */}
-            <div className="relative w-full md:w-[40%] h-48 md:h-full bg-gray-100 overflow-hidden cursor-pointer">
+    return (
+        <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden group flex flex-col md:flex-row h-auto md:h-72">
+
+            {/* Image Slider Section */}
+            <div className="relative w-full md:w-[40%] h-40 md:h-full bg-gray-100 overflow-hidden group/slider">
                 <Link href={`/services/${item.id}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}>
-                    <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
+                    <div
+                        className="flex h-full transition-transform duration-500 ease-out"
+                        style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+                    >
+                        {images.map((img, idx) => (
+                            <img
+                                key={idx}
+                                src={img}
+                                alt={`${item.title} - ${idx + 1}`}
+                                className="w-full h-full object-cover shrink-0"
+                            />
+                        ))}
+                    </div>
                 </Link>
+
+                {/* Navigation Arrows - Only if multiple images */}
+                {images.length > 1 && (
+                    <>
+                        <button
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center hover:bg-black/50 backdrop-blur-sm opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+                            }}
+                        >
+                            <i className="ri-arrow-left-s-line"></i>
+                        </button>
+                        <button
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center hover:bg-black/50 backdrop-blur-sm opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+                            }}
+                        >
+                            <i className="ri-arrow-right-s-line"></i>
+                        </button>
+                    </>
+                )}
+
+                {/* 1/X Badge */}
+                <div className="absolute bottom-3 left-3 z-10 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm backdrop-blur-sm">
+                    <i className="ri-image-line mr-1"></i>
+                    {currentImageIndex + 1}/{images.length}
+                </div>
 
                 {/* Verified Badge */}
                 {item.verified && (
@@ -39,45 +84,48 @@ export default function ServicesCard({ item }: { item: ServiceData }) {
             </div>
 
             {/* Content Section */}
-            <div className="flex-1 p-5 flex flex-col justify-between">
+            <div className="flex-1 p-2.5 md:p-5 lg:p-6 flex flex-col justify-between">
                 <div>
-                    <div className="flex justify-between items-start mb-2">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide bg-gray-100 px-2 py-1 rounded">{item.category}</span>
-                        <div className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-0.5 rounded textxs font-bold">
-                            <span className="text-sm">{item.rating}</span> <i className="ri-star-fill text-[10px]"></i>
-                            <span className="text-[10px] text-gray-400 font-normal">({item.reviews})</span>
-                        </div>
+                    <div className="flex justify-between items-start">
+                        <Link href={`/services/${item.id}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}>
+                            <h3 className="font-bold text-lg md:text-xl text-gray-800 leading-tight mb-0.5 hover:text-brand-orange transition-colors line-clamp-1">
+                                {item.title}
+                            </h3>
+                        </Link>
                     </div>
 
-                    <h3 className="font-bold text-lg text-gray-800 leading-tight mb-2 line-clamp-2 hover:text-[#00B0FF] transition-colors cursor-pointer">
-                        <Link href={`/services/${item.id}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}>{item.title}</Link>
-                    </h3>
+                    <p className="text-gray-500 text-xs font-medium mb-2">{item.category} • {item.subcategory}</p>
 
-                    {/* Meta Row */}
-                    <div className="flex flex-col gap-2 text-xs text-gray-500 mb-4">
-                        <div className="flex items-center gap-2">
-                            <i className="ri-user-line text-[#00B0FF]"></i>
-                            <span>{item.provider}</span>
+                    {/* Specs Row / Ratings */}
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 mb-2">
+                        <div className="flex items-center gap-1.5 bg-green-50 text-green-700 px-2 py-0.5 rounded font-bold">
+                            {item.rating} <i className="ri-star-fill text-[10px]"></i>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <i className="ri-map-pin-line text-[#00B0FF]"></i>
-                            <span>{item.location}</span>
-                        </div>
+                        <span className="text-gray-300">•</span>
+                        <div className="flex items-center gap-1.5"><i className="ri-chat-1-line text-gray-400 text-sm"></i> {item.reviews} Reviews</div>
+                        <span className="text-gray-300">•</span>
+                        <div className="flex items-center gap-1.5"><i className="ri-user-line text-gray-400 text-sm"></i> {item.provider}</div>
+                    </div>
+
+                    {/* Location */}
+                    <div className="flex items-start gap-1.5 text-xs text-gray-400 mb-3 mt-3">
+                        <i className="ri-map-pin-line mt-0.5"></i>
+                        <span className="line-clamp-1">{item.location}</span>
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                {/* Footer: Price & Actions */}
+                <div className="flex items-center justify-between pt-2 border-t border-gray-50">
                     <div>
                         <span className="text-gray-400 text-[10px] font-bold uppercase block">Starting From</span>
                         <span className="text-[#00B0FF] text-lg font-bold">{item.price}</span>
                     </div>
 
-                    <div className="flex gap-3">
-                        <button className="flex items-center gap-2 px-4 py-2 rounded bg-[#FFF0F0] text-[#FF4D4D] text-xs font-bold hover:bg-[#FF4D4D] hover:text-white transition-all shadow-sm border border-[#FFCDD2]/50">
+                    <div className="flex gap-2">
+                        <button className="flex items-center gap-2 px-3 py-2 rounded bg-[#FFF0F0] text-[#FF4D4D] text-xs font-bold hover:bg-[#FF4D4D] hover:text-white transition-all shadow-sm border border-[#FFCDD2]/50">
                             <i className="ri-phone-line text-sm"></i> Call
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2 rounded bg-[#E3F2FD] text-[#2196F3] text-xs font-bold hover:bg-[#2196F3] hover:text-white transition-all shadow-sm border border-[#BBDEFB]/50">
+                        <button className="flex items-center gap-2 px-3 py-2 rounded bg-[#E3F2FD] text-[#2196F3] text-xs font-bold hover:bg-[#2196F3] hover:text-white transition-all shadow-sm border border-[#BBDEFB]/50">
                             <i className="ri-chat-3-line text-sm"></i> Chat
                         </button>
                     </div>

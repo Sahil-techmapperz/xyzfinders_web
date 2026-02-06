@@ -140,11 +140,11 @@ export const NAV_ITEMS = [
 
 export const BROWSE_CATEGORIES = [
     { name: "Real Estate", icon: "/categories/properties.png", link: "/real-estate", isImage: true },
-    { name: "Mobile & Tablet", icon: "/categories/mobiles.png", link: "/electronics/mobiles", isImage: true },
+    { name: "Mobile & Tablet", icon: "/categories/mobiles.png", link: "/mobiles", isImage: true },
     { name: "Automobiles", icon: "/categories/cars.png", link: "/automobiles", isImage: true },
     { name: "Services", icon: "/categories/services.png", link: "/services", isImage: true },
     { name: "Learning & Education", icon: "/categories/education.png", link: "/education", isImage: true },
-    { name: "Gadgets & Electronics", icon: "/categories/gadgets.png", link: "/electronics", isImage: true },
+    { name: "Gadgets & Electronics", icon: "/categories/gadgets.png", link: "/gadgets", isImage: true },
     { name: "Pets & Animals Accessories", icon: "/categories/pets.png", link: "/pets", isImage: true },
     { name: "Fashions", icon: "/categories/fashion.png", link: "/fashion", isImage: true },
     { name: "Beauty & Well being", icon: "/categories/beauty.png", link: "/beauty", isImage: true },
