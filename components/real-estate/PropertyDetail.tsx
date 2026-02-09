@@ -58,34 +58,82 @@ export default function PropertyDetail({ id }: { id: string }) {
         : ['/placeholder.jpg', '/placeholder.jpg', '/placeholder.jpg'];
 
     return (
-        <section className="container mx-auto px-4 py-8 font-jost">
+        <section className="container mx-auto px-4 py-8 pb-8 font-jost">
             {/* 1. Hero Image Gallery */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 mb-8 h-[400px] md:h-[500px]">
-                {/* Large Main Image */}
-                <div className="md:col-span-2 relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-100">
+            {/* 1. Hero Image Gallery */}
+            <div className="mb-8">
+                {/* Mobile Carousel (Visible only on mobile) */}
+                <div className="md:hidden relative h-[300px] w-full rounded-2xl overflow-hidden bg-gray-100 group">
                     <img
-                        src={images[0]}
-                        alt={product.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        src={images[activeImage]}
+                        alt={`${product.title} - View ${activeImage + 1}`}
+                        className="w-full h-full object-cover transition-opacity duration-300"
                     />
+
+                    {/* Navigation Arrows */}
+                    {images.length > 1 && (
+                        <>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setActiveImage(prev => prev === 0 ? images.length - 1 : prev - 1);
+                                }}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md backdrop-blur-sm transition-all active:scale-95"
+                            >
+                                <i className="ri-arrow-left-s-line text-xl"></i>
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setActiveImage(prev => prev === images.length - 1 ? 0 : prev + 1);
+                                }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md backdrop-blur-sm transition-all active:scale-95"
+                            >
+                                <i className="ri-arrow-right-s-line text-xl"></i>
+                            </button>
+                        </>
+                    )}
+
+                    {/* Counter Badge */}
+                    <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md flex items-center gap-1.5">
+                        <i className="ri-image-line"></i>
+                        {activeImage + 1} / {images.length}
+                    </div>
                 </div>
 
-                {/* Right Column Images */}
-                <div className="flex flex-col gap-2 h-full">
-                    <div className="relative h-[250px] overflow-hidden rounded-2xl group cursor-pointer bg-gray-100">
+                {/* Desktop Grid (Hidden on mobile) */}
+                <div className="hidden md:grid grid-cols-3 gap-4 h-[500px]">
+                    {/* Large Main Image */}
+                    <div className="col-span-2 relative h-full rounded-2xl overflow-hidden group cursor-pointer bg-gray-100">
                         <img
-                            src={images[1] || images[0]}
-                            alt={`${product.title} view 2`}
+                            src={images[0]}
+                            alt={product.title}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                     </div>
-                    <div className="relative h-[250px] overflow-hidden rounded-2xl group cursor-pointer bg-gray-100">
-                        <img
-                            src={images[2] || images[0]}
-                            alt={`${product.title} view 3`}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition"></div>
+
+                    {/* Right Column Images */}
+                    <div className="flex flex-col gap-4 h-full">
+                        <div className="relative h-1/2 overflow-hidden rounded-2xl group cursor-pointer bg-gray-100">
+                            <img
+                                src={images[1] || images[0]}
+                                alt={`${product.title} view 2`}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                        </div>
+                        <div className="relative h-1/2 overflow-hidden rounded-2xl group cursor-pointer bg-gray-100">
+                            <img
+                                src={images[2] || images[0]}
+                                alt={`${product.title} view 3`}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition"></div>
+                            {images.length > 3 && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-xl backdrop-blur-[1px]">
+                                    +{images.length - 3} More
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -127,9 +175,9 @@ export default function PropertyDetail({ id }: { id: string }) {
                     </div>
 
                     {/* Price */}
-                    <div className="mb-8">
-                        <span className="text-[#FF4D4D] text-2xl font-bold">₹ {product.price}</span>
-                        <span className="text-gray-500 text-xs font-medium ml-1">/ Monthly</span>
+                    <div className="mb-6 md:mb-8">
+                        <span className="text-[#FF4D4D] text-xl md:text-2xl font-bold">₹ {product.price}</span>
+                        <span className="text-gray-500 text-[10px] md:text-xs font-medium ml-1">/ Monthly</span>
                     </div>
 
                     {/* 3. Property Details & Seller Grid */}
@@ -195,29 +243,31 @@ export default function PropertyDetail({ id }: { id: string }) {
                         {/* Right: Seller Card */}
                         <div className="xl:col-span-1">
                             <div className="sticky top-24">
-                                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-4">Property Owner</h3>
+                                <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+                                    <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-3 md:mb-4">Property Owner</h3>
 
                                     <div className="flex items-center gap-3 mb-4">
-                                        <div className="w-14 h-14 rounded-full bg-linear-to-br from-[#FF8A65] to-[#FF7043] flex items-center justify-center text-white text-xl font-bold shrink-0">
+                                        <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-linear-to-br from-[#FF8A65] to-[#FF7043] flex items-center justify-center text-white text-lg md:text-xl font-bold shrink-0">
                                             {product.seller_name ? product.seller_name.charAt(0) : 'U'}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="font-bold text-gray-900 truncate">{product.seller_name || 'Unknown User'}</div>
-                                            <div className="text-xs text-gray-500">Member since Dec 2025</div>
+                                            <div className="font-bold text-gray-900 truncate text-sm md:text-base">{product.seller_name || 'Unknown User'}</div>
+                                            <div className="text-[10px] md:text-xs text-gray-500">Member since Dec 2025</div>
                                         </div>
-                                        <i className="ri-verified-badge-fill text-green-500 text-xl shrink-0"></i>
+                                        <i className="ri-verified-badge-fill text-green-500 text-lg md:text-xl shrink-0"></i>
                                     </div>
 
-                                    <button className="w-full bg-[#2196F3] text-white font-bold py-3 rounded-xl hover:bg-[#1976D2] transition-colors mb-3 flex items-center justify-center gap-2 cursor-pointer">
-                                        <i className="ri-chat-3-line"></i>
-                                        Chat with Owner
-                                    </button>
+                                    <div className="space-y-2 md:space-y-3">
+                                        <button className="w-full bg-[#2196F3] text-white font-bold py-2.5 md:py-3 rounded-xl hover:bg-[#1976D2] transition-colors mb-2 md:mb-3 flex items-center justify-center gap-2 cursor-pointer text-sm md:text-base">
+                                            <i className="ri-chat-3-line"></i>
+                                            Chat with Owner
+                                        </button>
 
-                                    <button className="w-full bg-[#4CAF50] text-white font-bold py-3 rounded-xl hover:bg-[#45a049] transition-colors flex items-center justify-center gap-2 cursor-pointer">
-                                        <i className="ri-phone-line"></i>
-                                        Call Owner
-                                    </button>
+                                        <button className="w-full bg-[#4CAF50] text-white font-bold py-2.5 md:py-3 rounded-xl hover:bg-[#45a049] transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm md:text-base">
+                                            <i className="ri-phone-line"></i>
+                                            Call Owner
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -359,6 +409,8 @@ export default function PropertyDetail({ id }: { id: string }) {
                     )}
                 </div>
             </div>
+
+
 
         </section>
     );

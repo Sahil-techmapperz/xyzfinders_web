@@ -9,6 +9,7 @@ export default function EventsDetail({ id }: { id?: string }) {
     const [eventItem, setEventItem] = useState<any>(null);
     const [similarEvents, setSimilarEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeImage, setActiveImage] = useState(0);
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -90,37 +91,82 @@ export default function EventsDetail({ id }: { id?: string }) {
     const category = eventItem.category;
 
     return (
-        <div className="bg-[#FFFBF7] min-h-screen pb-20 font-jost overflow-x-hidden">
+        <div className="bg-[#FFFBF7] min-h-screen pb-8 font-jost overflow-x-hidden">
             <div className="container mx-auto px-4 py-8 max-w-7xl relative">
 
                 {/* 1. Hero Gallery Section */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 h-[400px] md:h-[500px]">
-                    {/* Main Image */}
-                    <div className="md:col-span-2 relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
+                <div className="mb-8">
+                    {/* Mobile Carousel (Visible only on mobile) */}
+                    <div className="md:hidden relative h-[300px] w-full rounded-2xl overflow-hidden bg-white group">
                         <img
-                            src={eventItem.image}
-                            alt={eventItem.title}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            src={eventItem.images[activeImage]}
+                            alt={`${eventItem.title} - View ${activeImage + 1}`}
+                            className="w-full h-full object-contain bg-gray-50 transition-opacity duration-300"
                         />
-                        <div className="absolute top-4 left-4 bg-[#FF6E40] text-white px-3 py-1 rounded font-bold text-sm shadow-sm">
+                        <div className="absolute top-4 left-4 bg-[#FF6E40] text-white px-3 py-1 rounded font-bold text-sm shadow-sm z-10">
                             {category}
                         </div>
-                    </div>
-                    {/* Side Images */}
-                    <div className="flex flex-col gap-2 h-full">
-                        <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
-                            <img
-                                src={eventItem.images[1] || eventItem.image}
-                                alt="Side View 1"
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
+
+                        {/* Navigation Arrows */}
+                        {eventItem.images.length > 1 && (
+                            <>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setActiveImage(prev => prev === 0 ? eventItem.images.length - 1 : prev - 1);
+                                    }}
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md backdrop-blur-sm transition-all active:scale-95"
+                                >
+                                    <i className="ri-arrow-left-s-line text-xl"></i>
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setActiveImage(prev => prev === eventItem.images.length - 1 ? 0 : prev + 1);
+                                    }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md backdrop-blur-sm transition-all active:scale-95"
+                                >
+                                    <i className="ri-arrow-right-s-line text-xl"></i>
+                                </button>
+                            </>
+                        )}
+
+                        {/* Counter Badge */}
+                        <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md flex items-center gap-1.5">
+                            <i className="ri-image-line"></i>
+                            {activeImage + 1} / {eventItem.images.length}
                         </div>
-                        <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
+                    </div>
+
+                    {/* Desktop Grid (Hidden on Mobile) */}
+                    <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-4 h-[500px]">
+                        {/* Main Image */}
+                        <div className="md:col-span-2 relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
                             <img
-                                src={eventItem.images[2] || eventItem.image}
-                                alt="Side View 2"
+                                src={eventItem.image}
+                                alt={eventItem.title}
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
+                            <div className="absolute top-4 left-4 bg-[#FF6E40] text-white px-3 py-1 rounded font-bold text-sm shadow-sm">
+                                {category}
+                            </div>
+                        </div>
+                        {/* Side Images */}
+                        <div className="flex flex-col gap-2 h-full">
+                            <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
+                                <img
+                                    src={eventItem.images[1] || eventItem.image}
+                                    alt="Side View 1"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                />
+                            </div>
+                            <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
+                                <img
+                                    src={eventItem.images[2] || eventItem.image}
+                                    alt="Side View 2"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -193,24 +239,26 @@ export default function EventsDetail({ id }: { id?: string }) {
 
                     {/* Right Column: Booking & Organizer */}
                     <div className="xl:col-span-1 space-y-6">
-                        <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 sticky top-24">
-                            <div className="text-center mb-6">
-                                <p className="text-sm text-gray-500 mb-1">Organized by</p>
-                                <p className="text-lg font-bold text-gray-900">{organizer}</p>
+                        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 sticky top-24">
+                            <div className="text-center mb-4 md:mb-6">
+                                <p className="text-xs md:text-sm text-gray-500 mb-1">Organized by</p>
+                                <p className="text-base md:text-lg font-bold text-gray-900">{organizer}</p>
                             </div>
 
-                            <button className="w-full bg-[#FF6E40] hover:bg-[#F4511E] text-white font-bold text-lg py-4 rounded-xl shadow-lg transition-transform hover:scale-[1.02] mb-4">
-                                Book Tickets
-                            </button>
+                            <div className="space-y-3 md:space-y-4">
+                                <button className="w-full bg-[#FF6E40] hover:bg-[#F4511E] text-white font-bold text-base md:text-lg py-3 md:py-4 rounded-xl shadow-lg transition-transform hover:scale-[1.02] mb-2 md:mb-4">
+                                    Book Tickets
+                                </button>
 
-                            <ContactSellerButton
-                                productId={id || "1"}
-                                sellerId={eventItem.user_id || 1}
-                                className="w-full bg-[#E3F2FD] hover:bg-[#BBDEFB] text-[#2196F3] font-bold text-lg py-4 rounded-xl shadow-sm transition-transform hover:scale-[1.02] mb-4 flex items-center justify-center gap-2 border border-[#90CAF9]/30"
-                                label="Chat with Organizer"
-                            />
+                                <ContactSellerButton
+                                    productId={id || "1"}
+                                    sellerId={eventItem.user_id || 1}
+                                    className="w-full bg-[#E3F2FD] hover:bg-[#BBDEFB] text-[#2196F3] font-bold text-base md:text-lg py-3 md:py-4 rounded-xl shadow-sm transition-transform hover:scale-[1.02] mb-2 md:mb-4 flex items-center justify-center gap-2 border border-[#90CAF9]/30"
+                                    label="Chat with Organizer"
+                                />
+                            </div>
 
-                            <p className="text-xs text-center text-gray-400">
+                            <p className="text-[10px] md:text-xs text-center text-gray-400 mt-2">
                                 Safe & Secure Booking • Instant Confirmation
                             </p>
                         </div>
@@ -276,6 +324,8 @@ export default function EventsDetail({ id }: { id?: string }) {
                 </div>
 
             </div>
+
+
         </div>
     );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import JobCard from './JobCard';
 import { JobFilters } from './types';
+import Link from 'next/link';
 
 interface Job {
     id: number;
@@ -24,6 +25,14 @@ export default function JobListings({ filters }: JobListingsProps) {
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const itemsPerPage = 10;
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters]);
 
     useEffect(() => {
         async function fetchJobsData() {
@@ -32,7 +41,8 @@ export default function JobListings({ filters }: JobListingsProps) {
                 // Build API URL with filter parameters
                 const params = new URLSearchParams();
                 params.set('category_id', '7');
-                params.set('per_page', '100');
+                params.set('per_page', itemsPerPage.toString());
+                params.set('page', currentPage.toString());
 
                 if (filters.search) params.set('search', filters.search);
                 if (filters.location) params.set('location', filters.location);
@@ -64,6 +74,10 @@ export default function JobListings({ filters }: JobListingsProps) {
                 const result = await response.json();
                 const products = result.data || [];
 
+                if (result.pagination) {
+                    setTotalPages(result.pagination.total_pages);
+                }
+
                 // Transform API data to Job format
                 const transformed: Job[] = products.map((product: any) => ({
                     id: product.id,
@@ -85,8 +99,10 @@ export default function JobListings({ filters }: JobListingsProps) {
             }
         }
 
+        // Add a small delay to avoid double fetch race conditions if filters change quickly, 
+        // though standard debounce is handled in parent usually.
         fetchJobsData();
-    }, [filters]);
+    }, [filters, currentPage]);
 
     function getTimeAgo(date: Date): string {
         const now = new Date();
@@ -99,16 +115,38 @@ export default function JobListings({ filters }: JobListingsProps) {
         return 'just now';
     }
 
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+            // Optional: scroll to top of list
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     return (
         <section className="w-full">
-            <div className="max-w-4xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            {/* Mobile Breadcrumbs */}
+            <div className="md:hidden px-4 py-2 text-xs text-gray-500 bg-white border-b border-gray-50">
+                <Link href="/" className="hover:text-brand-orange">Home</Link>
+                <span className="mx-1">{'>'}</span>
+                <span className="text-gray-900 front-medium">Jobs</span>
+            </div>
+
+            <div className="max-w-4xl mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm mt-4 md:mt-0 mx-4 md:mx-auto w-[calc(100%-2rem)] md:w-full">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1 tracking-tight">
+                    {/* Desktop Breadcrumbs (Hidden on mobile) */}
+                    <div className="hidden md:flex items-center text-xs text-gray-500 mb-2">
+                        <Link href="/" className="hover:text-brand-orange">Home</Link>
+                        <span className="mx-2">/</span>
+                        <span className="text-gray-900 font-medium">Jobs</span>
+                    </div>
+
+                    <h1 className="text-lg md:text-2xl font-bold text-gray-900 mb-1 tracking-tight">
                         Latest Openings
                     </h1>
-                    <p className="text-sm text-gray-500 font-medium flex items-center gap-2">
+                    <p className="text-xs md:text-sm text-gray-500 font-medium flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        {jobs.length} jobs found in your area
+                        {jobs.length} jobs found on this page
                     </p>
                 </div>
 
@@ -123,7 +161,7 @@ export default function JobListings({ filters }: JobListingsProps) {
                 </div>
             </div>
 
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto px-4 md:px-0">
                 {loading && (
                     <div className="text-center py-12">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -146,6 +184,33 @@ export default function JobListings({ filters }: JobListingsProps) {
                 {!loading && !error && jobs.map((job: Job) => (
                     <JobCard key={job.id} job={job} />
                 ))}
+
+                {/* Pagination Controls */}
+                {!loading && !error && totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-4 mt-8 mb-12">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#FF8A65] hover:border-[#FF8A65] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+                        >
+                            <i className="ri-arrow-left-s-line"></i> Previous
+                        </button>
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-600">
+                                Page <span className="text-gray-900 font-bold">{currentPage}</span> of <span className="text-gray-900 font-bold">{totalPages}</span>
+                            </span>
+                        </div>
+
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#FF8A65] hover:border-[#FF8A65] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+                        >
+                            Next <i className="ri-arrow-right-s-line"></i>
+                        </button>
+                    </div>
+                )}
             </div>
         </section>
     );

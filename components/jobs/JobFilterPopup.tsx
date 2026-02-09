@@ -86,7 +86,7 @@ export default function JobFilterPopup({ onClose, onApply, initialFilters }: Job
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
             <div
-                className="w-[90%] md:w-[600px] h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col font-jost overflow-hidden"
+                className="w-[95%] md:w-[600px] h-[80vh] md:h-[600px] max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col font-jost overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

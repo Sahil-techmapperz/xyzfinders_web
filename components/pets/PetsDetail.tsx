@@ -7,6 +7,7 @@ import ContactSellerButton from '../shared/ContactSellerButton';
 export default function PetsDetail({ id }: { id?: string }) {
     const [product, setProduct] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [activeImage, setActiveImage] = useState(0);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -83,34 +84,76 @@ export default function PetsDetail({ id }: { id?: string }) {
     ];
 
     return (
-        <div className="bg-[#FFFBF7] min-h-screen pb-20 font-jost overflow-x-hidden">
+        <div className="bg-[#FFFBF7] min-h-screen pb-8 font-jost overflow-x-hidden">
             <div className="container mx-auto px-4 py-8 max-w-7xl relative">
 
                 {/* 1. Hero Gallery Section */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 h-[400px] md:h-[500px]">
-                    {/* Main Image (Left) */}
-                    <div className="md:col-span-2 relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
+                <div className="mb-8">
+                    {/* Mobile Carousel (Visible only on mobile) */}
+                    <div className="md:hidden relative h-[300px] w-full rounded-2xl overflow-hidden bg-white group">
                         <img
-                            src={images[0]}
-                            alt={product.title}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            src={images[activeImage]}
+                            alt={`${product.title} - View ${activeImage + 1}`}
+                            className="w-full h-full object-contain bg-gray-50 transition-opacity duration-300"
                         />
+
+                        {/* Navigation Arrows */}
+                        {images.length > 1 && (
+                            <>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setActiveImage(prev => prev === 0 ? images.length - 1 : prev - 1);
+                                    }}
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md backdrop-blur-sm transition-all active:scale-95"
+                                >
+                                    <i className="ri-arrow-left-s-line text-xl"></i>
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setActiveImage(prev => prev === images.length - 1 ? 0 : prev + 1);
+                                    }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md backdrop-blur-sm transition-all active:scale-95"
+                                >
+                                    <i className="ri-arrow-right-s-line text-xl"></i>
+                                </button>
+                            </>
+                        )}
+
+                        {/* Counter Badge */}
+                        <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md flex items-center gap-1.5">
+                            <i className="ri-image-line"></i>
+                            {activeImage + 1} / {images.length}
+                        </div>
                     </div>
-                    {/* Side Images (Right Column, Stacked) */}
-                    <div className="flex flex-col gap-2 h-full">
-                        <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
+
+                    {/* Desktop Grid (Hidden on Mobile) */}
+                    <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-4 h-[500px]">
+                        {/* Main Image (Left) */}
+                        <div className="md:col-span-2 relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
                             <img
-                                src={images[1] || images[0]}
-                                alt={`${product.title} view 2`}
+                                src={images[0]}
+                                alt={product.title}
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
                         </div>
-                        <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
-                            <img
-                                src={images[2] || images[0]}
-                                alt={`${product.title} view 3`}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
+                        {/* Side Images (Right Column, Stacked) */}
+                        <div className="flex flex-col gap-2 h-full">
+                            <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
+                                <img
+                                    src={images[1] || images[0]}
+                                    alt={`${product.title} view 2`}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                />
+                            </div>
+                            <div className="relative h-[250px] rounded-2xl overflow-hidden group cursor-pointer bg-gray-200">
+                                <img
+                                    src={images[2] || images[0]}
+                                    alt={`${product.title} view 3`}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -143,7 +186,7 @@ export default function PetsDetail({ id }: { id?: string }) {
 
                     {/* Price & Posted Time */}
                     <div className="flex items-center gap-4">
-                        <span className="text-[#FF2D55] text-2xl font-bold">₹ {product.price.toLocaleString()}</span>
+                        <span className="text-[#FF2D55] text-xl md:text-2xl font-bold">₹ {product.price.toLocaleString()}</span>
                         <div className="flex items-center gap-1.5 text-[10px] text-green-500 font-bold">
                             <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                             Posted on {new Date(product.created_at).toLocaleDateString()}
@@ -195,16 +238,16 @@ export default function PetsDetail({ id }: { id?: string }) {
                     <div className="xl:col-span-1 space-y-6">
 
                         {/* Seller Card */}
-                        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                            <div className="flex justify-between items-start mb-4">
+                        <div className="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100">
+                            <div className="flex justify-between items-start mb-3 md:mb-4">
                                 <div>
                                     <p className="text-[10px] text-gray-400 mb-1">Posted By:</p>
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-lg">
+                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-base md:text-lg">
                                             {product.seller_name ? product.seller_name.charAt(0).toUpperCase() : 'U'}
                                         </div>
                                         <div>
-                                            <h3 className="text-sm font-bold text-gray-900 leading-tight">{product.seller_name || 'Unknown User'}</h3>
+                                            <h3 className="text-xs md:text-sm font-bold text-gray-900 leading-tight">{product.seller_name || 'Unknown User'}</h3>
                                             <span className="text-[10px] text-blue-500 flex items-center gap-1">
                                                 <i className="ri-checkbox-circle-fill"></i> Verified Breeder
                                             </span>
@@ -213,12 +256,14 @@ export default function PetsDetail({ id }: { id?: string }) {
                                 </div>
                             </div>
 
-                            <p className="text-[10px] text-gray-400 mb-4">Member Since 2022</p>
+                            <p className="text-[10px] text-gray-400 mb-3 md:mb-4">Member Since 2022</p>
 
-                            <button className="w-full bg-[#D50000] hover:bg-[#b50000] text-white text-xs font-bold py-2.5 rounded-lg mb-2 flex items-center justify-center gap-2 transition-colors cursor-pointer">
-                                <i className="ri-phone-fill"></i> Call Seller
-                            </button>
-                            <ContactSellerButton productId={id || "1"} sellerId={product.seller_id || 1} />
+                            <div className="space-y-2">
+                                <button className="w-full bg-[#D50000] hover:bg-[#b50000] text-white text-xs font-bold py-2.5 rounded-lg mb-2 flex items-center justify-center gap-2 transition-colors cursor-pointer">
+                                    <i className="ri-phone-fill"></i> Call Seller
+                                </button>
+                                <ContactSellerButton productId={id || "1"} sellerId={product.seller_id || 1} />
+                            </div>
                         </div>
 
                         {/* Google Ads Vertical Banner */}
@@ -275,6 +320,8 @@ export default function PetsDetail({ id }: { id?: string }) {
                 </div>
 
             </div>
+
+
         </div>
     );
 }

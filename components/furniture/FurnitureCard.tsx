@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { useState } from 'react';
 
 export interface FurnitureData {
     id: number;
     title: string;
     category: string;
     image: string;
+    images?: string[];
     brand?: string; // Brand name to show on image
     specs: {
         material: string;
@@ -25,6 +27,8 @@ interface FurnitureCardProps {
 }
 
 export default function FurnitureCard({ item }: FurnitureCardProps) {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
     // Extract brand from category or title
     const brand = item.brand || item.category;
 
@@ -33,18 +37,80 @@ export default function FurnitureCard({ item }: FurnitureCardProps) {
     };
     const seoUrl = `/furniture/${item.id}-${createSlug(item.title)}`;
 
+    // Ensure we have an array of images
+    const images = (item.images && item.images.length > 0) ? item.images : [item.image];
+
+    const handleDotClick = (e: React.MouseEvent, index: number) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCurrentImageIndex(index);
+    };
+
     return (
         <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col h-full">
 
-            {/* Image Section - Fixed Height */}
-            <div className="relative w-full h-64 bg-gray-100 overflow-hidden cursor-pointer">
+            {/* Image Slider Section */}
+            <div className="relative w-full h-64 bg-gray-100 overflow-hidden group/slider">
                 <Link href={seoUrl}>
-                    <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
+                    <div
+                        className="flex h-full transition-transform duration-500 ease-out"
+                        style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+                    >
+                        {images.map((img, idx) => (
+                            <img
+                                key={idx}
+                                src={img}
+                                alt={`${item.title} - ${idx + 1}`}
+                                className="w-full h-full object-cover shrink-0"
+                            />
+                        ))}
+                    </div>
                 </Link>
+
+                {/* Navigation Arrows (Visible on hover) */}
+                {images.length > 1 && (
+                    <>
+                        <button
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center hover:bg-black/50 backdrop-blur-sm opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+                            }}
+                        >
+                            <i className="ri-arrow-left-s-line"></i>
+                        </button>
+                        <button
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center hover:bg-black/50 backdrop-blur-sm opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+                            }}
+                        >
+                            <i className="ri-arrow-right-s-line"></i>
+                        </button>
+                    </>
+                )}
+
+                {/* 1/X Badge */}
+                <div className="absolute bottom-3 left-3 z-10 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm backdrop-blur-sm">
+                    <i className="ri-image-line mr-1"></i>
+                    {currentImageIndex + 1}/{images.length}
+                </div>
+
+                {/* Pagination Dots */}
+                {images.length > 1 && (
+                    <div className="absolute bottom-3 left-0 right-0 z-10 flex justify-center gap-1.5 pointer-events-none">
+                        {images.map((_, idx) => (
+                            <button
+                                key={idx}
+                                onClick={(e) => handleDotClick(e, idx)}
+                                className={`w-1.5 h-1.5 rounded-full transition-all shadow-sm pointer-events-auto ${currentImageIndex === idx ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}`}
+                            />
+                        ))}
+                    </div>
+                )}
 
                 {/* Verified Badge */}
                 {item.verified && (
@@ -59,20 +125,13 @@ export default function FurnitureCard({ item }: FurnitureCardProps) {
                         Premium
                     </div>
                 )}
-
-                {/* Brand/Category Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-3 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span className="text-white text-xs font-semibold px-2 py-1 bg-black/30 rounded-full backdrop-blur-sm border border-white/20">
-                        {item.category}
-                    </span>
-                </div>
             </div>
 
             {/* Content Section */}
             <div className="flex-1 p-5 flex flex-col justify-between">
                 <div>
                     <Link href={seoUrl}>
-                        <h3 className="font-bold text-lg text-gray-800 leading-tight mb-2 line-clamp-2 group-hover:text-[#8D6E63] transition-colors">
+                        <h3 className="font-bold text-lg text-gray-800 leading-tight mb-2 line-clamp-2 group-hover:text-brand-orange transition-colors">
                             {item.title}
                         </h3>
                     </Link>
@@ -80,20 +139,20 @@ export default function FurnitureCard({ item }: FurnitureCardProps) {
                     {/* Specs Grid */}
                     <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs text-gray-500 mb-4 mt-3">
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63]">
+                            <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63] shrink-0">
                                 <i className="ri-paint-brush-line"></i>
                             </div>
                             <span className="font-medium truncate">{item.specs.material}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63]">
+                            <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63] shrink-0">
                                 <i className="ri-checkbox-circle-line"></i>
                             </div>
                             <span className="font-medium truncate">{item.specs.condition}</span>
                         </div>
                         {item.specs.dimensions && (
                             <div className="flex items-center gap-2 col-span-2 md:col-span-1">
-                                <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63]">
+                                <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63] shrink-0">
                                     <i className="ri-ruler-line"></i>
                                 </div>
                                 <span className="font-medium truncate">{item.specs.dimensions}</span>
@@ -101,7 +160,7 @@ export default function FurnitureCard({ item }: FurnitureCardProps) {
                         )}
                         {item.specs.age && (
                             <div className="flex items-center gap-2 col-span-2 md:col-span-1">
-                                <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63]">
+                                <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63] shrink-0">
                                     <i className="ri-calendar-line"></i>
                                 </div>
                                 <span className="font-medium truncate">{item.specs.age}</span>
@@ -117,20 +176,20 @@ export default function FurnitureCard({ item }: FurnitureCardProps) {
                 </div>
 
                 {/* Footer: Price & Actions */}
-                <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
+                <div className="flex flex-col gap-3">
+                    <div>
                         <span className="text-[#D32F2F] text-xl font-bold font-rubik tracking-tight">
                             {item.price}
                         </span>
-                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Fixed Price</span>
+                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider ml-2">Fixed Price</span>
                     </div>
 
                     <div className="flex gap-2">
-                        <button className="w-9 h-9 flex items-center justify-center rounded-lg bg-[#FFF0F0] text-[#D32F2F] hover:bg-[#D32F2F] hover:text-white transition-all shadow-sm border border-[#FFCDD2]/50" title="Call Seller">
-                            <i className="ri-phone-fill text-lg"></i>
+                        <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#FFF0F0] text-[#D32F2F] hover:bg-[#D32F2F] hover:text-white transition-all shadow-sm border border-[#FFCDD2]/50 text-sm font-bold" title="Call Seller">
+                            <i className="ri-phone-fill"></i> Call
                         </button>
-                        <button className="w-9 h-9 flex items-center justify-center rounded-lg bg-[#E3F2FD] text-[#1976D2] hover:bg-[#1976D2] hover:text-white transition-all shadow-sm border border-[#BBDEFB]/50" title="Chat with Seller">
-                            <i className="ri-chat-3-fill text-lg"></i>
+                        <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#E3F2FD] text-[#1976D2] hover:bg-[#1976D2] hover:text-white transition-all shadow-sm border border-[#BBDEFB]/50 text-sm font-bold" title="Chat with Seller">
+                            <i className="ri-chat-3-fill"></i> Chat
                         </button>
                     </div>
                 </div>

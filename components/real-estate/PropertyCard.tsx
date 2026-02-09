@@ -39,7 +39,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden group flex flex-col md:flex-row h-auto md:h-72">
 
             {/* Image Slider Section */}
-            <div className="relative w-full md:w-[40%] h-40 md:h-full bg-gray-100 overflow-hidden group/slider">
+            <div className="relative w-full md:w-[40%] h-48 md:h-full bg-gray-100 overflow-hidden group/slider">
                 <Link href={`/real-estate/${property.id}-${property.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}>
                     <div
                         className="flex h-full transition-transform duration-500 ease-out"
@@ -117,17 +117,17 @@ export default function PropertyCard({ property }: PropertyCardProps) {
             </div>
 
             {/* Content Section */}
-            <div className="flex-1 p-2.5 md:p-5 lg:p-6 flex flex-col justify-between">
+            <div className="flex-1 p-4 md:p-5 lg:p-6 flex flex-col justify-between">
                 <div>
                     <div className="mb-2">
-                        <h3 className="font-bold text-lg text-gray-900 leading-tight mb-0.5 line-clamp-1">
+                        <h3 className="font-bold text-base md:text-lg text-gray-900 leading-tight mb-0.5 line-clamp-1">
                             {property.title}
                         </h3>
                         <p className="text-gray-500 text-xs font-medium">{property.category}</p>
                     </div>
 
                     {/* Specs Row */}
-                    <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs text-gray-600 mb-2 md:mb-4">
+                    <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs text-gray-600 mb-3 md:mb-4">
                         {property.specs.sharing ? (
                             <div className="flex items-center gap-1.5"><i className="ri-hotel-bed-line text-gray-400 text-sm"></i> {property.specs.sharing}</div>
                         ) : (
@@ -140,7 +140,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
                     </div>
 
                     {/* Tags Row */}
-                    <div className="flex flex-wrap items-center gap-2 text-[10px] md:text-xs text-gray-500 mb-2 md:mb-4">
+                    <div className="flex flex-wrap items-center gap-2 text-[10px] md:text-xs text-gray-500 mb-3 md:mb-4">
                         {property.tags.map((tag, i) => (
                             <span key={i} className="flex items-center">
                                 {tag}
@@ -150,14 +150,14 @@ export default function PropertyCard({ property }: PropertyCardProps) {
                     </div>
 
                     {/* Location */}
-                    <div className="flex items-start gap-1.5 text-xs text-gray-400 mb-3">
+                    <div className="flex items-start gap-1.5 text-xs text-gray-400 mb-4">
                         <i className="ri-map-pin-line mt-0.5"></i>
                         <span className="line-clamp-1">{property.location}</span>
                     </div>
                 </div>
 
                 {/* Footer: Price & Actions */}
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pt-2 border-t border-gray-50">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pt-3 border-t border-gray-50">
                     <div>
                         <span className="text-[#FF4D4D] text-lg md:text-xl font-bold">{property.price}</span>
                         <span className="text-gray-500 text-xs font-medium">/Monthly</span>

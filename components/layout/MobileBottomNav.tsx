@@ -144,7 +144,7 @@ export default function MobileBottomNav() {
                                     { name: 'Education', icon: '/categories/education.png', href: '/education' },
                                     { name: 'Electronics', icon: '/categories/electronics.png', href: '/gadgets' },
                                     { name: 'Pets', icon: '/categories/pets.png', href: '/pets' },
-                                    { name: 'Beauty', icon: '/categories/beauty.png', href: '/beauty-wellbeing' },
+                                    { name: 'Beauty', icon: '/categories/beauty.png', href: '/beauty' },
                                     { name: 'Furniture', icon: '/categories/furniture.png', href: '/furniture' },
                                     { name: 'Jobs', icon: '/categories/jobs.png', href: '/jobs' },
                                 ].map((cat, idx) => (

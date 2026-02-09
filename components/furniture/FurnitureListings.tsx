@@ -16,6 +16,14 @@ export default function FurnitureListings() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [categories, setCategories] = useState(CATEGORIES);
+
+    const toggleCategory = (name: string) => {
+        setCategories(prev => prev.map(cat =>
+            cat.name === name ? { ...cat, active: !cat.active } : cat
+        ));
+    };
+
     useEffect(() => {
         async function fetchFurnitureData() {
             try {
@@ -32,6 +40,7 @@ export default function FurnitureListings() {
                     title: product.title,
                     category: product.product_attributes?.category || 'Furniture',
                     image: product.images?.[0]?.image ? `data:image/jpeg;base64,${product.images[0].image}` : '',
+                    images: product.images?.map((img: any) => `data:image/jpeg;base64,${img.image}`) || [],
                     brand: product.product_attributes?.material || '',
                     specs: {
                         material: product.product_attributes?.material || 'Wood',
@@ -72,11 +81,17 @@ export default function FurnitureListings() {
     return (
         <section className="container mx-auto px-4 py-8 font-jost">
             <div className="mb-8">
+                {/* Mobile Link/Breadcrumb */}
+                <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                    <i className="ri-home-4-line"></i>
+                    <span>Furniture</span>
+                </div>
+
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Furniture for sale in New Delhi - <span className="text-gray-500 font-normal">{furnitureData.length} available</span>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                        Furniture for sale in New Delhi <span className="text-gray-500 font-normal text-base">- {furnitureData.length}(Available)</span>
                     </h1>
-                    <div className="flex items-center gap-2">
+                    <div className="hidden md:flex items-center gap-2">
                         <span className="text-xs font-bold text-gray-600">Sort By :</span>
                         <button className="bg-[#FFF0EB] border border-[#FFCCBC] text-[#FF7043] text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1">
                             Popular <i className="ri-arrow-down-s-line"></i>
@@ -84,25 +99,29 @@ export default function FurnitureListings() {
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs font-bold text-gray-900">Category :</span>
-                    <div className="flex flex-wrap gap-2">
-                        {CATEGORIES.map((cat, i) => (
-                            <button
-                                key={i}
-                                className={`text-[10px] font-bold px-3 py-1 rounded-full transition-colors ${cat.active
-                                    ? "bg-[#8D6E63] text-white flex items-center gap-1"
-                                    : "text-gray-600 hover:text-[#8D6E63]"
-                                    }`}
-                            >
-                                {cat.name}
-                                {cat.active && <i className="ri-close-line"></i>}
-                            </button>
-                        ))}
-                        <button className="text-[10px] font-bold px-3 py-1 rounded-full border border-[#8D6E63] text-[#8D6E63] hover:bg-[#8D6E63] hover:text-white transition-colors">
-                            View More
+                {/* Category Filters (Pills Style) */}
+                <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                    {categories.map((cat, i) => (
+                        <button
+                            key={i}
+                            onClick={() => toggleCategory(cat.name)}
+                            className={`text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 ${cat.active
+                                ? "bg-[#FF8A65] text-white"
+                                : "bg-white border border-gray-200 text-gray-600 hover:border-[#FF8A65] hover:text-[#FF8A65]"
+                                }`}
+                        >
+                            {cat.name}
+                            {cat.active && (
+                                <i className="ri-close-line bg-white/20 rounded-full p-0.5 text-[10px]"></i>
+                            )}
                         </button>
-                    </div>
+                    ))}
+                    {/* View More Button */}
+                    <button
+                        className="text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap transition-colors flex items-center gap-2 bg-gray-50 text-brand-orange border border-gray-200 hover:bg-orange-50 hover:border-brand-orange"
+                    >
+                        View More <i className="ri-equalizer-line"></i>
+                    </button>
                 </div>
             </div>
 

@@ -70,9 +70,33 @@ export default function JobsLanding() {
 
                 <div className="flex flex-col md:flex-row gap-8 items-start">
                     {/* Sidebar Column */}
-                    <div className={`w-full md:w-[280px] lg:w-[320px] shrink-0 ${isSidebarOpen ? 'block' : 'hidden md:block'}`}>
-                        <div className="sticky top-24">
+                    <div className={`
+                        ${isSidebarOpen ? 'fixed inset-0 z-50 bg-white overflow-y-auto p-4' : 'hidden'} 
+                        md:block md:static md:w-[280px] md:p-0 md:bg-transparent md:overflow-visible lg:w-[320px] shrink-0
+                    `}>
+                        {/* Mobile Close Button */}
+                        <div className="md:hidden flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+                            <h2 className="text-xl font-bold text-gray-800">Filters</h2>
+                            <button
+                                onClick={() => setIsSidebarOpen(false)}
+                                className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                            >
+                                <i className="ri-close-line text-2xl"></i>
+                            </button>
+                        </div>
+
+                        <div className="md:sticky md:top-24">
                             <JobSidebar filters={filters} setFilters={handleSetFilters} />
+
+                            {/* Mobile specific apply button (optional but good for UX) */}
+                            <div className="md:hidden mt-6 pt-4 border-t border-gray-100">
+                                <button
+                                    onClick={() => setIsSidebarOpen(false)}
+                                    className="w-full bg-[#FF8A65] text-white font-bold py-3 rounded-xl shadow-lg shadow-orange-200"
+                                >
+                                    Show Result
+                                </button>
+                            </div>
                         </div>
                     </div>
 

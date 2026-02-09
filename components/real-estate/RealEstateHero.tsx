@@ -11,6 +11,8 @@ export default function RealEstateHero() {
     const [roomType, setRoomType] = useState('Any');
     const [showFilters, setShowFilters] = useState(false);
 
+
+
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         console.log('Searching with:', { purpose, location, propertyType, priceRange, roomType });
@@ -20,24 +22,34 @@ export default function RealEstateHero() {
     return (
         <Fragment>
             {/* Mobile Header (Visible only on mobile) */}
-            <div className="md:hidden bg-white border-b border-gray-100 pb-2">
-                <div className="px-4 pt-4 pb-2">
+            <div className="md:hidden bg-white border-b border-gray-100 pb-2 sticky top-0 z-30">
+                <div className="px-4 py-3 flex items-center justify-between gap-3">
+                    <div className="flex-1 relative">
+                        <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input
+                            type="text"
+                            placeholder="Search location or project..."
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 pl-10 pr-3 text-sm focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                        />
+                    </div>
+                    <button
+                        onClick={() => setShowFilters(true)}
+                        className="w-11 h-11 flex items-center justify-center bg-white rounded-xl border border-gray-200 text-gray-600 shadow-sm active:bg-gray-50 active:scale-95 transition-all relative"
+                    >
+                        <i className="ri-equalizer-line text-xl"></i>
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-brand-orange rounded-full border-2 border-white"></span>
+                    </button>
+                </div>
 
-
+                <div className="px-4 pb-2">
                     {/* Mobile Filters Scroll */}
-                    <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-hide">
-                        <button
-                            onClick={() => setShowFilters(true)}
-                            className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-orange text-brand-orange bg-orange-50 text-sm font-medium whitespace-nowrap shrink-0"
-                        >
-                            <i className="ri-equalizer-line"></i>
-                            View More
-                        </button>
-
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
                         <select
                             value={purpose}
                             onChange={(e) => setPurpose(e.target.value)}
-                            className="px-4 py-1.5 rounded-full border border-gray-300 text-gray-700 text-sm font-medium bg-white whitespace-nowrap shrink-0 focus:outline-none"
+                            className="px-4 py-1.5 rounded-full border border-gray-200 text-gray-700 text-xs font-bold bg-white whitespace-nowrap shrink-0 focus:outline-none shadow-sm"
                         >
                             <option>Rent</option>
                             <option>Buy</option>
@@ -47,9 +59,9 @@ export default function RealEstateHero() {
                         <select
                             value={propertyType}
                             onChange={(e) => setPropertyType(e.target.value)}
-                            className="px-4 py-1.5 rounded-full border border-gray-300 text-gray-700 text-sm font-medium bg-white whitespace-nowrap shrink-0 focus:outline-none"
+                            className="px-4 py-1.5 rounded-full border border-gray-200 text-gray-700 text-xs font-bold bg-white whitespace-nowrap shrink-0 focus:outline-none shadow-sm"
                         >
-                            <option>All in Residential</option>
+                            <option>All Residential</option>
                             <option>Apartment</option>
                             <option>House</option>
                             <option>Villa</option>
@@ -58,15 +70,23 @@ export default function RealEstateHero() {
                         <select
                             value={priceRange}
                             onChange={(e) => setPriceRange(e.target.value)}
-                            className="px-4 py-1.5 rounded-full border border-gray-300 text-gray-700 text-sm font-medium bg-white whitespace-nowrap shrink-0 focus:outline-none"
+                            className="px-4 py-1.5 rounded-full border border-gray-200 text-gray-700 text-xs font-bold bg-white whitespace-nowrap shrink-0 focus:outline-none shadow-sm"
                         >
                             <option>Price Range</option>
                             <option>Under ₹50L</option>
                             <option>₹50L - ₹1Cr</option>
                         </select>
+                        <button
+                            onClick={() => setShowFilters(true)}
+                            className="px-4 py-1.5 rounded-full border border-gray-200 text-brand-orange bg-orange-50/50 text-xs font-bold whitespace-nowrap shrink-0"
+                        >
+                            + More Filters
+                        </button>
                     </div>
                 </div>
             </div>
+
+
 
             {/* Desktop Hero (Hidden on mobile) */}
             <section className="hidden md:block relative py-20 bg-linear-to-br from-[#3d2f3f] via-[#4a3d5c] to-[#2d2438] z-20">
@@ -190,7 +210,7 @@ export default function RealEstateHero() {
                         {/* Additional Filters Trigger */}
                         <div className="mt-4 pt-4 border-t border-gray-200 relative">
                             <div
-                                className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors inline-flex"
+                                className="inline-flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                                 onClick={() => setShowFilters(!showFilters)}
                             >
                                 <i className="ri-filter-3-line text-brand-orange"></i>

@@ -36,6 +36,8 @@ export default function GadgetDetail({ id }: { id?: string }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [activeImage, setActiveImage] = useState(0);
+
     useEffect(() => {
         if (!id) return;
 
@@ -143,47 +145,101 @@ export default function GadgetDetail({ id }: { id?: string }) {
     }
 
     return (
-        <div className="bg-[#FFFBF7] min-h-screen pb-20 font-jost">
+        <div className="bg-[#FFFBF7] min-h-screen pb-8 font-jost">
             <div className="container mx-auto px-4 py-8 max-w-7xl">
 
                 {/* Image Gallery */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 h-[400px] md:h-[500px]">
-                    {/* Main Image */}
-                    <div className="md:col-span-2 relative h-full rounded-2xl overflow-hidden group cursor-pointer bg-white">
-                        {gadget.image ? (
+                <div className="mb-8">
+                    {/* Mobile Carousel (Visible only on mobile) */}
+                    <div className="md:hidden relative h-[300px] w-full rounded-2xl overflow-hidden bg-white group">
+                        {gadget.images[activeImage] ? (
                             <img
-                                src={gadget.image}
-                                alt={gadget.title}
-                                className="w-full h-full object-contain md:object-cover transition-transform duration-700 group-hover:scale-105"
+                                src={gadget.images[activeImage]}
+                                alt={`${gadget.title} - View ${activeImage + 1}`}
+                                className="w-full h-full object-contain bg-gray-50 transition-opacity duration-300"
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
                                 <i className="ri-image-line text-4xl"></i>
                             </div>
                         )}
+
                         {gadget.seller.verified && (
-                            <div className="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-2">
-                                <i className="ri-shield-check-fill"></i> VERIFIED SELLER
+                            <div className="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-2 z-10 shadow-sm">
+                                <i className="ri-shield-check-fill"></i> VERIFIED
                             </div>
                         )}
+
+                        {/* Navigation Arrows */}
+                        {gadget.images.length > 1 && (
+                            <>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setActiveImage(prev => prev === 0 ? gadget.images.length - 1 : prev - 1);
+                                    }}
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md backdrop-blur-sm transition-all active:scale-95"
+                                >
+                                    <i className="ri-arrow-left-s-line text-xl"></i>
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setActiveImage(prev => prev === gadget.images.length - 1 ? 0 : prev + 1);
+                                    }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md backdrop-blur-sm transition-all active:scale-95"
+                                >
+                                    <i className="ri-arrow-right-s-line text-xl"></i>
+                                </button>
+                            </>
+                        )}
+
+                        {/* Counter Badge */}
+                        <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md flex items-center gap-1.5">
+                            <i className="ri-image-line"></i>
+                            {activeImage + 1} / {gadget.images.length}
+                        </div>
                     </div>
-                    {/* Side Images */}
-                    <div className="flex flex-col gap-2 h-full hidden md:flex">
-                        {[1, 2].map((idx) => (
-                            <div key={idx} className="relative h-1/2 rounded-2xl overflow-hidden group cursor-pointer bg-white">
-                                {gadget.images[idx] ? (
-                                    <img
-                                        src={gadget.images[idx]}
-                                        alt={`View ${idx}`}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50 border border-gray-100">
-                                        <i className="ri-image-2-line text-2xl"></i>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+
+                    {/* Desktop Grid (Hidden on Mobile) */}
+                    <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-4 h-[500px]">
+                        {/* Main Image */}
+                        <div className="md:col-span-2 relative h-full rounded-2xl overflow-hidden group cursor-pointer bg-white">
+                            {gadget.image ? (
+                                <img
+                                    src={gadget.image}
+                                    alt={gadget.title}
+                                    className="w-full h-full object-contain md:object-cover transition-transform duration-700 group-hover:scale-105"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
+                                    <i className="ri-image-line text-4xl"></i>
+                                </div>
+                            )}
+                            {gadget.seller.verified && (
+                                <div className="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-2">
+                                    <i className="ri-shield-check-fill"></i> VERIFIED SELLER
+                                </div>
+                            )}
+                        </div>
+                        {/* Side Images */}
+                        <div className="flex flex-col gap-2 h-full">
+                            {[1, 2].map((idx) => (
+                                <div key={idx} className="relative h-1/2 rounded-2xl overflow-hidden group cursor-pointer bg-white">
+                                    {gadget.images[idx] ? (
+                                        <img
+                                            src={gadget.images[idx]}
+                                            alt={`View ${idx}`}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50 border border-gray-100">
+                                            <i className="ri-image-2-line text-2xl"></i>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
@@ -229,13 +285,13 @@ export default function GadgetDetail({ id }: { id?: string }) {
                         </div>
 
                         {/* Price */}
-                        <div className="bg-linear-to-r from-[#FF8A65] to-[#FF7043] rounded-2xl p-6 mb-8 shadow-lg">
+                        <div className="bg-linear-to-r from-[#FF8A65] to-[#FF7043] rounded-2xl p-4 md:p-6 mb-6 md:mb-8 shadow-lg">
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <div className="text-white/80 text-sm font-medium mb-1">Price</div>
-                                    <div className="text-4xl font-bold text-white">{gadget.price}</div>
+                                    <div className="text-white/90 text-xs md:text-sm font-medium mb-1">Price</div>
+                                    <div className="text-2xl md:text-4xl font-bold text-white">₹ {gadget.price.toLocaleString()}</div>
                                 </div>
-                                <button className="bg-white text-[#FF8A65] font-bold px-8 py-3 rounded-xl hover:bg-gray-50 transition-colors shadow-md">
+                                <button className="bg-white text-[#FF8A65] font-bold px-4 py-2 md:px-8 md:py-3 rounded-xl text-sm md:text-base hover:bg-gray-50 transition-colors shadow-md">
                                     Make Offer
                                 </button>
                             </div>
@@ -290,32 +346,38 @@ export default function GadgetDetail({ id }: { id?: string }) {
                         <div className="sticky top-24 space-y-6">
 
                             {/* Seller Card */}
-                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                                <h3 className="text-lg font-bold text-gray-900 mb-4">Seller Information</h3>
+                            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+                                <p className="text-[10px] md:text-xs text-gray-400 font-medium mb-3 md:mb-4">Posted By</p>
 
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-14 h-14 rounded-full bg-linear-to-br from-[#FF8A65] to-[#FF7043] flex items-center justify-center text-white text-xl font-bold">
-                                        {gadget.seller.name.charAt(0)}
+                                <div className="flex items-center gap-3 md:gap-4 mb-2">
+                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                                        <div className="text-lg md:text-xl font-bold text-blue-600">
+                                            {gadget.seller.name ? gadget.seller.name.charAt(0).toUpperCase() : 'U'}
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <div className="font-bold text-gray-900">{gadget.seller.name}</div>
-                                        <div className="text-xs text-gray-500">Member since {gadget.seller.memberSince}</div>
+                                    <div>
+                                        <h3 className="text-gray-900 font-bold text-sm md:text-base flex items-center gap-1">
+                                            {gadget.seller.name || 'Unknown User'}
+                                            <i className="ri-verified-badge-fill text-blue-500 text-base md:text-lg"></i>
+                                        </h3>
+                                        <p className="text-[10px] md:text-xs text-gray-500">Seller</p>
                                     </div>
-                                    {gadget.seller.verified && (
-                                        <i className="ri-verified-badge-fill text-green-500 text-xl"></i>
-                                    )}
                                 </div>
 
-                                <ContactSellerButton
-                                    productId={id || 1}
-                                    sellerId={1}
-                                    className="w-full bg-[#2196F3] text-white font-bold py-3 rounded-xl hover:bg-[#1976D2] transition-colors mb-3 flex items-center justify-center gap-2"
-                                />
+                                <p className="text-[10px] text-gray-400 mb-4 md:mb-6">Member Since 2025</p>
 
-                                <button className="w-full bg-[#4CAF50] text-white font-bold py-3 rounded-xl hover:bg-[#45a049] transition-colors flex items-center justify-center gap-2">
-                                    <i className="ri-phone-line"></i>
-                                    Call Seller
-                                </button>
+                                <div className="space-y-2 md:space-y-3">
+                                    <button className="w-full bg-[#D53F3F] hover:bg-[#c43232] text-white font-bold py-2.5 md:py-3 rounded-lg text-sm md:text-base mb-2 md:mb-3 flex items-center justify-center gap-2 transition-colors cursor-pointer">
+                                        <i className="ri-phone-fill"></i>
+                                        Call
+                                    </button>
+
+                                    <ContactSellerButton
+                                        productId={id || "1"}
+                                        sellerId={1}
+                                        className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold py-2.5 md:py-3 rounded-lg text-sm md:text-base flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                                    />
+                                </div>
                             </div>
 
                             {/* Safety Tips */}
