@@ -968,6 +968,139 @@ export const MOCK_JOBS = [
     }
 ];
 
+
+// Fashion Data
+export const MOCK_FASHION = [
+    {
+        id: 1,
+        title: "Zara Man Slim Fit Blazer - Navy Blue",
+        category: "Men",
+        subcategory: "Clothing",
+        brand: "Zara",
+        image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=2071&auto=format&fit=crop",
+        images: [
+            "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=2071&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1594938298603-c8148c47e356?q=80&w=1974&auto=format&fit=crop"
+        ],
+        description: "Classic navy blue blazer from Zara. Slim fit, perfect for formal occasions or office wear. Worn only twice.",
+        specs: {
+            size: "40 (L)",
+            condition: "Like New",
+            material: "Wool Blend",
+            color: "Navy Blue"
+        },
+        price: "₹ 2,500/-",
+        location: "Vasant Kunj, New Delhi",
+        postedTime: "Posted 2 hr ago",
+        verified: true,
+        premium: true,
+        seller_name: "Rahul Verma",
+        seller_id: 101
+    },
+    {
+        id: 2,
+        title: "H&M Floral Summer Dress",
+        category: "Women",
+        subcategory: "Clothing",
+        brand: "H&M",
+        image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?q=80&w=1976&auto=format&fit=crop",
+        images: [
+            "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?q=80&w=1976&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=2046&auto=format&fit=crop"
+        ],
+        description: "Beautiful floral summer dress. Lightweight and comfortable. Perfect for casual outings.",
+        specs: {
+            size: "M",
+            condition: "New with Tags",
+            material: "Cotton",
+            color: "Multi"
+        },
+        price: "₹ 1,200/-",
+        location: "Saket, New Delhi",
+        postedTime: "Posted 5 hr ago",
+        verified: true,
+        premium: false,
+        seller_name: "Priya Singh",
+        seller_id: 102
+    },
+    {
+        id: 3,
+        title: "Nike Air Jordan 1 High - Chicago Lost & Found",
+        category: "Men",
+        subcategory: "Footwear",
+        brand: "Nike",
+        image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=2070&auto=format&fit=crop",
+        images: [
+            "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?q=80&w=2025&auto=format&fit=crop"
+        ],
+        description: "Authentic Air Jordan 1s. Limited edition. Box and bill available.",
+        specs: {
+            size: "UK 9",
+            condition: "Brand New",
+            material: "Leather",
+            color: "Red/White/Black"
+        },
+        price: "₹ 35,000/-",
+        location: "Connaught Place, New Delhi",
+        postedTime: "Posted 1 day ago",
+        verified: true,
+        premium: true,
+        seller_name: "SneakerHead Delhi",
+        seller_id: 103
+    },
+    {
+        id: 4,
+        title: "Louis Vuitton Neverfull MM Tote Bag",
+        category: "Women",
+        subcategory: "Accessories",
+        brand: "Louis Vuitton",
+        image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=2070&auto=format&fit=crop",
+        images: [
+            "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1591561954557-26941169b49e?q=80&w=1974&auto=format&fit=crop"
+        ],
+        description: "Original LV Tote bag. Gently used. Comes with dust bag and authenticity card.",
+        specs: {
+            size: "Medium",
+            condition: "Good",
+            material: "Canvas",
+            color: "Brown Monogram"
+        },
+        price: "₹ 85,000/-",
+        location: "Greater Kailash, New Delhi",
+        postedTime: "Posted 3 days ago",
+        verified: true,
+        premium: true,
+        seller_name: "Luxury Resale",
+        seller_id: 104
+    },
+    {
+        id: 5,
+        title: "Ray-Ban Aviator Sunglasses",
+        category: "Unisex",
+        subcategory: "Accessories",
+        brand: "Ray-Ban",
+        image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=2080&auto=format&fit=crop",
+        images: [
+            "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=2080&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=2080&auto=format&fit=crop"
+        ],
+        description: "Classic gold frame aviators. Scratch-free lenses. Original case included.",
+        specs: {
+            size: "Standard",
+            condition: "Excellent",
+            material: "Metal",
+            color: "Gold/Green"
+        },
+        price: "₹ 4,500/-",
+        location: "Dwarka, New Delhi",
+        postedTime: "Posted 6 hr ago",
+        verified: false,
+        premium: false
+    }
+];
+
 // Unified List
 export const ALL_LISTINGS = [
     ...MOCK_PROPERTIES.map(item => ({ ...item, listingType: 'property' })),
@@ -980,6 +1113,7 @@ export const ALL_LISTINGS = [
     ...MOCK_BEAUTY.map(item => ({ ...item, listingType: 'beauty' })),
     ...MOCK_ELECTRONICS.map(item => ({ ...item, listingType: 'electronics' })),
     ...MOCK_FURNITURE.map(item => ({ ...item, listingType: 'furniture' })),
+    ...MOCK_FASHION.map(item => ({ ...item, listingType: 'fashion' })),
     ...MOCK_JOBS.map(item => ({ ...item, listingType: 'job' })),
 ];
 

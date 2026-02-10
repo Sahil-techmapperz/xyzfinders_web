@@ -10,6 +10,7 @@ import PetsCard from '@/components/pets/PetsCard';
 import EducationCard from '@/components/education/EducationCard';
 import EventsCard from '@/components/events/EventsCard';
 import ServicesCard from '@/components/services/ServicesCard';
+import FashionCard from '@/components/fashion/FashionCard';
 
 interface Product {
     id: number;
@@ -30,6 +31,7 @@ interface Product {
     created_at: string;
     is_featured?: number;
     product_attributes?: any;
+    brand?: string;
 }
 
 function GlobalListingsContent() {
@@ -153,9 +155,11 @@ function GlobalListingsContent() {
 
     // Map products to listing card format
     const mapProductToCard = (product: Product) => {
-        const imageUrl = product.images?.[0]?.image
-            ? `data:image/jpeg;base64,${product.images[0].image}`
-            : '/placeholder.jpg';
+        const images = product.images?.length > 0
+            ? product.images.map(img => `data:image/jpeg;base64,${img.image}`)
+            : ['/placeholder.jpg'];
+
+        const imageUrl = images[0];
 
         const categoryType = getCategoryType(product.category_name);
 
@@ -178,6 +182,7 @@ function GlobalListingsContent() {
             price: `₹${product.price.toLocaleString()}`,
             location: product.city || 'Unknown',
             image: imageUrl,
+            images: images,
             verified: false,
             premium: product.is_featured === 1,
             listingType: categoryType,
@@ -286,6 +291,23 @@ function GlobalListingsContent() {
             };
         }
 
+        if (categoryType === 'fashion') {
+            return {
+                ...baseCard,
+                category: 'Fashion',
+                subcategory: attrs?.subcategory || '',
+                brand: product.brand || attrs?.brand || '',
+                specs: {
+                    size: attrs?.specs?.size || 'N/A',
+                    condition: attrs?.specs?.condition || 'Good',
+                    material: attrs?.specs?.material || '',
+                    color: attrs?.specs?.color || ''
+                },
+                postedTime: 'Recently',
+                description: product.description || ''
+            };
+        }
+
         // For other types, just return base card with description
         return {
             ...baseCard,
@@ -303,7 +325,8 @@ function GlobalListingsContent() {
             'Pets & Animals Accessories': 'pet',
             'Learning & Education': 'education',
             'Local Events': 'event',
-            'Services': 'service'
+            'Services': 'service',
+            'Fashion': 'fashion'
         };
         return mapping[categoryName] || 'property';
     };
@@ -384,6 +407,7 @@ function GlobalListingsContent() {
                                         if (item.listingType === 'education') return <EducationCard key={product.id} item={item} />;
                                         if (item.listingType === 'event') return <EventsCard key={product.id} item={item} />;
                                         if (item.listingType === 'service') return <ServicesCard key={product.id} item={item} />;
+                                        if (item.listingType === 'fashion') return <FashionCard key={product.id} item={item} />;
                                         return null;
                                     })}
                                 </div>
