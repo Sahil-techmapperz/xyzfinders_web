@@ -18,16 +18,13 @@ export async function POST(request: NextRequest) {
             description,
             price,
             category,
-            brand,
-            model,
-            condition,
-            warranty,
-            age,
             city,
             state,
             landmark,
-            phone,
-            images
+            condition,
+            images,
+            // Category-specific fields that will go into product_attributes
+            ...categorySpecificFields
         } = body;
 
         // Validation
@@ -77,19 +74,25 @@ export async function POST(request: NextRequest) {
         const locationName = landmark || city;
 
         // Find or create location
-        let locationRecord = await queryOne<{ id: number; city_id: number; name: string }>(
+        let locationRecord = await queryOne<{ id: number; city_id: number; name: string; postal_code?: string }>(
             'SELECT * FROM locations WHERE city_id = ? AND name = ? LIMIT 1',
             [cityId, locationName]
         );
 
         if (!locationRecord) {
             const result: any = await query(
-                'INSERT INTO locations (city_id, name, created_at) VALUES (?, ?, NOW())',
-                [cityId, locationName]
+                'INSERT INTO locations (city_id, name, postal_code, created_at) VALUES (?, ?, ?, NOW())',
+                [cityId, locationName, body.pincode || null]
             );
-            locationRecord = await queryOne<{ id: number; city_id: number; name: string }>(
+            locationRecord = await queryOne<{ id: number; city_id: number; name: string; postal_code?: string }>(
                 'SELECT * FROM locations WHERE id = ?',
                 [result.insertId]
+            );
+        } else if (body.pincode && locationRecord.postal_code !== body.pincode) {
+            // Update postal_code if it changed
+            await query(
+                'UPDATE locations SET postal_code = ? WHERE id = ?',
+                [body.pincode, locationRecord.id]
             );
         }
 
@@ -106,30 +109,36 @@ export async function POST(request: NextRequest) {
             category_id = categories[0].id;
         }
 
-        // Build description with category-specific fields
-        let fullDescription = description;
-        if (brand) fullDescription += `\n\nBrand: ${brand}`;
-        if (model) fullDescription += `\nModel: ${model}`;
-        if (warranty) fullDescription += `\nWarranty: ${warranty}`;
-        if (age) fullDescription += `\nAge: ${age}`;
-        if (phone) fullDescription += `\nContact: ${phone}`;
+        // Build product_attributes JSON with category-specific fields
+        const productAttributes = {
+            ...categorySpecificFields,
+            location: landmark || city // Include location in attributes for easier filtering
+        };
+
+        // Remove undefined/null values from attributes
+        Object.keys(productAttributes).forEach(key => {
+            if (productAttributes[key] === undefined || productAttributes[key] === null || productAttributes[key] === '') {
+                delete productAttributes[key];
+            }
+        });
 
         // Insert product
         const result: any = await query(
             `INSERT INTO products (
                 title, description, price, category_id, 
-                user_id, location_id, \`condition\`, status, 
-                is_featured, views,
+                user_id, location_id, \`condition\`, product_attributes,
+                status, is_featured, views,
                 created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0, 0, NOW(), NOW())`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', 0, 0, NOW(), NOW())`,
             [
                 title,
-                fullDescription,
+                description,
                 parseFloat(price),
                 category_id,
                 authUser.userId,
                 location_id,
                 condition || 'good',
+                JSON.stringify(productAttributes)
             ]
         );
 

@@ -49,6 +49,14 @@ export default function FashionDetail({ id }: { id?: string }) {
                         img.image ? `data:image/jpeg;base64,${img.image}` : ''
                     ) || [];
 
+                    // Build full address from location fields
+                    const locationParts = [];
+                    if (item.location_name) locationParts.push(item.location_name);
+                    if (item.city_name) locationParts.push(item.city_name);
+                    if (item.state_name) locationParts.push(item.state_name);
+                    if (item.postal_code) locationParts.push(item.postal_code);
+                    const fullAddress = locationParts.join(', ') || 'Location not specified';
+
                     setProduct({
                         id: item.id,
                         title: item.title,
@@ -59,7 +67,7 @@ export default function FashionDetail({ id }: { id?: string }) {
                         subcategory: attributes.subcategory || '',
                         images: images,
                         specs: attributes.specs || {},
-                        location: attributes.location || item.city || '',
+                        location: fullAddress,
                         postedTime: `Posted ${new Date(item.created_at).toLocaleDateString()}`,
                         verified: attributes.verified || false,
                         premium: attributes.premium || item.is_featured,
@@ -104,6 +112,14 @@ export default function FashionDetail({ id }: { id?: string }) {
                                     img.image ? `data:image/jpeg;base64,${img.image}` : ''
                                 ) || [];
 
+                                // Build full address from location fields
+                                const locationParts = [];
+                                if (item.location_name) locationParts.push(item.location_name);
+                                if (item.city_name) locationParts.push(item.city_name);
+                                if (item.state_name) locationParts.push(item.state_name);
+                                if (item.postal_code) locationParts.push(item.postal_code);
+                                const fullAddress = locationParts.join(', ') || 'Location not specified';
+
                                 return {
                                     id: item.id,
                                     title: item.title,
@@ -114,7 +130,7 @@ export default function FashionDetail({ id }: { id?: string }) {
                                     subcategory: attributes.subcategory || '',
                                     images: images,
                                     specs: attributes.specs || {},
-                                    location: attributes.location || item.city || '',
+                                    location: fullAddress,
                                     postedTime: `Posted ${new Date(item.created_at).toLocaleDateString()}`,
                                     verified: attributes.verified || false,
                                     premium: attributes.premium || item.is_featured,

@@ -26,6 +26,9 @@ function EducationCreateForm() {
         level: '',
         mode: '',
         institute: '',
+        duration: '',
+        experience: '',
+        batchSize: '',
         city: '',
         state: '',
         landmark: '',
@@ -60,6 +63,9 @@ function EducationCreateForm() {
                     level: product.level || '',
                     mode: product.mode || '',
                     institute: product.institute_name || '',
+                    duration: (typeof product.product_attributes === 'string' ? JSON.parse(product.product_attributes) : product.product_attributes)?.specs?.duration || '',
+                    experience: (typeof product.product_attributes === 'string' ? JSON.parse(product.product_attributes) : product.product_attributes)?.details?.experience || '',
+                    batchSize: (typeof product.product_attributes === 'string' ? JSON.parse(product.product_attributes) : product.product_attributes)?.details?.batch_size || '',
                     city: product.city_name || '',
                     state: product.state_name || '',
                     landmark: product.location_name || '',
@@ -125,6 +131,24 @@ function EducationCreateForm() {
             const url = isEditMode ? `/api/seller/products/${editId}` : '/api/seller/products/create';
             const method = isEditMode ? 'PATCH' : 'POST';
 
+            // Construct product_attributes
+            const product_attributes = {
+                specs: {
+                    mode: formData.mode,
+                    level: formData.level,
+                    duration: formData.duration,
+                    subject: formData.subject,
+                    course_name: formData.title
+                },
+                details: {
+                    batch_size: formData.batchSize,
+                    experience: formData.experience,
+                    board: 'All Boards',
+                    language: 'English',
+                    material: 'Included'
+                }
+            };
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
@@ -133,6 +157,7 @@ function EducationCreateForm() {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    product_attributes: JSON.stringify(product_attributes),
                     images
                 })
             });
@@ -163,7 +188,7 @@ function EducationCreateForm() {
     ];
 
     return (
-        <div className="min-h-screen font-jost bg-gradient-to-br from-teal-50 via-white to-cyan-50">
+        <div className="min-h-screen font-jost bg-linear-to-br from-teal-50 via-white to-cyan-50">
             <div className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
                 <div className="container mx-auto px-4 py-4 max-w-5xl">
                     <div className="flex items-center justify-between">
@@ -187,7 +212,7 @@ function EducationCreateForm() {
                             <div key={step.number} className="flex items-center flex-1">
                                 <div className="flex flex-col items-center flex-1">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${currentStep >= step.number
-                                        ? 'bg-gradient-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
+                                        ? 'bg-linear-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
                                         : 'bg-gray-200 text-gray-400'
                                         }`}>
                                         <i className={step.icon}></i>
@@ -210,7 +235,7 @@ function EducationCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-information-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
@@ -308,7 +333,7 @@ function EducationCreateForm() {
 
                                 <button
                                     onClick={() => setCurrentStep(2)}
-                                    className="mt-8 w-full bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                    className="mt-8 w-full bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                 >
                                     Continue to Details
                                     <i className="ri-arrow-right-line text-xl"></i>
@@ -321,7 +346,7 @@ function EducationCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-list-check text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Education Details</h2>
@@ -366,6 +391,42 @@ function EducationCreateForm() {
                                         </div>
                                     </div>
 
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Duration (Optional)</label>
+                                            <input
+                                                type="text"
+                                                name="duration"
+                                                value={formData.duration}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., 3 Months"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Experience (Optional)</label>
+                                            <input
+                                                type="text"
+                                                name="experience"
+                                                value={formData.experience}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., 5 Years"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Batch Size (Optional)</label>
+                                            <input
+                                                type="text"
+                                                name="batchSize"
+                                                value={formData.batchSize}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., 10 Students"
+                                            />
+                                        </div>
+                                    </div>
+
                                     <div>
                                         <label className="block text-gray-700 font-semibold mb-3">Mode of Teaching*</label>
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -375,7 +436,7 @@ function EducationCreateForm() {
                                                     type="button"
                                                     onClick={() => handlePillSelect('mode', option)}
                                                     className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.mode === option
-                                                        ? 'bg-gradient-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                        ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
                                                         : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
                                                         }`}
                                                 >
@@ -396,7 +457,7 @@ function EducationCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(3)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -410,7 +471,7 @@ function EducationCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-image-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Images</h2>
@@ -446,7 +507,7 @@ function EducationCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(4)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -460,7 +521,7 @@ function EducationCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-map-pin-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Location Details</h2>
@@ -538,7 +599,7 @@ function EducationCreateForm() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {loading ? (
                                             <>

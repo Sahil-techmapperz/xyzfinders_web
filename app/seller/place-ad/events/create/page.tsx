@@ -29,6 +29,7 @@ function EventsCreateForm() {
         city: '',
         state: '',
         landmark: '',
+        highlights: '',
         termsAccepted: false
     });
     const [images, setImages] = useState<string[]>([]);
@@ -60,6 +61,11 @@ function EventsCreateForm() {
                     eventTime: product.event_time || '',
                     venue: product.venue_name || '',
                     organizer: product.organizer_name || '',
+                    highlights: Array.isArray(product.product_attributes?.highlights)
+                        ? product.product_attributes.highlights.join('\n')
+                        : (typeof product.product_attributes === 'string'
+                            ? (JSON.parse(product.product_attributes).highlights || []).join('\n')
+                            : ''),
                     city: product.city_name || '',
                     state: product.state_name || '',
                     landmark: product.location_name || '',
@@ -121,6 +127,11 @@ function EventsCreateForm() {
             const url = isEditMode ? `/api/seller/products/${editId}` : '/api/seller/products/create';
             const method = isEditMode ? 'PATCH' : 'POST';
 
+            // Construct product_attributes
+            const product_attributes = {
+                highlights: formData.highlights.split('\n').filter((h: string) => h.trim() !== '')
+            };
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
@@ -129,6 +140,7 @@ function EventsCreateForm() {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    product_attributes: JSON.stringify(product_attributes),
                     images
                 })
             });
@@ -157,7 +169,7 @@ function EventsCreateForm() {
     ];
 
     return (
-        <div className="min-h-screen font-jost bg-gradient-to-br from-violet-50 via-white to-purple-50">
+        <div className="min-h-screen font-jost bg-linear-to-br from-violet-50 via-white to-purple-50">
             <div className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
                 <div className="container mx-auto px-4 py-4 max-w-5xl">
                     <div className="flex items-center justify-between">
@@ -181,7 +193,7 @@ function EventsCreateForm() {
                             <div key={step.number} className="flex items-center flex-1">
                                 <div className="flex flex-col items-center flex-1">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${currentStep >= step.number
-                                        ? 'bg-gradient-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
+                                        ? 'bg-linear-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
                                         : 'bg-gray-200 text-gray-400'
                                         }`}>
                                         <i className={step.icon}></i>
@@ -204,7 +216,7 @@ function EventsCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-information-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
@@ -303,7 +315,7 @@ function EventsCreateForm() {
 
                                 <button
                                     onClick={() => setCurrentStep(2)}
-                                    className="mt-8 w-full bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                    className="mt-8 w-full bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                 >
                                     Continue to Details
                                     <i className="ri-arrow-right-line text-xl"></i>
@@ -316,7 +328,7 @@ function EventsCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-list-check text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Event Details</h2>
@@ -370,6 +382,19 @@ function EventsCreateForm() {
                                             placeholder="e.g., Global Events Ltd."
                                         />
                                     </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-semibold mb-2">Event Highlights (Optional)</label>
+                                        <textarea
+                                            name="highlights"
+                                            value={formData.highlights}
+                                            onChange={handleInputChange}
+                                            rows={4}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition resize-none"
+                                            placeholder="Enter highlights (one per line)&#10;e.g., Live Music&#10;Free Snacks&#10;Meet & Greet"
+                                        ></textarea>
+                                        <p className="text-xs text-gray-400 mt-1">Enter each highlight on a new line.</p>
+                                    </div>
                                 </div>
 
                                 <div className="flex gap-4 mt-8">
@@ -382,7 +407,7 @@ function EventsCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(3)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -396,7 +421,7 @@ function EventsCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-image-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Images</h2>
@@ -432,7 +457,7 @@ function EventsCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(4)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -446,7 +471,7 @@ function EventsCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-map-pin-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Location Details</h2>
@@ -524,7 +549,7 @@ function EventsCreateForm() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {loading ? (
                                             <>

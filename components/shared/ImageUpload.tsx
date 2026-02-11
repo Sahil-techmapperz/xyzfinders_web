@@ -1,22 +1,31 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 interface ImageUploadProps {
     onImagesChange: (images: string[]) => void;
     maxImages?: number;
     maxSizeMB?: number;
+    initialImages?: string[]; // Add support for initial images in edit mode
 }
 
 export default function ImageUpload({
     onImagesChange,
     maxImages = 5,
-    maxSizeMB = 5
+    maxSizeMB = 5,
+    initialImages = []
 }: ImageUploadProps) {
-    const [previews, setPreviews] = useState<string[]>([]);
+    const [previews, setPreviews] = useState<string[]>(initialImages);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Update previews when initialImages change (for edit mode)
+    useEffect(() => {
+        if (initialImages.length > 0) {
+            setPreviews(initialImages);
+        }
+    }, [initialImages]);
 
     const validateFile = (file: File): boolean => {
         // Check file type
@@ -106,8 +115,8 @@ export default function ImageUpload({
                 onDragLeave={handleDragLeave}
                 onClick={handleClick}
                 className={`border-2 border-dashed rounded-lg p-12 text-center transition cursor-pointer ${isDragging
-                        ? 'border-brand-orange bg-orange-50'
-                        : 'border-gray-300 hover:border-brand-orange'
+                    ? 'border-brand-orange bg-orange-50'
+                    : 'border-gray-300 hover:border-brand-orange'
                     }`}
             >
                 <input

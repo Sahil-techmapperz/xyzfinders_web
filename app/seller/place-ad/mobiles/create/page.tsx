@@ -24,64 +24,30 @@ function MobilesCreateForm() {
         category: '',
         brand: '',
         model: '',
-        condition: '',
-        warranty: '',
-        storage: '',
-        ram: '',
+        condition: '', // Used in detail page
+        warranty: '', // Used in detail page: attrs.details?.warranty
+        storage: '', // Used in detail page: attrs.specs?.storage
+        ram: '', // Used in detail page: attrs.details?.ram
+        // Missing fields from detail page
+        version: '', // attrs.details?.version
+        battery: '', // attrs.details?.battery
+        damage: '', // attrs.details?.damage
+        age: '', // attrs.specs?.age
+        colour: '', // attrs.specs?.colour
         city: '',
         state: '',
         landmark: '',
         termsAccepted: false
     });
     const [images, setImages] = useState<string[]>([]);
+    const [charCount, setCharCount] = useState(0);
+    const maxChars = 10000;
 
     useEffect(() => {
         if (isEditMode) {
             fetchProductDetails();
         }
     }, [editId]);
-
-    const fetchProductDetails = async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem('token');
-            const res = await fetch(`/api/seller/products/${editId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                const product = data.data;
-                setFormData({
-                    title: product.title || '',
-                    phone: product.contact_phone || '',
-                    price: product.price?.toString() || '',
-                    description: product.description || '',
-                    category: product.subcategory_name || '',
-                    brand: product.brand || '',
-                    model: product.model || '',
-                    condition: product.condition || '',
-                    warranty: '', // Map if available
-                    storage: '', // Map if available
-                    ram: '', // Map if available
-                    city: product.city_name || '',
-                    state: product.state_name || '',
-                    landmark: product.location_name || '',
-                    termsAccepted: true
-                });
-                setImages(product.images || []);
-                setCharCount(product.description?.length || 0);
-            } else {
-                toast.error('Failed to load product details');
-            }
-        } catch (error) {
-            console.error('Error fetching product', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-    const [charCount, setCharCount] = useState(0);
-    const maxChars = 10000;
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -103,12 +69,70 @@ function MobilesCreateForm() {
         setFormData(prev => ({ ...prev, termsAccepted: !prev.termsAccepted }));
     };
 
-    const handleSubmit = async () => {
-        const requiredFields = ['title', 'phone', 'price', 'description', 'category', 'brand', 'model', 'condition', 'warranty', 'city', 'state'];
-        const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
+    const fetchProductDetails = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem('token');
+            const res = await fetch(`/api/seller/products/${editId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-        if (missingFields.length > 0) {
-            toast.error(`Please fill all required fields: ${missingFields.join(', ')}`);
+            if (res.ok) {
+                const data = await res.json();
+                const product = data.data;
+
+                // Parse attributes if they are string
+                let attrs: any = {};
+                try {
+                    attrs = typeof product.product_attributes === 'string'
+                        ? JSON.parse(product.product_attributes)
+                        : product.product_attributes || {};
+                } catch (e) {
+                    console.error("Error parsing attributes", e);
+                }
+
+                // Handle legacy structure where specs might be direct properties or nested
+                const specs = attrs.specs || {};
+                const details = attrs.details || {};
+
+                setFormData({
+                    title: product.title || '',
+                    phone: product.phone || '', // Check if phone is mapped correctly
+                    price: product.price?.toString() || '',
+                    description: product.description || '',
+                    category: product.category || '',
+                    brand: product.brand || '',
+                    model: specs.model || product.model || '',
+                    condition: product.condition || '',
+                    warranty: details.warranty || '',
+                    storage: specs.storage || '',
+                    ram: details.ram || '',
+                    version: details.version || '',
+                    battery: details.battery || '',
+                    damage: details.damage || '',
+                    age: specs.age || '',
+                    colour: specs.colour || '',
+                    city: product.city_name || '',
+                    state: product.state_name || '',
+                    landmark: product.location_name || '',
+                    termsAccepted: true
+                });
+                setImages(product.images || []);
+                setCharCount(product.description?.length || 0);
+            } else {
+                toast.error('Failed to load product details');
+            }
+        } catch (error) {
+            console.error('Error fetching product', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmit = async () => {
+        // Basic validation
+        if (!formData.title || !formData.price || !formData.category || !formData.city || !formData.state) {
+            toast.error('Please fill in all required fields');
             return;
         }
 
@@ -129,6 +153,23 @@ function MobilesCreateForm() {
             const url = isEditMode ? `/api/seller/products/${editId}` : '/api/seller/products/create';
             const method = isEditMode ? 'PATCH' : 'POST';
 
+            // Construct product_attributes
+            const product_attributes = {
+                specs: {
+                    model: formData.model,
+                    storage: formData.storage,
+                    age: formData.age,
+                    colour: formData.colour
+                },
+                details: {
+                    warranty: formData.warranty,
+                    ram: formData.ram,
+                    version: formData.version,
+                    battery: formData.battery,
+                    damage: formData.damage
+                }
+            };
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
@@ -137,6 +178,7 @@ function MobilesCreateForm() {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    product_attributes: JSON.stringify(product_attributes),
                     images
                 })
             });
@@ -168,7 +210,7 @@ function MobilesCreateForm() {
     ];
 
     return (
-        <div className="min-h-screen font-jost bg-gradient-to-br from-green-50 via-white to-emerald-50">
+        <div className="min-h-screen font-jost bg-linear-to-br from-green-50 via-white to-emerald-50">
             <div className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
                 <div className="container mx-auto px-4 py-4 max-w-5xl">
                     <div className="flex items-center justify-between">
@@ -192,7 +234,7 @@ function MobilesCreateForm() {
                             <div key={step.number} className="flex items-center flex-1">
                                 <div className="flex flex-col items-center flex-1">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${currentStep >= step.number
-                                        ? 'bg-gradient-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
+                                        ? 'bg-linear-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
                                         : 'bg-gray-200 text-gray-400'
                                         }`}>
                                         <i className={step.icon}></i>
@@ -215,7 +257,7 @@ function MobilesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-information-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
@@ -313,7 +355,7 @@ function MobilesCreateForm() {
 
                                 <button
                                     onClick={() => setCurrentStep(2)}
-                                    className="mt-8 w-full bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                    className="mt-8 w-full bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                 >
                                     Continue to Details
                                     <i className="ri-arrow-right-line text-xl"></i>
@@ -326,7 +368,7 @@ function MobilesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-list-check text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Product Details</h2>
@@ -394,7 +436,7 @@ function MobilesCreateForm() {
                                                     type="button"
                                                     onClick={() => handlePillSelect('condition', option)}
                                                     className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.condition === option
-                                                        ? 'bg-gradient-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                        ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
                                                         : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
                                                         }`}
                                                 >
@@ -402,6 +444,70 @@ function MobilesCreateForm() {
                                                 </button>
                                             ))}
                                         </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Colour</label>
+                                            <input
+                                                type="text"
+                                                name="colour"
+                                                value={formData.colour}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., Space Black, Deep Purple"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Age</label>
+                                            <input
+                                                type="text"
+                                                name="age"
+                                                value={formData.age}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., 1 Year, 6 Months"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Battery Health</label>
+                                            <input
+                                                type="text"
+                                                name="battery"
+                                                value={formData.battery}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., 90%, 100%"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Version/OS</label>
+                                            <input
+                                                type="text"
+                                                name="version"
+                                                value={formData.version}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., iOS 17, Android 14"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-semibold mb-2">Physical Damage</label>
+                                        <input
+                                            type="text"
+                                            name="damage"
+                                            value={formData.damage}
+                                            onChange={handleInputChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                            placeholder="e.g., None, Minor scratches on screen"
+                                        />
                                     </div>
 
                                     <div>
@@ -413,7 +519,7 @@ function MobilesCreateForm() {
                                                     type="button"
                                                     onClick={() => handlePillSelect('warranty', option)}
                                                     className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.warranty === option
-                                                        ? 'bg-gradient-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                        ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
                                                         : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
                                                         }`}
                                                 >
@@ -434,7 +540,7 @@ function MobilesCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(3)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -448,7 +554,7 @@ function MobilesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-image-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Product Images</h2>
@@ -485,7 +591,7 @@ function MobilesCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(4)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -499,7 +605,7 @@ function MobilesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-map-pin-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Location Details</h2>
@@ -577,7 +683,7 @@ function MobilesCreateForm() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {loading ? (
                                             <>

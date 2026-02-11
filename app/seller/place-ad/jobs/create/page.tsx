@@ -25,6 +25,8 @@ function JobsCreateForm() {
         companyName: '',
         jobType: '',
         experienceLevel: '',
+        gender: '',
+        qualification: '',
         city: '',
         state: '',
         landmark: '',
@@ -49,15 +51,30 @@ function JobsCreateForm() {
             if (res.ok) {
                 const data = await res.json();
                 const product = data.data;
+
+                // Parse attributes
+                let attrs: any = {};
+                try {
+                    attrs = typeof product.product_attributes === 'string'
+                        ? JSON.parse(product.product_attributes)
+                        : product.product_attributes || {};
+                } catch (e) {
+                    console.error("Error parsing attributes", e);
+                }
+                const specs = attrs.specs || {};
+                const attributes = attrs || {};
+
                 setFormData({
                     title: product.title || '',
                     phone: product.contact_phone || '',
                     price: product.price?.toString() || '',
                     description: product.description || '',
                     category: product.subcategory_name || '',
-                    companyName: product.company_name || '',
-                    jobType: product.job_type || '',
-                    experienceLevel: product.experience_level || '',
+                    companyName: product.company_name || attributes.company || '',
+                    jobType: product.job_type || attributes.jobType || '',
+                    experienceLevel: product.experience_level || specs.experience || '',
+                    gender: specs.gender || '',
+                    qualification: specs.qualification || '',
                     city: product.city_name || '',
                     state: product.state_name || '',
                     landmark: product.location_name || '',
@@ -163,7 +180,7 @@ function JobsCreateForm() {
     ];
 
     return (
-        <div className="min-h-screen font-jost bg-gradient-to-br from-sky-50 via-white to-blue-50">
+        <div className="min-h-screen font-jost bg-linear-to-br from-sky-50 via-white to-blue-50">
             <div className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
                 <div className="container mx-auto px-4 py-4 max-w-5xl">
                     <div className="flex items-center justify-between">
@@ -187,7 +204,7 @@ function JobsCreateForm() {
                             <div key={step.number} className="flex items-center flex-1">
                                 <div className="flex flex-col items-center flex-1">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${currentStep >= step.number
-                                        ? 'bg-gradient-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
+                                        ? 'bg-linear-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
                                         : 'bg-gray-200 text-gray-400'
                                         }`}>
                                         <i className={step.icon}></i>
@@ -210,7 +227,7 @@ function JobsCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-information-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
@@ -309,7 +326,7 @@ function JobsCreateForm() {
 
                                 <button
                                     onClick={() => setCurrentStep(2)}
-                                    className="mt-8 w-full bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                    className="mt-8 w-full bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                 >
                                     Continue to Details
                                     <i className="ri-arrow-right-line text-xl"></i>
@@ -322,7 +339,7 @@ function JobsCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-list-check text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Job Details</h2>
@@ -363,7 +380,7 @@ function JobsCreateForm() {
                                                         type="button"
                                                         onClick={() => handlePillSelect('jobType', option)}
                                                         className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.jobType === option
-                                                            ? 'bg-gradient-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                            ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
                                                             : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
                                                             }`}
                                                     >
@@ -371,6 +388,33 @@ function JobsCreateForm() {
                                                     </button>
                                                 ))}
                                             </div>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Gender Preference (Optional)</label>
+                                            <select
+                                                name="gender"
+                                                value={formData.gender}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                            >
+                                                <option value="">Any</option>
+                                                <option value="Male">Male</option>
+                                                <option value="Female">Female</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Qualification (Optional)</label>
+                                            <input
+                                                type="text"
+                                                name="qualification"
+                                                value={formData.qualification}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., Any Graduate, B.Tech, MBA"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -385,7 +429,7 @@ function JobsCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(3)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -399,7 +443,7 @@ function JobsCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-image-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Images</h2>
@@ -435,7 +479,7 @@ function JobsCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(4)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -449,7 +493,7 @@ function JobsCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-map-pin-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Location Details</h2>
@@ -527,7 +571,7 @@ function JobsCreateForm() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {loading ? (
                                             <>

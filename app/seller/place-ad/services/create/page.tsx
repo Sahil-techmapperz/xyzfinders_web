@@ -48,14 +48,26 @@ function ServicesCreateForm() {
             if (res.ok) {
                 const data = await res.json();
                 const product = data.data;
+
+                // Parse attributes
+                let attrs: any = {};
+                try {
+                    attrs = typeof product.product_attributes === 'string'
+                        ? JSON.parse(product.product_attributes)
+                        : product.product_attributes || {};
+                } catch (e) {
+                    console.error("Error parsing attributes", e);
+                }
+                const specs = attrs.specs || {};
+
                 setFormData({
                     title: product.title || '',
                     phone: product.contact_phone || '',
                     price: product.price?.toString() || '',
                     description: product.description || '',
                     category: product.subcategory_name || '',
-                    availability: '', // Map if available
-                    experience: '', // Map if available
+                    availability: product.availability || specs.availability || '',
+                    experience: product.experience || specs.experience || '',
                     city: product.city_name || '',
                     state: product.state_name || '',
                     landmark: product.location_name || '',
@@ -153,7 +165,7 @@ function ServicesCreateForm() {
     ];
 
     return (
-        <div className="min-h-screen font-jost bg-gradient-to-br from-cyan-50 via-white to-teal-50">
+        <div className="min-h-screen font-jost bg-linear-to-br from-cyan-50 via-white to-teal-50">
             <div className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
                 <div className="container mx-auto px-4 py-4 max-w-5xl">
                     <div className="flex items-center justify-between">
@@ -177,7 +189,7 @@ function ServicesCreateForm() {
                             <div key={step.number} className="flex items-center flex-1">
                                 <div className="flex flex-col items-center flex-1">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${currentStep >= step.number
-                                        ? 'bg-gradient-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
+                                        ? 'bg-linear-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
                                         : 'bg-gray-200 text-gray-400'
                                         }`}>
                                         <i className={step.icon}></i>
@@ -200,7 +212,7 @@ function ServicesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-information-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
@@ -298,7 +310,7 @@ function ServicesCreateForm() {
 
                                 <button
                                     onClick={() => setCurrentStep(2)}
-                                    className="mt-8 w-full bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                    className="mt-8 w-full bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                 >
                                     Continue to Details
                                     <i className="ri-arrow-right-line text-xl"></i>
@@ -311,7 +323,7 @@ function ServicesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-list-check text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Service Details</h2>
@@ -353,7 +365,7 @@ function ServicesCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(3)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -367,7 +379,7 @@ function ServicesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-image-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Service Images</h2>
@@ -404,7 +416,7 @@ function ServicesCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(4)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -418,7 +430,7 @@ function ServicesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-map-pin-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Service Location</h2>
@@ -496,7 +508,7 @@ function ServicesCreateForm() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {loading ? (
                                             <>

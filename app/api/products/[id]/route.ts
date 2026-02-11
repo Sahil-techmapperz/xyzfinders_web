@@ -16,9 +16,10 @@ export async function GET(
             `SELECT p.*, 
         u.name as seller_name, u.phone as seller_phone,
         c.name as category_name,
-        l.name as city,
+        l.name as location_name,
+        l.postal_code as postal_code,
         ci.name as city_name,
-        s.name as state
+        s.name as state_name
       FROM products p
       LEFT JOIN users u ON p.user_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
@@ -61,9 +62,13 @@ export async function GET(
         // Fetch similar products (same category, excluding current product)
         const similarProducts = await query<Product>(
             `SELECT p.id, p.title, p.price, p.location_id, p.user_id, p.product_attributes,
-             l.name as city, u.name as seller_name
+             l.name as location_name, l.postal_code as postal_code,
+             ci.name as city_name, s.name as state_name,
+             u.name as seller_name
              FROM products p
              LEFT JOIN locations l ON p.location_id = l.id
+             LEFT JOIN cities ci ON l.city_id = ci.id
+             LEFT JOIN states s ON ci.state_id = s.id
              LEFT JOIN users u ON p.user_id = u.id
              WHERE p.category_id = ? AND p.id != ?
              LIMIT 5`,

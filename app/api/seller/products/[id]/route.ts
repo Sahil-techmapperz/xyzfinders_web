@@ -21,6 +21,7 @@ export async function GET(
             `SELECT p.*, 
                     c.name as category_name,
                     l.name as location_name,
+                    l.postal_code as postal_code,
                     ci.name as city_name,
                     s.name as state_name
              FROM products p
@@ -53,8 +54,31 @@ export async function GET(
             return null;
         }).filter(Boolean);
 
+        // Parse product_attributes if it exists
+        let parsedAttributes = {};
+        if (product.product_attributes) {
+            try {
+                parsedAttributes = typeof product.product_attributes === 'string'
+                    ? JSON.parse(product.product_attributes)
+                    : product.product_attributes;
+
+                // If specs object exists within product_attributes, extract its fields
+                if (parsedAttributes && typeof parsedAttributes === 'object' && 'specs' in parsedAttributes) {
+                    const specs = (parsedAttributes as any).specs;
+                    // Merge specs fields into parsedAttributes for easy access
+                    parsedAttributes = {
+                        ...parsedAttributes,
+                        ...(typeof specs === 'object' ? specs : {})
+                    };
+                }
+            } catch (e) {
+                console.error('Error parsing product_attributes:', e);
+            }
+        }
+
         return successResponse({
             ...product,
+            ...parsedAttributes, // Merge attributes into the response for easy access
             images: processedImages
         });
     } catch (error: any) {
@@ -108,7 +132,8 @@ export async function PATCH(
         const body = await request.json();
 
         // Check if it's a status-only update or a full detail update
-        const { status, title, description, price, condition, images, phone, brand, model } = body;
+        // Extract location fields separately so they don't go into product_attributes
+        const { status, title, description, price, condition, images, city, state, landmark, pincode, ...otherFields } = body;
 
         // Verify ownership first
         const product = await queryOne<any>(
@@ -122,7 +147,7 @@ export async function PATCH(
 
         if (status && Object.keys(body).length === 1) {
             // Status-only update
-            if (!['active', 'sold', 'details_archived'].includes(status)) {
+            if (!['active', 'sold', 'inactive'].includes(status)) {
                 return errorResponse('Invalid status');
             }
             await query(
@@ -132,55 +157,82 @@ export async function PATCH(
             return successResponse(null, 'Product status updated successfully');
         }
 
+        // Handle location updates if city/state/landmark/pincode are provided
+        let location_id = null;
+        if (city || state || landmark || pincode) {
+
+            // Find or create state
+            let stateRecord = await queryOne<{ id: number }>('SELECT id FROM states WHERE name = ? LIMIT 1', [state]);
+            if (!stateRecord) {
+                const result: any = await query('INSERT INTO states (name, created_at) VALUES (?, NOW())', [state]);
+                stateRecord = { id: result.insertId };
+            }
+            const stateId = stateRecord.id;
+
+            // Find or create city
+            let cityRecord = await queryOne<{ id: number }>('SELECT id FROM cities WHERE state_id = ? AND name = ? LIMIT 1', [stateId, city]);
+            if (!cityRecord) {
+                const result: any = await query('INSERT INTO cities (state_id, name, created_at) VALUES (?, ?, NOW())', [stateId, city]);
+                cityRecord = { id: result.insertId };
+            }
+            const cityId = cityRecord.id;
+
+            // Find or create location
+            const locationName = landmark || city;
+            let locationRecord = await queryOne<{ id: number; postal_code?: string }>('SELECT id, postal_code FROM locations WHERE city_id = ? AND name = ? LIMIT 1', [cityId, locationName]);
+
+            if (!locationRecord) {
+                const result: any = await query(
+                    'INSERT INTO locations (city_id, name, postal_code, created_at) VALUES (?, ?, ?, NOW())',
+                    [cityId, locationName, pincode || null]
+                );
+                location_id = result.insertId;
+            } else {
+                location_id = locationRecord.id;
+                // Update postal_code if it changed
+                if (pincode && locationRecord.postal_code !== pincode) {
+                    await query('UPDATE locations SET postal_code = ? WHERE id = ?', [pincode, location_id]);
+                }
+            }
+
+            // Update product's location_id
+            await query('UPDATE products SET location_id = ? WHERE id = ?', [location_id, id]);
+        }
+
+
         // Full update logic
         const updateFields: string[] = [];
         const queryParams: any[] = [];
 
-        const fieldMapping: Record<string, string> = {
+        // Core fields that have dedicated columns
+        const coreFieldMapping: Record<string, string> = {
             title: 'title',
-            price: 'price',
-            condition: 'condition',
-            status: 'status',
-            phone: 'contact_phone',
             description: 'description',
-            category: 'subcategory_name',
-            brand: 'brand',
-            model: 'model',
-            year: 'year',
-            kmDriven: 'km_driven',
-            fuelType: 'fuel_type',
-            transmission: 'transmission',
-            owners: 'owners',
-            type: 'property_type',
-            bedrooms: 'bedrooms',
-            bathrooms: 'bathrooms',
-            furnishing: 'furnishing',
-            constructionStatus: 'construction_status',
-            listedBy: 'listed_by',
-            superBuiltupArea: 'super_builtup_area',
-            carpetArea: 'carpet_area',
-            totalFloors: 'total_floors',
-            floorNo: 'floor_no',
-            salaryType: 'salary_period',
-            jobType: 'job_type',
-            companyName: 'company_name',
-            experienceLevel: 'experience_level',
-            eventDate: 'event_date',
-            eventTime: 'event_time',
-            venue: 'venue_name',
-            organizer: 'organizer_name',
-            breed: 'breed',
-            age: 'age',
-            gender: 'gender',
-            color: 'color',
-            vaccinated: 'vaccinated'
+            price: 'price',
+            condition: '`condition`', // Escaped because it's a reserved keyword
+            status: 'status'
         };
 
-        for (const [bodyKey, dbColumn] of Object.entries(fieldMapping)) {
+        // Update core fields
+        for (const [bodyKey, dbColumn] of Object.entries(coreFieldMapping)) {
             if (body[bodyKey] !== undefined) {
                 updateFields.push(`${dbColumn} = ?`);
                 queryParams.push(body[bodyKey]);
             }
+        }
+
+        // Build product_attributes JSON from remaining fields
+        const productAttributes: any = {};
+        for (const [key, value] of Object.entries(otherFields)) {
+            if (value !== undefined && value !== null && value !== '' && key !== 'images') {
+                productAttributes[key] = value;
+            }
+        }
+
+        // Add product_attributes to update if there are any
+        if (Object.keys(productAttributes).length > 0) {
+            updateFields.push('product_attributes = ?');
+            queryParams.push(JSON.stringify(productAttributes));
         }
 
         if (updateFields.length > 0) {

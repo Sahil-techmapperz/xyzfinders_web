@@ -29,12 +29,22 @@ function AutomobilesCreateForm() {
         fuelType: '',
         transmission: '',
         owners: '',
+        // Missing fields from detail page
+        interiorColor: '', // attrs.interiorColor
+        horsepower: '', // attrs.horsepower
+        exteriorColor: '', // attrs.exteriorColor
+        doors: '', // attrs.doors
+        bodyType: '', // attrs.bodyType
+        seaterCapacity: '', // attrs.seaterCapacity
+        engineCapacity: '', // attrs.engineCapacity
         city: '',
         state: '',
         landmark: '',
         termsAccepted: false
     });
     const [images, setImages] = useState<string[]>([]);
+    const [charCount, setCharCount] = useState(0);
+    const maxChars = 10000;
 
     useEffect(() => {
         if (isEditMode) {
@@ -53,19 +63,37 @@ function AutomobilesCreateForm() {
             if (res.ok) {
                 const data = await res.json();
                 const product = data.data;
+
+                // Parse attributes if they are string
+                let attrs: any = {};
+                try {
+                    attrs = typeof product.product_attributes === 'string'
+                        ? JSON.parse(product.product_attributes)
+                        : product.product_attributes || {};
+                } catch (e) {
+                    console.error("Error parsing attributes", e);
+                }
+
                 setFormData({
                     title: product.title || '',
-                    phone: product.contact_phone || '',
+                    phone: product.phone || '',
                     price: product.price?.toString() || '',
                     description: product.description || '',
-                    category: product.subcategory_name || '',
-                    brand: '', // Map if available
-                    model: '', // Map if available
-                    year: '',
-                    kmDriven: '',
-                    fuelType: product.fuel_type || '',
+                    category: product.category || '',
+                    brand: product.brand || '',
+                    model: product.model || '',
+                    year: attrs.year || '', // attrs.year
+                    kmDriven: attrs.kms || attrs.km || '', // attrs.kms
+                    fuelType: product.fuel_type || attrs.fuel || '',
                     transmission: product.transmission || '',
-                    owners: '',
+                    owners: attrs.owners || '',
+                    interiorColor: attrs.interiorColor || attrs.interior_color || product.interior_color || '',
+                    horsepower: attrs.horsepower || product.horsepower || '',
+                    exteriorColor: attrs.exteriorColor || attrs.exterior_color || product.exterior_color || '',
+                    doors: attrs.doors || product.doors || '',
+                    bodyType: attrs.bodyType || attrs.body_type || product.body_type || '',
+                    seaterCapacity: attrs.seaterCapacity || attrs.seater_capacity || product.seater_capacity || '',
+                    engineCapacity: attrs.engineCapacity || attrs.engine_capacity || product.engine_capacity || '',
                     city: product.city_name || '',
                     state: product.state_name || '',
                     landmark: product.location_name || '',
@@ -82,8 +110,6 @@ function AutomobilesCreateForm() {
             setLoading(false);
         }
     };
-    const [charCount, setCharCount] = useState(0);
-    const maxChars = 10000;
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -170,7 +196,7 @@ function AutomobilesCreateForm() {
     ];
 
     return (
-        <div className="min-h-screen font-jost bg-gradient-to-br from-red-50 via-white to-orange-50">
+        <div className="min-h-screen font-jost bg-linear-to-br from-red-50 via-white to-orange-50">
             <div className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
                 <div className="container mx-auto px-4 py-4 max-w-5xl">
                     <div className="flex items-center justify-between">
@@ -194,7 +220,7 @@ function AutomobilesCreateForm() {
                             <div key={step.number} className="flex items-center flex-1">
                                 <div className="flex flex-col items-center flex-1">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${currentStep >= step.number
-                                        ? 'bg-gradient-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
+                                        ? 'bg-linear-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
                                         : 'bg-gray-200 text-gray-400'
                                         }`}>
                                         <i className={step.icon}></i>
@@ -217,7 +243,7 @@ function AutomobilesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-information-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
@@ -315,7 +341,7 @@ function AutomobilesCreateForm() {
 
                                 <button
                                     onClick={() => setCurrentStep(2)}
-                                    className="mt-8 w-full bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                    className="mt-8 w-full bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                 >
                                     Continue to Details
                                     <i className="ri-arrow-right-line text-xl"></i>
@@ -328,7 +354,7 @@ function AutomobilesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-list-check text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Vehicle Details</h2>
@@ -408,7 +434,7 @@ function AutomobilesCreateForm() {
                                                     type="button"
                                                     onClick={() => handlePillSelect('fuelType', option)}
                                                     className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.fuelType === option
-                                                        ? 'bg-gradient-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                        ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
                                                         : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
                                                         }`}
                                                 >
@@ -418,23 +444,113 @@ function AutomobilesCreateForm() {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-gray-700 font-semibold mb-3">Transmission*</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {transmissionOptions.map(option => (
-                                                <button
-                                                    key={option}
-                                                    type="button"
-                                                    onClick={() => handlePillSelect('transmission', option)}
-                                                    className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.transmission === option
-                                                        ? 'bg-gradient-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
-                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
-                                                        }`}
-                                                >
-                                                    {option}
-                                                </button>
-                                            ))}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Transmission*</label>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {transmissionOptions.map(option => (
+                                                    <button
+                                                        key={option}
+                                                        type="button"
+                                                        onClick={() => handlePillSelect('transmission', option)}
+                                                        className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.transmission === option
+                                                            ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                            : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
+                                                            }`}
+                                                    >
+                                                        {option}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
+
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Body Type (Optional)</label>
+                                            <input
+                                                type="text"
+                                                name="bodyType"
+                                                value={formData.bodyType}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., SUV, Sedan, Hatchback"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Exterior Color</label>
+                                            <input
+                                                type="text"
+                                                name="exteriorColor"
+                                                value={formData.exteriorColor}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., White, Black, Red"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Interior Color</label>
+                                            <input
+                                                type="text"
+                                                name="interiorColor"
+                                                value={formData.interiorColor}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., Beige, Black, Tan"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Horsepower</label>
+                                            <input
+                                                type="text"
+                                                name="horsepower"
+                                                value={formData.horsepower}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., 120 HP"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Engine Capacity</label>
+                                            <input
+                                                type="text"
+                                                name="engineCapacity"
+                                                value={formData.engineCapacity}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., 1500 cc"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Seater Capacity</label>
+                                            <input
+                                                type="text"
+                                                name="seaterCapacity"
+                                                value={formData.seaterCapacity}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., 5, 7"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-semibold mb-2">Doors</label>
+                                        <input
+                                            type="text"
+                                            name="doors"
+                                            value={formData.doors}
+                                            onChange={handleInputChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                            placeholder="e.g., 4, 2"
+                                        />
                                     </div>
                                 </div>
 
@@ -448,7 +564,7 @@ function AutomobilesCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(3)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -462,7 +578,7 @@ function AutomobilesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-image-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Vehicle Images</h2>
@@ -499,7 +615,7 @@ function AutomobilesCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(4)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -513,7 +629,7 @@ function AutomobilesCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-map-pin-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Location Details</h2>
@@ -591,7 +707,7 @@ function AutomobilesCreateForm() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {loading ? (
                                             <>

@@ -30,18 +30,39 @@ function FashionCreateForm() {
         city: '',
         state: '',
         landmark: '',
+        pincode: '',
         termsAccepted: false
     });
     const [images, setImages] = useState<string[]>([]);
     const [charCount, setCharCount] = useState(0);
+    const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([]);
     const maxChars = 10000;
 
     useEffect(() => {
-        if (isEditMode) {
+        if (isEditMode && editId) {
             fetchProductDetails();
         }
-    }, [editId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editId]); // Only depend on editId
 
+    // Fetch categories on mount
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch('/api/categories');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    setCategories(data.data || []);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
+    };
     const fetchProductDetails = async () => {
         try {
             setLoading(true);
@@ -53,49 +74,149 @@ function FashionCreateForm() {
             if (res.ok) {
                 const data = await res.json();
                 const product = data.data;
+
+                console.log('Loaded product data:', product);
+                console.log('Product attributes:', product.product_attributes);
+                console.log('===== DETAIL FIELDS FROM PRODUCT_ATTRIBUTES =====');
+                console.log('Size:', product.size);
+                console.log('Color:', product.color);
+                console.log('Material:', product.material);
+                console.log('Brand:', product.brand);
+                console.log('Condition:', product.condition);
+                console.log('Phone:', product.phone);
+                console.log('===== END DETAIL FIELDS =====');
+
+                console.log('Terms:', product.termsAccepted);
+
+                // Check if category matches current form (Fashion)
+                // Map category names to their respective routes
+                const categoryRoutes: Record<string, string> = {
+                    'Fashion': 'fashion',
+                    'Mobile & Tablet': 'mobiles',
+                    'Mobiles': 'mobiles',
+                    'Automobiles': 'automobiles',
+                    'Real Estate': 'real-estate',
+                    'Electronics': 'gadgets',
+                    'Gadgets & Electronics': 'gadgets',
+                    'Furniture': 'furniture',
+                    'Furniture & Appliance': 'furniture',
+                    'Pets': 'pets',
+                    'Pets & Animals Accessories': 'pets',
+                    'Education': 'education',
+                    'Learning & Education': 'education',
+                    'Services': 'services',
+                    'Events': 'events',
+                    'Local Events': 'events',
+                    'Jobs': 'jobs',
+                    "Job's": 'jobs'
+                };
+
+                const currentCategory = product.category_name || product.category;
+                const targetRoute = categoryRoutes[currentCategory];
+
+                if (targetRoute && targetRoute !== 'fashion') {
+                    toast('Redirecting to correct category form...', { icon: '🔄' });
+                    router.push(`/seller/place-ad/${targetRoute}/create?edit=${editId}`);
+                    return;
+                }
+
+                // The API now returns product_attributes merged into the response
+                // Parse attributes
+                let attrs: any = {};
+                try {
+                    attrs = typeof product.product_attributes === 'string'
+                        ? JSON.parse(product.product_attributes)
+                        : product.product_attributes || {};
+                } catch (e) {
+                    console.error("Error parsing attributes", e);
+                }
+                const specs = attrs.specs || {};
+
                 setFormData({
                     title: product.title || '',
-                    phone: product.contact_phone || '', // Check DB column mapping
+                    phone: product.phone || '',
                     price: product.price?.toString() || '',
                     description: product.description || '',
-                    category: product.subcategory_name || '', // or handle appropriately
-                    size: '', // TODO: Map extended fields if stored in JSON or separate columns
-                    color: '',
-                    material: '',
-                    brand: '',
-                    condition: product.condition || '',
+                    category: product.category || '',
+                    size: product.size || specs.size || '',
+                    color: product.color || specs.color || '',
+                    material: product.material || specs.material || '',
+                    brand: product.brand || attrs.brand || '',
+                    condition: product.condition || specs.condition || '',
                     city: product.city_name || '',
                     state: product.state_name || '',
                     landmark: product.location_name || '',
+                    pincode: product.postal_code || '',
                     termsAccepted: true
                 });
                 setImages(product.images || []);
                 setCharCount(product.description?.length || 0);
 
-                // Populate extracted fields from description if not in DB
-                // This is a simplification; ideally store these in proper columns
-                if (product.description) {
-                    const brandMatch = product.description.match(/Brand: (.*)/);
-                    if (brandMatch) setFormData(prev => ({ ...prev, brand: brandMatch[1] }));
-                    // Add similar regex for other fields if needed
-                }
+                console.log('Form data set:', {
+                    title: product.title,
+                    phone: product.phone,
+                    category: product.category,
+                    size: product.size,
+                    color: product.color
+                });
             } else {
                 toast.error('Failed to load product details');
             }
         } catch (error) {
-            console.error('Error fetching product', error);
+            console.error('Error fetching product:', error);
+            toast.error('Error loading product details');
         } finally {
             setLoading(false);
         }
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
+        const { name, value, type } = e.target;
+
+        // Handle category change redirect
+        if (name === 'category') {
+            const categoryRoutes: Record<string, string> = {
+                'Fashion': 'fashion',
+                'Mobile & Tablet': 'mobiles',
+                'Mobiles': 'mobiles',
+                'Automobiles': 'automobiles',
+                'Real Estate': 'real-estate',
+                'Electronics': 'gadgets',
+                'Gadgets & Electronics': 'gadgets',
+                'Furniture': 'furniture',
+                'Furniture & Appliance': 'furniture',
+                'Pets': 'pets',
+                'Pets & Animals Accessories': 'pets',
+                'Education': 'education',
+                'Learning & Education': 'education',
+                'Services': 'services',
+                'Events': 'events',
+                'Local Events': 'events',
+                'Jobs': 'jobs',
+                "Job's": 'jobs'
+            };
+
+            const targetRoute = categoryRoutes[value];
+            if (targetRoute && targetRoute !== 'fashion') {
+                const confirmRedirect = window.confirm(`Switching to ${value} category will redirect you to a different form. Continue?`);
+                if (confirmRedirect) {
+                    const currentUrl = new URL(window.location.href);
+                    router.push(`/seller/place-ad/${targetRoute}/create${currentUrl.search}`);
+                    return;
+                } else {
+                    return; // Don't update state if cancelled
+                }
+            }
+        }
+
         if (name === 'description') {
             if (value.length <= maxChars) {
                 setFormData(prev => ({ ...prev, [name]: value }));
                 setCharCount(value.length);
             }
+        } else if (type === 'checkbox') {
+            const checked = (e.target as HTMLInputElement).checked;
+            setFormData(prev => ({ ...prev, [name]: checked }));
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
@@ -110,7 +231,7 @@ function FashionCreateForm() {
     };
 
     const handleSubmit = async () => {
-        const requiredFields = ['title', 'phone', 'price', 'description', 'city', 'state'];
+        const requiredFields = ['title', 'phone', 'price', 'description', 'city', 'state', 'pincode'];
         const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
 
         if (missingFields.length > 0) {
@@ -135,10 +256,10 @@ function FashionCreateForm() {
             const url = isEditMode ? `/api/seller/products/${editId}` : '/api/seller/products/create';
             const method = isEditMode ? 'PATCH' : 'POST';
 
-            // For update, we might need a specific endpoint or just handle it here
-            // Note: Currently PATCH only supports status update in the [id] route I created earlier.
-            // I need to update the [id] route to support full update via PATCH or PUT.
-            // But for now, let's assume I will fix the API next.
+            // Normalize condition value for database
+            const normalizeCondition = (value: string) => {
+                return value.toLowerCase().replace(/ /g, '_');
+            };
 
             const response = await fetch(url, {
                 method: method,
@@ -148,6 +269,7 @@ function FashionCreateForm() {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    condition: normalizeCondition(formData.condition),
                     images
                 })
             });
@@ -180,7 +302,7 @@ function FashionCreateForm() {
 
 
     return (
-        <div className="min-h-screen font-jost bg-gradient-to-br from-fuchsia-50 via-white to-pink-50">
+        <div className="min-h-screen font-jost bg-linear-to-br from-fuchsia-50 via-white to-pink-50">
             {/* Same JSX as before, just ensuring we are inside the component */}
             <div className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
                 <div className="container mx-auto px-4 py-4 max-w-5xl">
@@ -210,7 +332,7 @@ function FashionCreateForm() {
                             <div key={step.number} className="flex items-center flex-1">
                                 <div className="flex flex-col items-center flex-1">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${currentStep >= step.number
-                                        ? 'bg-gradient-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
+                                        ? 'bg-linear-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
                                         : 'bg-gray-200 text-gray-400'
                                         }`}>
                                         <i className={step.icon}></i>
@@ -233,7 +355,7 @@ function FashionCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-information-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
@@ -268,11 +390,11 @@ function FashionCreateForm() {
                                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
                                             >
                                                 <option value="">Select category</option>
-                                                <option value="Men">Men's Fashion</option>
-                                                <option value="Women">Women's Fashion</option>
-                                                <option value="Kids">Kids' Fashion</option>
-                                                <option value="Accessories">Accessories</option>
-                                                <option value="Other">Other</option>
+                                                {categories.map(cat => (
+                                                    <option key={cat.id} value={cat.name}>
+                                                        {cat.name}
+                                                    </option>
+                                                ))}
                                             </select>
                                         </div>
 
@@ -332,7 +454,7 @@ function FashionCreateForm() {
 
                                 <button
                                     onClick={() => setCurrentStep(2)}
-                                    className="mt-8 w-full bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                    className="mt-8 w-full bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                 >
                                     Continue to Details
                                     <i className="ri-arrow-right-line text-xl"></i>
@@ -345,7 +467,7 @@ function FashionCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-list-check text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Item Details</h2>
@@ -413,7 +535,7 @@ function FashionCreateForm() {
                                                     type="button"
                                                     onClick={() => handlePillSelect('condition', option)}
                                                     className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.condition === option
-                                                        ? 'bg-gradient-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                        ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
                                                         : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
                                                         }`}
                                                 >
@@ -434,7 +556,7 @@ function FashionCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(3)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -448,7 +570,7 @@ function FashionCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-image-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Images</h2>
@@ -472,6 +594,7 @@ function FashionCreateForm() {
                                     onImagesChange={setImages}
                                     maxImages={5}
                                     maxSizeMB={5}
+                                    initialImages={images}
                                 />
 
                                 <div className="flex gap-4 mt-8">
@@ -484,7 +607,7 @@ function FashionCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(4)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -498,7 +621,7 @@ function FashionCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-map-pin-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Location Details</h2>
@@ -529,6 +652,19 @@ function FashionCreateForm() {
                                                 placeholder="e.g., Delhi"
                                             />
                                         </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-semibold mb-2">Pin Code*</label>
+                                        <input
+                                            type="text"
+                                            name="pincode"
+                                            value={formData.pincode}
+                                            onChange={handleInputChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                            placeholder="e.g., 110024"
+                                            maxLength={6}
+                                        />
                                     </div>
 
                                     <div>
@@ -576,7 +712,7 @@ function FashionCreateForm() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {loading ? (
                                             <>

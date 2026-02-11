@@ -7,6 +7,19 @@ import toast from 'react-hot-toast';
 import ImageUpload from '@/components/shared/ImageUpload';
 import ProductPreview from '@/components/shared/ProductPreview';
 
+const AMENITIES_LIST = [
+    { name: 'Parking', icon: 'ri-car-line' },
+    { name: 'Lift', icon: 'ri-building-2-line' },
+    { name: 'Power Backup', icon: 'ri-battery-charge-line' },
+    { name: 'Gym', icon: 'ri-run-line' },
+    { name: 'Swimming Pool', icon: 'ri-water-flash-line' },
+    { name: 'Security', icon: 'ri-shield-star-line' },
+    { name: 'Garden', icon: 'ri-plant-line' },
+    { name: 'Club House', icon: 'ri-community-line' },
+    { name: 'WiFi', icon: 'ri-wifi-line' },
+    { name: 'AC', icon: 'ri-snowflake-line' }
+];
+
 function PropertyCreateForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -27,12 +40,22 @@ function PropertyCreateForm() {
         bathrooms: '',
         area: '',
         furnished: '',
+        amenities: [] as string[],
+        // Missing fields
+        securityDeposit: '', // specs.securityDeposit
+        kitchen: '', // specs.kitchen
+        balcony: '', // specs.balcony
+        tenants: '', // specs.tenants
+        roomType: '', // specs.roomType
+        attachedBathroom: '', // specs.attachedBathroom
         city: '',
         state: '',
         landmark: '',
         termsAccepted: false
     });
     const [images, setImages] = useState<string[]>([]);
+    const [charCount, setCharCount] = useState(0);
+    const maxChars = 10000;
 
     useEffect(() => {
         if (isEditMode) {
@@ -51,17 +74,36 @@ function PropertyCreateForm() {
             if (res.ok) {
                 const data = await res.json();
                 const product = data.data;
+
+                // Parse attributes if they are string
+                let attrs: any = {};
+                try {
+                    attrs = typeof product.product_attributes === 'string'
+                        ? JSON.parse(product.product_attributes)
+                        : product.product_attributes || {};
+                } catch (e) {
+                    console.error("Error parsing attributes", e);
+                }
+                const specs = attrs.specs || {};
+
                 setFormData({
                     title: product.title || '',
-                    phone: product.contact_phone || '',
+                    phone: product.phone || '',
                     price: product.price?.toString() || '',
                     description: product.description || '',
-                    category: product.subcategory_name || '',
-                    propertyType: product.property_type || '',
-                    bedrooms: '',
-                    bathrooms: '',
-                    area: '',
-                    furnished: '',
+                    category: product.category || '',
+                    propertyType: product.property_type || '', // or attrs.type
+                    bedrooms: specs.bedroom || '',
+                    bathrooms: specs.bathroom || '',
+                    area: attrs.area || '',
+                    furnished: specs.furnishing || '',
+                    securityDeposit: specs.securityDeposit || '',
+                    kitchen: specs.kitchen || '',
+                    balcony: specs.balcony || '',
+                    tenants: specs.tenants || '',
+                    roomType: specs.roomType || '',
+                    attachedBathroom: specs.attachedBathroom || '',
+                    amenities: attrs.amenities ? attrs.amenities.map((a: any) => a.name) : [],
                     city: product.city_name || '',
                     state: product.state_name || '',
                     landmark: product.location_name || '',
@@ -78,8 +120,6 @@ function PropertyCreateForm() {
             setLoading(false);
         }
     };
-    const [charCount, setCharCount] = useState(0);
-    const maxChars = 10000;
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -93,8 +133,19 @@ function PropertyCreateForm() {
         }
     };
 
-    const handlePillSelect = (field: 'furnished' | 'propertyType', value: string) => {
+    const handlePillSelect = (field: 'furnished' | 'propertyType' | 'tenants', value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleAmenityToggle = (amenityName: string) => {
+        setFormData(prev => {
+            const current = prev.amenities;
+            if (current.includes(amenityName)) {
+                return { ...prev, amenities: current.filter(a => a !== amenityName) };
+            } else {
+                return { ...prev, amenities: [...current, amenityName] };
+            }
+        });
     };
 
     const handleCheckbox = () => {
@@ -135,6 +186,10 @@ function PropertyCreateForm() {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    amenities: formData.amenities.map(name => {
+                        const match = AMENITIES_LIST.find(a => a.name === name);
+                        return match || { name, icon: 'ri-star-line' };
+                    }),
                     images
                 })
             });
@@ -157,6 +212,7 @@ function PropertyCreateForm() {
 
     const propertyTypeOptions = ['Apartment', 'House', 'Villa', 'Plot'];
     const furnishedOptions = ['Fully Furnished', 'Semi Furnished', 'Unfurnished'];
+    const tenantsOptions = ['Family', 'Bachelor', 'Company', 'Any'];
 
     const steps = [
         { number: 1, title: 'Basic Info', icon: 'ri-information-line' },
@@ -166,7 +222,7 @@ function PropertyCreateForm() {
     ];
 
     return (
-        <div className="min-h-screen font-jost bg-gradient-to-br from-purple-50 via-white to-pink-50">
+        <div className="min-h-screen font-jost bg-linear-to-br from-purple-50 via-white to-pink-50">
             <div className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
                 <div className="container mx-auto px-4 py-4 max-w-5xl">
                     <div className="flex items-center justify-between">
@@ -190,7 +246,7 @@ function PropertyCreateForm() {
                             <div key={step.number} className="flex items-center flex-1">
                                 <div className="flex flex-col items-center flex-1">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${currentStep >= step.number
-                                        ? 'bg-gradient-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
+                                        ? 'bg-linear-to-br from-brand-orange to-orange-600 text-white shadow-lg scale-110'
                                         : 'bg-gray-200 text-gray-400'
                                         }`}>
                                         <i className={step.icon}></i>
@@ -213,7 +269,7 @@ function PropertyCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-information-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
@@ -310,7 +366,7 @@ function PropertyCreateForm() {
 
                                 <button
                                     onClick={() => setCurrentStep(2)}
-                                    className="mt-8 w-full bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                    className="mt-8 w-full bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                 >
                                     Continue to Details
                                     <i className="ri-arrow-right-line text-xl"></i>
@@ -323,7 +379,7 @@ function PropertyCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-list-check text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Property Details</h2>
@@ -339,13 +395,38 @@ function PropertyCreateForm() {
                                                     type="button"
                                                     onClick={() => handlePillSelect('propertyType', option)}
                                                     className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.propertyType === option
-                                                        ? 'bg-gradient-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                        ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
                                                         : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
                                                         }`}
                                                 >
                                                     {option}
                                                 </button>
                                             ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Room Type</label>
+                                            <input
+                                                type="text"
+                                                name="roomType"
+                                                value={formData.roomType}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., Master Bedroom"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Security Deposit</label>
+                                            <input
+                                                type="text" // Or number
+                                                name="securityDeposit"
+                                                value={formData.securityDeposit}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., 50000"
+                                            />
                                         </div>
                                     </div>
 
@@ -375,6 +456,20 @@ function PropertyCreateForm() {
                                         </div>
 
                                         <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Balcony (Optional)</label>
+                                            <input
+                                                type="text"
+                                                name="balcony"
+                                                value={formData.balcony}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., 1"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div>
                                             <label className="block text-gray-700 font-semibold mb-2">Area (sq ft)*</label>
                                             <input
                                                 type="text"
@@ -383,6 +478,28 @@ function PropertyCreateForm() {
                                                 onChange={handleInputChange}
                                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
                                                 placeholder="e.g., 1200"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Kitchen (Optional)</label>
+                                            <input
+                                                type="text"
+                                                name="kitchen"
+                                                value={formData.kitchen}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., Modular"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Attached Bath</label>
+                                            <input
+                                                type="text"
+                                                name="attachedBathroom"
+                                                value={formData.attachedBathroom}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., Yes"
                                             />
                                         </div>
                                     </div>
@@ -396,11 +513,50 @@ function PropertyCreateForm() {
                                                     type="button"
                                                     onClick={() => handlePillSelect('furnished', option)}
                                                     className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.furnished === option
-                                                        ? 'bg-gradient-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                        ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
                                                         : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
                                                         }`}
                                                 >
                                                     {option}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-semibold mb-3">Tenant Preference</label>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            {tenantsOptions.map(option => (
+                                                <button
+                                                    key={option}
+                                                    type="button"
+                                                    onClick={() => handlePillSelect('tenants', option)}
+                                                    className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.tenants === option
+                                                        ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
+                                                        }`}
+                                                >
+                                                    {option}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-semibold mb-3">Amenities</label>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            {AMENITIES_LIST.map(amenity => (
+                                                <button
+                                                    key={amenity.name}
+                                                    type="button"
+                                                    onClick={() => handleAmenityToggle(amenity.name)}
+                                                    className={`px-3 py-3 rounded-xl border-2 font-medium text-sm transition-all flex items-center justify-center gap-2 ${formData.amenities.includes(amenity.name)
+                                                        ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
+                                                        }`}
+                                                >
+                                                    <i className={amenity.icon}></i>
+                                                    {amenity.name}
                                                 </button>
                                             ))}
                                         </div>
@@ -417,7 +573,7 @@ function PropertyCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(3)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -431,7 +587,7 @@ function PropertyCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-image-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Property Images</h2>
@@ -468,7 +624,7 @@ function PropertyCreateForm() {
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(4)}
-                                        className="flex-1 bg-gradient-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-brand-orange to-orange-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2"
                                     >
                                         Continue
                                         <i className="ri-arrow-right-line"></i>
@@ -482,7 +638,7 @@ function PropertyCreateForm() {
                         <div className="space-y-6 animate-fadeIn">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-orange to-orange-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-orange to-orange-600 flex items-center justify-center">
                                         <i className="ri-map-pin-line text-white text-xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-bold text-gray-900">Location Details</h2>
@@ -560,7 +716,7 @@ function PropertyCreateForm() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 bg-linear-to-r from-green-500 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {loading ? (
                                             <>
