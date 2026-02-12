@@ -240,9 +240,32 @@ export default function EventsDetail({ id }: { id?: string }) {
                     {/* Right Column: Booking & Organizer */}
                     <div className="xl:col-span-1 space-y-6">
                         <div className="bg-white rounded-2xl p-4 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 sticky top-24">
-                            <div className="text-center mb-4 md:mb-6">
-                                <p className="text-xs md:text-sm text-gray-500 mb-1">Organized by</p>
-                                <p className="text-base md:text-lg font-bold text-gray-900">{organizer}</p>
+                            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 border-b border-gray-100 pb-4 md:pb-6">
+                                <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                                    {eventItem.seller_avatar ? (
+                                        <img
+                                            src={`data:image/jpeg;base64,${eventItem.seller_avatar}`}
+                                            alt={organizer}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="text-lg md:text-xl font-bold text-blue-600">
+                                            {organizer ? organizer.charAt(0).toUpperCase() : 'O'}
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-xs md:text-sm text-gray-500">Organized by</p>
+                                    <h3 className="text-base md:text-lg font-bold text-gray-900 leading-tight">{organizer}</h3>
+                                    {!!eventItem.seller_is_verified && (
+                                        <span className="text-[10px] text-blue-500 flex items-center gap-1 font-bold mt-1">
+                                            <i className="ri-checkbox-circle-fill"></i> Verified Organizer
+                                        </span>
+                                    )}
+                                    <p className="text-[10px] text-gray-400 mt-1">
+                                        Member Since {eventItem.seller_created_at ? new Date(eventItem.seller_created_at).getFullYear() : '2023'}
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="space-y-3 md:space-y-4">

@@ -1,113 +1,85 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import EducationCard, { EducationData } from './EducationCard';
 import EducationFilterPopup from './EducationFilterPopup';
+import { Product } from '@/types';
+import { formatDate } from '@/lib/utils';
 
-const EDUCATION_DATA: EducationData[] = [
-    {
-        id: 1,
-        title: "Mathematics & Science Tuition (Class 9-10)",
-        category: "Tuition",
-        subject: "Maths & Science",
-        image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2070&auto=format&fit=crop",
-        description: "Experienced tutor with 10+ years of experience. Focus on concept building and exam preparation. Weekly tests and doubt sessions.",
-        specs: {
-            mode: "Offline/Home",
-            level: "High School",
-            duration: "Monthly",
-            language: "English"
-        },
-        fees: "₹ 3,500/-",
-        location: "Dwarka Sector 12, New Delhi",
-        postedTime: "Posted 2 hr ago",
-        verified: true,
-        premium: true
-    },
-    {
-        id: 2,
-        title: "IELTS & TOEFL Coaching - Guaranteed 7+ Band",
-        category: "Exam Prep",
-        subject: "English",
-        image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop",
-        description: "Comprehensive coaching for IELTS/TOEFL. Study material included. Mock tests every weekend. Flexible timings.",
-        specs: {
-            mode: "Online/Offline",
-            level: "Professional",
-            duration: "3 Months",
-            language: "English"
-        },
-        fees: "₹ 12,000/-",
-        location: "Rajouri Garden, New Delhi",
-        postedTime: "Posted 5 hr ago",
-        verified: true,
-        premium: true
-    },
-    {
-        id: 3,
-        title: "Personal Fitness Trainer Certification Course",
-        category: "Vocational",
-        subject: "Fitness",
-        image: "https://images.unsplash.com/photo-1544367563-12123d8965cd?q=80&w=2070&auto=format&fit=crop",
-        description: "Become a certified fitness trainer. Practical training included. Job placement assistance provided after course completion.",
-        specs: {
-            mode: "Offline",
-            level: "Adult",
-            duration: "6 Months",
-            language: "English/Hindi"
-        },
-        fees: "₹ 45,000/-",
-        location: "Saket, New Delhi",
-        postedTime: "Posted 1 day ago",
-        verified: false,
-        premium: false
-    },
-    {
-        id: 4,
-        title: "French Language Classes for Beginners",
-        category: "Language",
-        subject: "French",
-        image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=2070&auto=format&fit=crop",
-        description: "Learn French from a level A1 certified trainer. Small batch size for personal attention. Weekend classes available.",
-        specs: {
-            mode: "Online",
-            level: "Beginner",
-            duration: "3 Months",
-            language: "French"
-        },
-        fees: "₹ 8,000/-",
-        location: "Vasant Kunj, New Delhi",
-        postedTime: "Posted 3 days ago",
-        verified: true,
-        premium: false
-    }
-];
+interface EducationListingsProps {
+    educationPromise: Promise<Product[]>;
+    locationsPromise: Promise<{ name: string; active: boolean }[]>;
+}
 
-const LOCATIONS = [
-    { name: "South Delhi", active: true },
-    { name: "North Delhi", active: false },
-    { name: "West Delhi", active: false },
-    { name: "East Delhi", active: false },
-    { name: "Noida", active: false },
-    { name: "Gurugram", active: false },
-];
+export default function EducationListings({ educationPromise, locationsPromise }: EducationListingsProps) {
+    const products = use(educationPromise);
+    const initialLocations = use(locationsPromise);
 
-export default function EducationListings() {
-    const [locations, setLocations] = useState([
-        { name: "South Delhi", active: true },
-        { name: "North Delhi", active: false },
-        { name: "West Delhi", active: false },
-        { name: "East Delhi", active: false },
-        { name: "Noida", active: false },
-        { name: "Gurugram", active: false },
-    ]);
+    // Map API products to education format
+    const EDUCATION_DATA: EducationData[] = products.map(p => {
+        let attributes: any = {};
+        if (typeof p.product_attributes === 'string') {
+            try {
+                attributes = JSON.parse(p.product_attributes);
+            } catch (e) {
+                console.error('Failed to parse product_attributes', e);
+            }
+        } else if (typeof p.product_attributes === 'object') {
+            attributes = p.product_attributes;
+        }
 
+        const productImages = p.images?.map((img: any) =>
+            img.image ? `data:image/jpeg;base64,${img.image}` : ''
+        ) || [];
+
+        return {
+            id: p.id,
+            title: p.title,
+            category: attributes.category || 'Education',
+            subject: attributes.subject || '',
+            image: productImages.length > 0 ? productImages[0] : '',
+            description: p.description,
+            specs: {
+                mode: attributes.mode || 'Offline',
+                level: attributes.level || 'All Levels',
+                duration: attributes.duration || 'Flexible',
+                language: attributes.language || 'English'
+            },
+            fees: `₹ ${p.price.toLocaleString()}`,
+            location: p.city ? `${p.city}, ${p.location?.state || ''}` : 'Unknown Location',
+            postedTime: formatDate(p.created_at),
+            verified: !!(p.seller?.is_verified),
+            premium: !!p.is_boosted
+        };
+    });
+
+    const [locations, setLocations] = useState(initialLocations);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
     const [showFilters, setShowFilters] = useState(false);
+
+    // Location filtering
+    const activeLocationNames = locations.filter(loc => loc.active).map(loc => loc.name);
+    const filteredEducation = activeLocationNames.length > 0
+        ? EDUCATION_DATA.filter(item => activeLocationNames.some(locName => item.location.includes(locName)))
+        : EDUCATION_DATA;
+
+    // Pagination
+    const totalPages = Math.ceil(filteredEducation.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentEducation = filteredEducation.slice(startIndex, endIndex);
 
     const toggleLocation = (name: string) => {
         setLocations(prev => prev.map(loc =>
             loc.name === name ? { ...loc, active: !loc.active } : loc
         ));
+        setCurrentPage(1);
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
@@ -118,7 +90,7 @@ export default function EducationListings() {
                 {/* Breadcrumb (Mobile Style - Optional/Placeholder if needed, or just standard header) */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
-                        Education & Learning in New Delhi <span className="text-gray-500 font-normal text-base">- 850(Available)</span>
+                        Education & Learning in New Delhi <span className="text-gray-500 font-normal text-base">- {filteredEducation.length}(Available)</span>
                     </h1>
 
                     <div className="hidden md:flex items-center gap-2">
@@ -164,18 +136,52 @@ export default function EducationListings() {
 
                 {/* Left: Listings */}
                 <div className="xl:col-span-2 grid grid-cols-1 gap-6">
-                    {EDUCATION_DATA.map(item => (
+                    {currentEducation.map(item => (
                         <EducationCard key={item.id} item={item} />
                     ))}
 
                     {/* Pagination */}
-                    <div className="flex items-center justify-center gap-2 pt-8">
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors"><i className="ri-arrow-left-double-line"></i></button>
-                        <button className="w-8 h-8 flex items-center justify-center bg-[#FF8A65] text-white font-bold rounded-lg shadow-sm">1</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">2</button>
-                        <span className="text-gray-300">...</span>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors"><i className="ri-arrow-right-double-line"></i></button>
-                    </div>
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2 pt-8">
+                            {/* Previous button */}
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg transition-colors ${currentPage === 1
+                                        ? 'text-gray-300 cursor-not-allowed'
+                                        : 'text-gray-400 hover:border-[#FF8A65] hover:text-[#FF8A65]'
+                                    }`}
+                            >
+                                <i className="ri-arrow-left-double-line"></i>
+                            </button>
+
+                            {/* Page numbers */}
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    onClick={() => handlePageChange(page)}
+                                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${currentPage === page
+                                            ? 'bg-[#FF8A65] text-white font-bold shadow-sm'
+                                            : 'border border-gray-200 text-gray-500 font-medium hover:border-[#FF8A65] hover:text-[#FF8A65]'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+
+                            {/* Next button */}
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg transition-colors ${currentPage === totalPages
+                                        ? 'text-gray-300 cursor-not-allowed'
+                                        : 'text-gray-400 hover:border-[#FF8A65] hover:text-[#FF8A65]'
+                                    }`}
+                            >
+                                <i className="ri-arrow-right-double-line"></i>
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right: Ad Banner */}

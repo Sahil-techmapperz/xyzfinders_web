@@ -14,18 +14,21 @@ export async function GET(
 
         const product = await queryOne<Product>(
             `SELECT p.*, 
-        u.name as seller_name, u.phone as seller_phone,
+        u.name as seller_name, u.phone as seller_phone, u.created_at as seller_created_at, u.is_verified as seller_is_verified,
         c.name as category_name,
         l.name as location_name,
         l.postal_code as postal_code,
         ci.name as city_name,
-        s.name as state_name
+        s.name as state_name,
+        COALESCE(sl.avatar, b.avatar) as seller_avatar
       FROM products p
       LEFT JOIN users u ON p.user_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN locations l ON p.location_id = l.id
       LEFT JOIN cities ci ON l.city_id = ci.id
       LEFT JOIN states s ON ci.state_id = s.id
+      LEFT JOIN sellers sl ON u.id = sl.user_id
+      LEFT JOIN buyers b ON u.id = b.user_id
       WHERE p.id = ?`,
             [productId]
         );
@@ -86,6 +89,11 @@ export async function GET(
                 image: result.length > 0 ? result[0].image_data.toString('base64') : null
             };
         }));
+
+        // Convert seller_avatar from Buffer to Base64 string if necessary
+        if ((product as any).seller_avatar && Buffer.isBuffer((product as any).seller_avatar)) {
+            (product as any).seller_avatar = (product as any).seller_avatar.toString('base64');
+        }
 
         return successResponse({
             ...product,

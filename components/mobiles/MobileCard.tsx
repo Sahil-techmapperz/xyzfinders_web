@@ -128,7 +128,7 @@ export default function MobileCard({ item }: MobileCardProps) {
                 <div>
                     <div className="flex justify-between items-start">
                         <h3 className="font-bold text-lg md:text-xl text-gray-800 leading-tight mb-0.5 line-clamp-1">
-                            {item.title}
+                         <Link href={`/mobiles/${item.id}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}>{item.title}</Link>
                         </h3>
                     </div>
 

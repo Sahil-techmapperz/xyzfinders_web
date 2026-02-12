@@ -20,7 +20,10 @@ interface FurnitureDetailData {
         name: string;
         verified: boolean;
         memberSince: string;
+        id: number;
+        avatar?: string | null;
     };
+    seller_id?: number;
 }
 
 interface SimilarProduct {
@@ -81,9 +84,12 @@ export default function FurnitureDetail({ id }: { id?: string }) {
                     features: features,
                     seller: {
                         name: data.seller_name || 'Seller',
-                        verified: data.product_attributes?.verified || false,
-                        memberSince: new Date(data.created_at).getFullYear().toString() // Aproximation
-                    }
+                        verified: data.seller_is_verified || false,
+                        memberSince: data.seller_created_at ? new Date(data.seller_created_at).getFullYear().toString() : '2025',
+                        id: data.user_id,
+                        avatar: data.seller_avatar
+                    },
+                    seller_id: data.user_id
                 });
 
                 // Transform similar products
@@ -333,14 +339,24 @@ export default function FurnitureDetail({ id }: { id?: string }) {
 
                                 <div className="flex items-center gap-3 md:gap-4 mb-2">
                                     <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
-                                        <div className="text-lg md:text-xl font-bold text-blue-600">
-                                            {furniture.seller.name ? furniture.seller.name.charAt(0).toUpperCase() : 'U'}
-                                        </div>
+                                        {furniture.seller.avatar ? (
+                                            <img
+                                                src={`data:image/jpeg;base64,${furniture.seller.avatar}`}
+                                                alt={furniture.seller.name || 'Seller'}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="text-lg md:text-xl font-bold text-blue-600">
+                                                {furniture.seller.name ? furniture.seller.name.charAt(0).toUpperCase() : 'U'}
+                                            </div>
+                                        )}
                                     </div>
                                     <div>
                                         <h3 className="text-gray-900 font-bold text-sm md:text-base flex items-center gap-1">
-                                            {furniture.seller.name || 'Unknown User'}
-                                            <i className="ri-verified-badge-fill text-blue-500 text-base md:text-lg"></i>
+                                            {furniture.seller.name || 'Seller'}
+                                            {!!furniture.seller.verified && (
+                                                <i className="ri-verified-badge-fill text-blue-500 text-base md:text-lg"></i>
+                                            )}
                                         </h3>
                                         <p className="text-[10px] md:text-xs text-gray-500">Seller</p>
                                     </div>
@@ -356,8 +372,8 @@ export default function FurnitureDetail({ id }: { id?: string }) {
 
                                     <ContactSellerButton
                                         productId={id || "1"}
-                                        sellerId={1}
-                                        className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold py-2.5 md:py-3 rounded-lg text-sm md:text-base flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                                        sellerId={furniture.seller_id || 1}
+                                        className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer text-sm md:text-base"
                                     />
                                 </div>
                             </div>

@@ -7,8 +7,14 @@ import JobListings from './JobListings';
 import JobRightSidebar from './JobRightSidebar';
 import JobCategories from './JobCategories';
 import { JobFilters } from './types';
+import { Product } from '@/types';
 
-export default function JobsLanding() {
+interface JobsLandingProps {
+    jobsPromise: Promise<Product[]>;
+    locationsPromise: Promise<{ name: string; active: boolean }[]>;
+}
+
+export default function JobsLanding({ jobsPromise, locationsPromise }: JobsLandingProps) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -102,7 +108,7 @@ export default function JobsLanding() {
 
                     {/* Main Content Column */}
                     <div className="flex-1 min-w-0">
-                        <JobListings filters={filters} />
+                        <JobListings filters={filters} jobsPromise={jobsPromise} locationsPromise={locationsPromise} />
                     </div>
 
                     {/* Right Sidebar Column (Ads) */}

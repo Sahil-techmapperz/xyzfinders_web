@@ -66,6 +66,17 @@ export default function MessagesSystem({ role }: MessagesSystemProps) {
                 images = [];
             }
 
+            let productImage = '/placeholder.png';
+            if (c.product_image) {
+                if (c.product_image.startsWith('http') || c.product_image.startsWith('data:')) {
+                    productImage = c.product_image;
+                } else {
+                    productImage = `data:image/jpeg;base64,${c.product_image}`;
+                }
+            } else if (images.length > 0) {
+                productImage = images[0] || '/placeholder.png';
+            }
+
             return {
                 id: `${c.product_id}-${otherUser.id}`, // composite ID
                 rawId: c.id,
@@ -74,7 +85,7 @@ export default function MessagesSystem({ role }: MessagesSystemProps) {
                 productId: c.product_id,
                 productTitle: c.product_title || 'Unknown Item',
                 productPrice: c.product_price,
-                productImage: images[0] || '/placeholder.png',
+                productImage: productImage,
                 lastMessage: c.message,
                 time: new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 timestamp: new Date(c.created_at),
@@ -142,7 +153,7 @@ export default function MessagesSystem({ role }: MessagesSystemProps) {
                         const res = await apiClient.get(`/products/${productId}`);
                         if (res.success && res.data) {
                             const p = res.data;
-                            let images = [];
+                            let images: any[] = [];
                             try {
                                 if (typeof p.images === 'string') {
                                     images = p.images.startsWith('[') ? JSON.parse(p.images) : [p.images];
@@ -151,6 +162,16 @@ export default function MessagesSystem({ role }: MessagesSystemProps) {
                                 }
                             } catch (e) { }
 
+                            let primaryImage = '/placeholder.png';
+                            if (images.length > 0) {
+                                const img = images[0];
+                                if (typeof img === 'string') {
+                                    primaryImage = img;
+                                } else if (typeof img === 'object' && img.image) {
+                                    primaryImage = `data:image/jpeg;base64,${img.image}`;
+                                }
+                            }
+
                             setInitializingChat({
                                 id: compositeId,
                                 otherUserId: parseInt(otherUserId),
@@ -158,7 +179,7 @@ export default function MessagesSystem({ role }: MessagesSystemProps) {
                                 productId: p.id,
                                 productTitle: p.title,
                                 productPrice: p.price,
-                                productImage: images[0] || '/placeholder.png',
+                                productImage: primaryImage,
                                 avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(p.seller?.name || 'Seller')}&background=random`
                             });
                             setSelectedChatId(compositeId);
@@ -205,8 +226,8 @@ export default function MessagesSystem({ role }: MessagesSystemProps) {
 
     return (
         <div className="min-h-screen bg-[#FFFBF7] font-jost flex flex-col">
-            <div className="flex-grow container mx-auto px-4 py-6 flex flex-col items-stretch h-[calc(100vh-140px)]">
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex overflow-hidden flex-grow">
+            <div className="grow container mx-auto px-4 py-6 flex flex-col items-stretch h-[calc(100vh-140px)]">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex overflow-hidden grow">
 
                     {/* Sidebar */}
                     <div className={`${selectedChatId ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-gray-200`}>
@@ -214,7 +235,7 @@ export default function MessagesSystem({ role }: MessagesSystemProps) {
                             <h2 className="text-xl font-bold text-gray-800">{role === 'seller' ? 'Seller Messages' : 'My Messages'}</h2>
                         </div>
 
-                        <div className="overflow-y-auto flex-grow">
+                        <div className="overflow-y-auto grow">
                             {conversations.length === 0 ? (
                                 <div className="p-8 text-center text-gray-500">
                                     <p>No conversations found.</p>
@@ -233,14 +254,14 @@ export default function MessagesSystem({ role }: MessagesSystemProps) {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-baseline mb-1">
                                                 <h3 className="font-semibold text-gray-900 truncate">{chat.otherUserName}</h3>
-                                                <span className="text-xs text-gray-400 flex-shrink-0">{chat.time}</span>
+                                                <span className="text-xs text-gray-400 shrink-0">{chat.time}</span>
                                             </div>
                                             <p className={`text-sm truncate ${chat.unread > 0 ? 'font-semibold text-gray-800' : 'text-gray-500'}`}>
                                                 {chat.lastMessage}
                                             </p>
                                             <div className="flex items-center gap-1 mt-1.5 bg-gray-50 p-1 rounded-md max-w-fit">
                                                 <img
-                                                    src={chat.productImage && chat.productImage.startsWith('http') ? chat.productImage : '/placeholder.png'}
+                                                    src={chat.productImage || '/placeholder.png'}
                                                     alt=""
                                                     onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png' }}
                                                     className="w-4 h-4 rounded object-cover"
@@ -272,7 +293,7 @@ export default function MessagesSystem({ role }: MessagesSystemProps) {
                                 <div className="flex items-center gap-3">
                                     <div className="hidden sm:flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                                         <img
-                                            src={activeChat?.productImage && activeChat.productImage.startsWith('http') ? activeChat.productImage : '/placeholder.png'}
+                                            src={activeChat?.productImage || '/placeholder.png'}
                                             alt=""
                                             onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png' }}
                                             className="w-8 h-8 rounded object-cover"
@@ -288,7 +309,7 @@ export default function MessagesSystem({ role }: MessagesSystemProps) {
                             </div>
 
                             {/* Messages */}
-                            <div className="flex-grow p-4 overflow-y-auto space-y-4 bg-[#F8F9FA] h-0">
+                            <div className="grow p-4 overflow-y-auto space-y-4 bg-[#F8F9FA] h-0">
                                 {messages.map((msg: any) => (
                                     <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
                                         <div className={`max-w-[75%] lg:max-w-[60%] rounded-2xl px-4 py-3 shadow-sm ${msg.sender === 'me'

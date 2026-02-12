@@ -1,113 +1,85 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import PetsCard, { PetData } from './PetsCard';
 import PetsFilterPopup from './PetsFilterPopup';
+import { Product } from '@/types';
+import { formatDate } from '@/lib/utils';
 
-const PETS_DATA: PetData[] = [
-    {
-        id: 1,
-        title: "Golden Retriever Puppies KCI Registered",
-        category: "Dogs",
-        type: "Dog",
-        image: "https://images.unsplash.com/photo-1633722715463-d30f4f325e24?q=80&w=2069&auto=format&fit=crop",
-        description: "Adorbale Golden Retriever puppies available. KCI registered, first vaccination done. Very playful and healthy...",
-        specs: {
-            age: "45 Days",
-            breed: "Golden Retriever",
-            gender: "Male/Female",
-            vaccinated: "Yes"
-        },
-        price: "₹ 25,000/-",
-        location: "Vasant Vihar, New Delhi",
-        postedTime: "Posted 3 hr ago",
-        verified: true,
-        premium: true
-    },
-    {
-        id: 2,
-        title: "Persian Cat Kittens (Doll Face)",
-        category: "Cats",
-        type: "Cat",
-        image: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=1887&auto=format&fit=crop",
-        description: "Pure white Persian kittens with blue eyes. Litter trained and very friendly. Looking for a loving home.",
-        specs: {
-            age: "2 Months",
-            breed: "Persian",
-            gender: "Male",
-            vaccinated: "No"
-        },
-        price: "₹ 12,000/-",
-        location: "Lajpat Nagar, New Delhi",
-        postedTime: "Posted 6 hr ago",
-        verified: true,
-        premium: true
-    },
-    {
-        id: 3,
-        title: "Large Dog Cage / Crate (Heavy Duty)",
-        category: "Accessories",
-        type: "Accessory",
-        image: "https://images.unsplash.com/photo-1598585226456-ccde20937a0c?q=80&w=2072&auto=format&fit=crop",
-        description: "Heavy duty customized dog cage suitable for large breeds like German Shepherd, Rottweiler. Size 4x3x3 feet.",
-        specs: {
-            age: "New",
-            breed: "Universal",
-            gender: "N/A",
-            vaccinated: "N/A"
-        },
-        price: "₹ 4,500/-",
-        location: "Dwarka, New Delhi",
-        postedTime: "Posted 10 hr ago",
-        verified: false,
-        premium: false
-    },
-    {
-        id: 4,
-        title: "Pedigree Adult Dog Food Chicken & Vegetables 20kg",
-        category: "Food",
-        type: "Food",
-        image: "https://images.unsplash.com/photo-1585846888147-3fe14c130048?q=80&w=1887&auto=format&fit=crop",
-        description: "Unopened bag of Pedigree Adult Dog Food. Selling because my dog switched to a different diet. Market price 3800, selling for cheap.",
-        specs: {
-            age: "New",
-            breed: "All Breeds",
-            gender: "N/A",
-            vaccinated: "N/A"
-        },
-        price: "₹ 2,800/-",
-        location: "Rohini, New Delhi",
-        postedTime: "Posted 1 day ago",
-        verified: true,
-        premium: false
-    }
-];
+interface PetsListingsProps {
+    petsPromise: Promise<Product[]>;
+    locationsPromise: Promise<{ name: string; active: boolean }[]>;
+}
 
-const LOCATIONS = [
-    { name: "South Delhi", active: true },
-    { name: "Gurugram", active: false },
-    { name: "Noida", active: false },
-    { name: "West Delhi", active: false },
-    { name: "East Delhi", active: false },
-    { name: "Faridabad", active: false },
-];
+export default function PetsListings({ petsPromise, locationsPromise }: PetsListingsProps) {
+    const products = use(petsPromise);
+    const initialLocations = use(locationsPromise);
 
-export default function PetsListings() {
-    const [locations, setLocations] = useState([
-        { name: "South Delhi", active: true },
-        { name: "Gurugram", active: false },
-        { name: "Noida", active: false },
-        { name: "West Delhi", active: false },
-        { name: "East Delhi", active: false },
-        { name: "Faridabad", active: false },
-    ]);
+    // Map API products to pets format
+    const PETS_DATA: PetData[] = products.map(p => {
+        let attributes: any = {};
+        if (typeof p.product_attributes === 'string') {
+            try {
+                attributes = JSON.parse(p.product_attributes);
+            } catch (e) {
+                console.error('Failed to parse product_attributes', e);
+            }
+        } else if (typeof p.product_attributes === 'object') {
+            attributes = p.product_attributes;
+        }
 
+        const productImages = p.images?.map((img: any) =>
+            img.image ? `data:image/jpeg;base64,${img.image}` : ''
+        ) || [];
+
+        return {
+            id: p.id,
+            title: p.title,
+            category: attributes.category || 'Pets',
+            type: attributes.type || 'Pet',
+            image: productImages.length > 0 ? productImages[0] : '',
+            description: p.description,
+            specs: {
+                age: attributes.age || 'Unknown',
+                breed: attributes.breed || 'Mixed',
+                gender: attributes.gender || 'N/A',
+                vaccinated: attributes.vaccinated || 'No'
+            },
+            price: `₹ ${p.price.toLocaleString()}`,
+            location: p.city ? `${p.city}, ${p.location?.state || ''}` : 'Unknown Location',
+            postedTime: formatDate(p.created_at),
+            verified: !!(p.seller?.is_verified),
+            premium: !!p.is_boosted
+        };
+    });
+
+    const [locations, setLocations] = useState(initialLocations);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
     const [showFilters, setShowFilters] = useState(false);
+
+    // Location filtering
+    const activeLocationNames = locations.filter(loc => loc.active).map(loc => loc.name);
+    const filteredPets = activeLocationNames.length > 0
+        ? PETS_DATA.filter(pet => activeLocationNames.some(locName => pet.location.includes(locName)))
+        : PETS_DATA;
+
+    // Pagination
+    const totalPages = Math.ceil(filteredPets.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentPets = filteredPets.slice(startIndex, endIndex);
 
     const toggleLocation = (name: string) => {
         setLocations(prev => prev.map(loc =>
             loc.name === name ? { ...loc, active: !loc.active } : loc
         ));
+        setCurrentPage(1);
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
@@ -117,7 +89,7 @@ export default function PetsListings() {
             <div className="mb-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
-                        Pets & Animals Accessories in New Delhi <span className="text-gray-500 font-normal text-base">- 1,240(Available)</span>
+                        Pets & Animals Accessories in New Delhi <span className="text-gray-500 font-normal text-base">- {filteredPets.length}(Available)</span>
                     </h1>
 
                     <div className="hidden md:flex items-center gap-2">
@@ -163,19 +135,52 @@ export default function PetsListings() {
 
                 {/* Left: Listings */}
                 <div className="xl:col-span-2 grid grid-cols-1 gap-6">
-                    {PETS_DATA.map(pet => (
+                    {currentPets.map(pet => (
                         <PetsCard key={pet.id} item={pet} />
                     ))}
 
                     {/* Pagination */}
-                    <div className="flex items-center justify-center gap-2 pt-8">
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors"><i className="ri-arrow-left-double-line"></i></button>
-                        <button className="w-8 h-8 flex items-center justify-center bg-[#FF8A65] text-white font-bold rounded-lg shadow-sm">1</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">2</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">3</button>
-                        <span className="text-gray-300">...</span>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors"><i className="ri-arrow-right-double-line"></i></button>
-                    </div>
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2 pt-8">
+                            {/* Previous button */}
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg transition-colors ${currentPage === 1
+                                        ? 'text-gray-300 cursor-not-allowed'
+                                        : 'text-gray-400 hover:border-[#FF8A65] hover:text-[#FF8A65]'
+                                    }`}
+                            >
+                                <i className="ri-arrow-left-double-line"></i>
+                            </button>
+
+                            {/* Page numbers */}
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    onClick={() => handlePageChange(page)}
+                                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${currentPage === page
+                                            ? 'bg-[#FF8A65] text-white font-bold shadow-sm'
+                                            : 'border border-gray-200 text-gray-500 font-medium hover:border-[#FF8A65] hover:text-[#FF8A65]'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+
+                            {/* Next button */}
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg transition-colors ${currentPage === totalPages
+                                        ? 'text-gray-300 cursor-not-allowed'
+                                        : 'text-gray-400 hover:border-[#FF8A65] hover:text-[#FF8A65]'
+                                    }`}
+                            >
+                                <i className="ri-arrow-right-double-line"></i>
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right: Ad Banner */}

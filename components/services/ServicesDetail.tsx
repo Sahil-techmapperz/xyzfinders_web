@@ -233,15 +233,30 @@ export default function ServicesDetail({ id }: { id?: string }) {
                     <div className="xl:col-span-1 space-y-6">
                         <div className="bg-white rounded-2xl p-4 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 sticky top-24">
                             <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 border-b border-gray-100 pb-4 md:pb-6">
-                                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg md:text-xl">
-                                    {providerName ? providerName.charAt(0).toUpperCase() : 'P'}
+                                <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                                    {product.seller_avatar ? (
+                                        <img
+                                            src={`data:image/jpeg;base64,${product.seller_avatar}`}
+                                            alt={providerName}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="text-lg md:text-xl font-bold text-blue-600">
+                                            {providerName ? providerName.charAt(0).toUpperCase() : 'P'}
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <p className="text-xs md:text-sm text-gray-500">Service Provider</p>
                                     <h3 className="text-base md:text-lg font-bold text-gray-900 leading-tight">{providerName}</h3>
-                                    <span className="text-[10px] text-blue-500 flex items-center gap-1 font-bold mt-1">
-                                        <i className="ri-checkbox-circle-fill"></i> Verified Partner
-                                    </span>
+                                    {!!product.seller_is_verified && (
+                                        <span className="text-[10px] text-blue-500 flex items-center gap-1 font-bold mt-1">
+                                            <i className="ri-checkbox-circle-fill"></i> Verified Partner
+                                        </span>
+                                    )}
+                                    <p className="text-[10px] text-gray-400 mt-1">
+                                        Member Since {product.seller_created_at ? new Date(product.seller_created_at).getFullYear() : '2023'}
+                                    </p>
                                 </div>
                             </div>
 
@@ -251,7 +266,7 @@ export default function ServicesDetail({ id }: { id?: string }) {
                                 </button>
                                 <ContactSellerButton
                                     productId={id || "1"}
-                                    sellerId={product.seller_id || 1}
+                                    sellerId={product.user_id || 1}
                                     className="w-full bg-[#E3F2FD] hover:bg-[#BBDEFB] text-[#2196F3] font-bold text-base md:text-lg py-3 md:py-4 rounded-xl shadow-sm transition-transform hover:scale-[1.02] mb-2 md:mb-4 flex items-center justify-center gap-2 border border-[#90CAF9]/30"
                                     label="Chat with Provider"
                                 />

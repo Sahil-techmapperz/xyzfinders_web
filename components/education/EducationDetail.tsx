@@ -198,30 +198,45 @@ export default function EducationDetail({ id }: { id?: string }) {
                         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <p className="text-[10px] text-gray-400 mb-1">Posted By:</p>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
-                                            {product.seller_name ? product.seller_name.charAt(0).toUpperCase() : 'U'}
+                                    <p className="text-[10px] md:text-xs text-gray-400 font-medium mb-3 md:mb-4">Posted By:</p>
+                                    <div className="flex items-center gap-3 md:gap-4 mb-2">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                                            {product.seller_avatar ? (
+                                                <img
+                                                    src={`data:image/jpeg;base64,${product.seller_avatar}`}
+                                                    alt={product.seller_name || 'Seller'}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="text-lg md:text-xl font-bold text-blue-600">
+                                                    {product.seller_name ? product.seller_name.charAt(0).toUpperCase() : 'U'}
+                                                </div>
+                                            )}
                                         </div>
                                         <div>
-                                            <h3 className="text-sm font-bold text-gray-900 leading-tight">{product.seller_name || 'Unknown User'}</h3>
-                                            <span className="text-[10px] text-blue-500 flex items-center gap-1">
-                                                <i className="ri-checkbox-circle-fill"></i> Verified Tutor
-                                            </span>
+                                            <h3 className="text-gray-900 font-bold text-sm md:text-base flex items-center gap-1">
+                                                {product.seller_name || 'Unknown User'}
+                                                {!!product.seller_is_verified && (
+                                                    <i className="ri-verified-badge-fill text-blue-500 text-base md:text-lg"></i>
+                                                )}
+                                            </h3>
+                                            <p className="text-[10px] md:text-xs text-gray-500">Tutor</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <p className="text-[10px] text-gray-400 mb-4">Member Since 2021</p>
+                            <p className="text-[10px] text-gray-400 mb-4">
+                                Member Since {product.seller_created_at ? new Date(product.seller_created_at).getFullYear() : '2021'}
+                            </p>
 
                             <button className="w-full bg-[#D50000] hover:bg-[#b50000] text-white text-xs font-bold py-2.5 rounded-lg mb-2 flex items-center justify-center gap-2 transition-colors cursor-pointer">
                                 <i className="ri-phone-fill"></i> Call Tutor
                             </button>
                             <ContactSellerButton
                                 productId={id || "1"}
-                                sellerId={product.seller_id || 1}
-                                className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white text-xs font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                                sellerId={product.user_id || 1}
+                                className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer text-sm md:text-base"
                                 label="Chat with Tutor"
                             />
                         </div>

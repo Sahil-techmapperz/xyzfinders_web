@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState, use } from 'react';
 import JobCard from './JobCard';
 import { JobFilters } from './types';
 import Link from 'next/link';
+import { Product } from '@/types';
+import { formatDate } from '@/lib/utils';
 
 interface Job {
     id: number;
@@ -19,106 +21,98 @@ interface Job {
 
 interface JobListingsProps {
     filters: JobFilters;
+    jobsPromise: Promise<Product[]>;
+    locationsPromise: Promise<{ name: string; active: boolean }[]>;
 }
 
-export default function JobListings({ filters }: JobListingsProps) {
-    const [jobs, setJobs] = useState<Job[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const itemsPerPage = 10;
+export default function JobListings({ filters, jobsPromise, locationsPromise }: JobListingsProps) {
+    const products = use(jobsPromise);
+    const initialLocations = use(locationsPromise);
 
-    // Reset to page 1 when filters change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [filters]);
-
-    useEffect(() => {
-        async function fetchJobsData() {
-            setLoading(true);
+    // Map API products to Job format
+    const allJobs: Job[] = products.map(p => {
+        let attributes: any = {};
+        if (typeof p.product_attributes === 'string') {
             try {
-                // Build API URL with filter parameters
-                const params = new URLSearchParams();
-                params.set('category_id', '7');
-                params.set('per_page', itemsPerPage.toString());
-                params.set('page', currentPage.toString());
+                attributes = JSON.parse(p.product_attributes);
+            } catch (e) {
+                console.error('Failed to parse product_attributes', e);
+            }
+        } else if (typeof p.product_attributes === 'object') {
+            attributes = p.product_attributes;
+        }
 
-                if (filters.search) params.set('search', filters.search);
-                if (filters.location) params.set('location', filters.location);
-                if (filters.qualification) params.set('qualification', filters.qualification);
-                if (filters.keywords) params.set('keywords', filters.keywords);
+        const specs = attributes.specs || {};
 
-                if (filters.jobType.length > 0) {
-                    params.set('job_type', filters.jobType.join(','));
-                }
-                if (filters.experience.length > 0) {
-                    params.set('experience', filters.experience.join(','));
-                }
-                if (filters.salaryRange > 0) {
-                    params.set('min_salary', filters.salaryRange.toString());
-                }
-                if (filters.salaryRanges && filters.salaryRanges.length > 0) {
-                    params.set('salary_ranges', filters.salaryRanges.join(','));
-                }
-                if (filters.workMode.length > 0) {
-                    params.set('work_mode', filters.workMode.join(','));
-                }
-                if (filters.jobRoles && filters.jobRoles.length > 0) {
-                    params.set('job_roles', filters.jobRoles.join(','));
-                }
+        return {
+            id: p.id,
+            title: p.title,
+            company: attributes.company || 'Company',
+            salary: specs.salary || `₹${p.price.toLocaleString()}/month`,
+            type: specs.type || 'Full-time',
+            experience: specs.experience || 'N/A',
+            qualification: specs.qualification || 'Any',
+            location: p.city ? `${p.city}, ${p.location?.state || ''}` : 'Unknown Location',
+            postedTime: formatDate(p.created_at)
+        };
+    });
 
-                const response = await fetch(`/api/products?${params.toString()}`);
-                if (!response.ok) throw new Error('Failed to fetch data');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
-                const result = await response.json();
-                const products = result.data || [];
+    // Client-side filtering based on filters prop
+    const filteredJobs = allJobs.filter(job => {
+        // Search filter
+        if (filters.search && !job.title.toLowerCase().includes(filters.search.toLowerCase())) {
+            return false;
+        }
 
-                if (result.pagination) {
-                    setTotalPages(result.pagination.total_pages);
-                }
+        // Location filter
+        if (filters.location && !job.location.toLowerCase().includes(filters.location.toLowerCase())) {
+            return false;
+        }
 
-                // Transform API data to Job format
-                const transformed: Job[] = products.map((product: any) => ({
-                    id: product.id,
-                    title: product.title,
-                    company: product.product_attributes?.company || 'Company',
-                    salary: product.product_attributes?.specs?.salary || `₹${product.price.toLocaleString('en-IN')}/month`,
-                    type: product.product_attributes?.specs?.type || 'Full-time',
-                    experience: product.product_attributes?.specs?.experience || 'N/A',
-                    qualification: product.product_attributes?.specs?.qualification || 'Any',
-                    location: product.product_attributes?.location || product.city || 'New Delhi',
-                    postedTime: getTimeAgo(new Date(product.created_at))
-                }));
+        // Qualification filter
+        if (filters.qualification && !job.qualification.toLowerCase().includes(filters.qualification.toLowerCase())) {
+            return false;
+        }
 
-                setJobs(transformed);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'An error occurred');
-            } finally {
-                setLoading(false);
+        // Keywords filter
+        if (filters.keywords) {
+            const keywords = filters.keywords.toLowerCase();
+            if (!job.title.toLowerCase().includes(keywords) && !job.company.toLowerCase().includes(keywords)) {
+                return false;
             }
         }
 
-        // Add a small delay to avoid double fetch race conditions if filters change quickly, 
-        // though standard debounce is handled in parent usually.
-        fetchJobsData();
-    }, [filters, currentPage]);
+        // Job type filter
+        if (filters.jobType.length > 0) {
+            const matchesType = filters.jobType.some(type =>
+                job.type.toLowerCase().includes(type.toLowerCase())
+            );
+            if (!matchesType) return false;
+        }
 
-    function getTimeAgo(date: Date): string {
-        const now = new Date();
-        const diff = now.getTime() - date.getTime();
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const days = Math.floor(hours / 24);
+        // Experience filter
+        if (filters.experience.length > 0) {
+            const matchesExp = filters.experience.some(exp =>
+                job.experience.toLowerCase().includes(exp.toLowerCase())
+            );
+            if (!matchesExp) return false;
+        }
 
-        if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
-        if (hours > 0) return `${hours} hr ago`;
-        return 'just now';
-    }
+        return true;
+    });
+
+    // Pagination
+    const totalPages = Math.ceil(filteredJobs.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentJobs = filteredJobs.slice(startIndex, endIndex);
 
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= totalPages) {
             setCurrentPage(newPage);
-            // Optional: scroll to top of list
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -146,7 +140,7 @@ export default function JobListings({ filters }: JobListingsProps) {
                     </h1>
                     <p className="text-xs md:text-sm text-gray-500 font-medium flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        {jobs.length} jobs found on this page
+                        {filteredJobs.length} jobs found
                     </p>
                 </div>
 
@@ -162,52 +156,49 @@ export default function JobListings({ filters }: JobListingsProps) {
             </div>
 
             <div className="max-w-4xl mx-auto px-4 md:px-0">
-                {loading && (
-                    <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                        <p className="mt-4 text-gray-600">Loading jobs...</p>
-                    </div>
-                )}
-
-                {error && (
-                    <div className="text-center py-12 text-red-600">
-                        <p>Error: {error}</p>
-                    </div>
-                )}
-
-                {!loading && !error && jobs.length === 0 && (
-                    <div className="text-center py-12 text-gray-600">
-                        <p>No jobs found matching your filters.</p>
-                    </div>
-                )}
-
-                {!loading && !error && jobs.map((job: Job) => (
+                {currentJobs.map((job: Job) => (
                     <JobCard key={job.id} job={job} />
                 ))}
 
-                {/* Pagination Controls */}
-                {!loading && !error && totalPages > 1 && (
-                    <div className="flex justify-center items-center gap-4 mt-8 mb-12">
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-2 mt-8 mb-12">
+                        {/* Previous button */}
                         <button
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
-                            className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#FF8A65] hover:border-[#FF8A65] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+                            className={`w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 transition-colors ${currentPage === 1
+                                    ? 'text-gray-300 bg-gray-50 cursor-not-allowed'
+                                    : 'text-gray-600 hover:border-[#FF8A65] hover:text-[#FF8A65]'
+                                }`}
                         >
-                            <i className="ri-arrow-left-s-line"></i> Previous
+                            <i className="ri-arrow-left-s-line text-lg"></i>
                         </button>
 
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-600">
-                                Page <span className="text-gray-900 font-bold">{currentPage}</span> of <span className="text-gray-900 font-bold">{totalPages}</span>
-                            </span>
-                        </div>
+                        {/* Page numbers */}
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                            <button
+                                key={page}
+                                onClick={() => handlePageChange(page)}
+                                className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-bold transition-colors ${currentPage === page
+                                        ? 'bg-[#4A90E2] text-white shadow-md'
+                                        : 'text-gray-600 hover:bg-blue-50 hover:text-[#4A90E2]'
+                                    }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
 
+                        {/* Next button */}
                         <button
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
-                            className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#FF8A65] hover:border-[#FF8A65] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+                            className={`w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 transition-colors ${currentPage === totalPages
+                                    ? 'text-gray-300 bg-gray-50 cursor-not-allowed'
+                                    : 'text-gray-600 hover:border-[#FF8A65] hover:text-[#FF8A65]'
+                                }`}
                         >
-                            Next <i className="ri-arrow-right-s-line"></i>
+                            <i className="ri-arrow-right-s-line text-lg"></i>
                         </button>
                     </div>
                 )}

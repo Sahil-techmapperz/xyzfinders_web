@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
 
         // Insert message
         const result: any = await query(
-            `INSERT INTO messages (product_id, sender_id, receiver_id, message, is_read, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 0, NOW(), NOW())`,
+            `INSERT INTO messages (product_id, sender_id, receiver_id, message, is_read, created_at)
+       VALUES (?, ?, ?, ?, 0, NOW())`,
             [product_id, authUser.userId, receiver_id, message]
         );
 

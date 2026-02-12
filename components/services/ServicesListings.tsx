@@ -1,81 +1,79 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import ServicesCard, { ServiceData } from './ServicesCard';
 import ServicesFilterPopup from './ServicesFilterPopup';
+import { Product } from '@/types';
+import { formatDate } from '@/lib/utils';
 
-const SERVICES_DATA: ServiceData[] = [
-    {
-        id: 1,
-        title: "Expert Home Plumbing Services",
-        category: "Home Maintenance",
-        subcategory: "Plumbing",
-        image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?q=80&w=2072&auto=format&fit=crop",
-        rating: 4.8,
-        reviews: 124,
-        location: "Kalkaji, New Delhi",
-        price: "₹ 500 Visit Charge",
-        verified: true,
-        provider: "QuickFix Solutions"
-    },
-    {
-        id: 2,
-        title: "Professional House Deep Cleaning",
-        category: "Cleaning",
-        subcategory: "Deep Clean",
-        image: "https://images.unsplash.com/photo-1581578731117-104f2a8d46a8?q=80&w=1974&auto=format&fit=crop",
-        rating: 4.9,
-        reviews: 210,
-        location: "Vasant Kunj, New Delhi",
-        price: "₹ 1,999 (2BHK)",
-        verified: true,
-        provider: "Sparkle Homes"
-    },
-    {
-        id: 3,
-        title: "AC Repair & Service - Brand Authorized",
-        category: "Appliances",
-        subcategory: "AC Repair",
-        image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=2069&auto=format&fit=crop",
-        rating: 4.5,
-        reviews: 89,
-        location: "Dwarka, New Delhi",
-        price: "₹ 600 Visit Charge",
-        verified: false,
-        provider: "Cool Breeze Services"
-    },
-    {
-        id: 4,
-        title: "Interior Design Consultation",
-        category: "Design",
-        subcategory: "Interior",
-        image: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000&auto=format&fit=crop",
-        rating: 5.0,
-        reviews: 45,
-        location: "South Ex, New Delhi",
-        price: "Free Consultation",
-        verified: true,
-        provider: "Urban Space Designs"
-    }
-];
+interface ServicesListingsProps {
+    servicesPromise: Promise<Product[]>;
+    locationsPromise: Promise<{ name: string; active: boolean }[]>;
+}
 
-export default function ServicesListings() {
-    const [locations, setLocations] = useState([
-        { name: "Kalkaji", active: true },
-        { name: "Vasant Kunj", active: false },
-        { name: "Dwarka", active: false },
-        { name: "South Ex", active: false },
-        { name: "Lajpat Nagar", active: false },
-        { name: "Hauz Khas", active: false },
-    ]);
+export default function ServicesListings({ servicesPromise, locationsPromise }: ServicesListingsProps) {
+    const products = use(servicesPromise);
+    const initialLocations = use(locationsPromise);
 
-    // Renamed to avoid potential ReferenceError/Shadowing issues
+    // Map API products to service format
+    const SERVICES_DATA: ServiceData[] = products.map(p => {
+        let attributes: any = {};
+        if (typeof p.product_attributes === 'string') {
+            try {
+                attributes = JSON.parse(p.product_attributes);
+            } catch (e) {
+                console.error('Failed to parse product_attributes', e);
+            }
+        } else if (typeof p.product_attributes === 'object') {
+            attributes = p.product_attributes;
+        }
+
+        const productImages = p.images?.map((img: any) =>
+            img.image ? `data:image/jpeg;base64,${img.image}` : ''
+        ) || [];
+
+        return {
+            id: p.id,
+            title: p.title,
+            category: attributes.category || 'Service',
+            subcategory: attributes.subcategory || '',
+            image: productImages.length > 0 ? productImages[0] : '',
+            rating: attributes.rating || 0,
+            reviews: attributes.reviews || 0,
+            location: p.city ? `${p.city}, ${p.location?.state || ''}` : 'Unknown Location',
+            price: `₹ ${p.price.toLocaleString()}`,
+            verified: !!(p.seller?.is_verified),
+            provider: p.seller?.name || 'Unknown Provider'
+        };
+    });
+
+    const [locations, setLocations] = useState(initialLocations);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
     const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
+
+    // Location filtering
+    const activeLocationNames = locations.filter(loc => loc.active).map(loc => loc.name);
+    const filteredServices = activeLocationNames.length > 0
+        ? SERVICES_DATA.filter(service => activeLocationNames.some(locName => service.location.includes(locName)))
+        : SERVICES_DATA;
+
+    // Pagination
+    const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentServices = filteredServices.slice(startIndex, endIndex);
 
     const toggleLocation = (name: string) => {
         setLocations(prev => prev.map(loc =>
             loc.name === name ? { ...loc, active: !loc.active } : loc
         ));
+        setCurrentPage(1);
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
@@ -85,7 +83,7 @@ export default function ServicesListings() {
             <div className="mb-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
-                        Services in New Delhi <span className="text-gray-500 font-normal text-base">- 482(Available)</span>
+                        Services in New Delhi <span className="text-gray-500 font-normal text-base">- {filteredServices.length}(Available)</span>
                     </h1>
                     <div className="hidden md:flex items-center gap-2">
                         <span className="text-xs font-bold text-gray-600">Sort By :</span>
@@ -130,24 +128,52 @@ export default function ServicesListings() {
 
                 {/* Listings */}
                 <div className="xl:col-span-2 grid grid-cols-1 gap-6">
-                    {SERVICES_DATA.map(item => (
+                    {currentServices.map(item => (
                         <ServicesCard key={item.id} item={item} />
                     ))}
 
                     {/* Pagination */}
-                    <div className="flex justify-center items-center gap-2 mt-8">
-                        <button className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-[#00B0FF] hover:text-white hover:border-[#00B0FF] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                            <i className="ri-arrow-left-s-line"></i>
-                        </button>
-                        <button className="w-10 h-10 rounded-lg bg-[#00B0FF] text-white font-bold flex items-center justify-center shadow-md">1</button>
-                        <button className="w-10 h-10 rounded-lg border border-gray-200 text-gray-600 font-bold flex items-center justify-center hover:bg-gray-50 transition-all">2</button>
-                        <button className="w-10 h-10 rounded-lg border border-gray-200 text-gray-600 font-bold flex items-center justify-center hover:bg-gray-50 transition-all">3</button>
-                        <span className="text-gray-400">...</span>
-                        <button className="w-10 h-10 rounded-lg border border-gray-200 text-gray-600 font-bold flex items-center justify-center hover:bg-gray-50 transition-all">8</button>
-                        <button className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-[#00B0FF] hover:text-white hover:border-[#00B0FF] transition-all">
-                            <i className="ri-arrow-right-s-line"></i>
-                        </button>
-                    </div>
+                    {totalPages > 1 && (
+                        <div className="flex justify-center items-center gap-2 mt-8">
+                            {/* Previous button */}
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className={`w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center transition-all ${currentPage === 1
+                                        ? 'text-gray-300 bg-gray-50 cursor-not-allowed'
+                                        : 'text-gray-500 hover:bg-[#00B0FF] hover:text-white hover:border-[#00B0FF]'
+                                    }`}
+                            >
+                                <i className="ri-arrow-left-s-line"></i>
+                            </button>
+
+                            {/* Page numbers */}
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    onClick={() => handlePageChange(page)}
+                                    className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold transition-all ${currentPage === page
+                                            ? 'bg-[#00B0FF] text-white shadow-md'
+                                            : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+
+                            {/* Next button */}
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className={`w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center transition-all ${currentPage === totalPages
+                                        ? 'text-gray-300 bg-gray-50 cursor-not-allowed'
+                                        : 'text-gray-500 hover:bg-[#00B0FF] hover:text-white hover:border-[#00B0FF]'
+                                    }`}
+                            >
+                                <i className="ri-arrow-right-s-line"></i>
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Sidebar Ad/Promo */}

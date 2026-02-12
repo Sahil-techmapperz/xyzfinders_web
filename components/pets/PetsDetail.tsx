@@ -241,28 +241,47 @@ export default function PetsDetail({ id }: { id?: string }) {
                         <div className="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100">
                             <div className="flex justify-between items-start mb-3 md:mb-4">
                                 <div>
-                                    <p className="text-[10px] text-gray-400 mb-1">Posted By:</p>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-base md:text-lg">
-                                            {product.seller_name ? product.seller_name.charAt(0).toUpperCase() : 'U'}
+                                    <p className="text-[10px] md:text-xs text-gray-400 font-medium mb-3 md:mb-4">Posted By:</p>
+                                    <div className="flex items-center gap-3 md:gap-4 mb-2">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                                            {product.seller_avatar ? (
+                                                <img
+                                                    src={`data:image/jpeg;base64,${product.seller_avatar}`}
+                                                    alt={product.seller_name || 'Seller'}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="text-lg md:text-xl font-bold text-orange-600">
+                                                    {product.seller_name ? product.seller_name.charAt(0).toUpperCase() : 'U'}
+                                                </div>
+                                            )}
                                         </div>
                                         <div>
-                                            <h3 className="text-xs md:text-sm font-bold text-gray-900 leading-tight">{product.seller_name || 'Unknown User'}</h3>
-                                            <span className="text-[10px] text-blue-500 flex items-center gap-1">
-                                                <i className="ri-checkbox-circle-fill"></i> Verified Breeder
-                                            </span>
+                                            <h3 className="text-gray-900 font-bold text-sm md:text-base flex items-center gap-1">
+                                                {product.seller_name || 'Unknown User'}
+                                                {!!product.seller_is_verified && (
+                                                    <i className="ri-verified-badge-fill text-blue-500 text-base md:text-lg"></i>
+                                                )}
+                                            </h3>
+                                            <p className="text-[10px] md:text-xs text-gray-500">Seller</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <p className="text-[10px] text-gray-400 mb-3 md:mb-4">Member Since 2022</p>
+                            <p className="text-[10px] text-gray-400 mb-3 md:mb-4">
+                                Member Since {product.seller_created_at ? new Date(product.seller_created_at).getFullYear() : '2022'}
+                            </p>
 
                             <div className="space-y-2">
                                 <button className="w-full bg-[#D50000] hover:bg-[#b50000] text-white text-xs font-bold py-2.5 rounded-lg mb-2 flex items-center justify-center gap-2 transition-colors cursor-pointer">
                                     <i className="ri-phone-fill"></i> Call Seller
                                 </button>
-                                <ContactSellerButton productId={id || "1"} sellerId={product.seller_id || 1} />
+                                <ContactSellerButton
+                                    productId={id || "1"}
+                                    sellerId={product.user_id || 1}
+                                    className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer text-sm md:text-base"
+                                />
                             </div>
                         </div>
 

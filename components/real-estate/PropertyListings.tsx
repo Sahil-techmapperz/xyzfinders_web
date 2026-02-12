@@ -1,133 +1,86 @@
 "use client";
 
-import { useState, Suspense, Fragment } from 'react';
+import { useState, Fragment, use } from 'react';
 import { useSearchParams } from 'next/navigation';
 import GoogleAdBanner from '@/components/home/GoogleAdBanner';
-import Link from 'next/link';
 import PropertyCard from './PropertyCard';
+import { Product } from '@/types';
+import { formatDate } from '@/lib/utils';
 
 interface Property {
     id: number;
     title: string;
     category: string;
-    type: string; // e.g., Apartment, House
+    type: string;
     price: string;
     location: string;
     specs: {
         bedroom?: number;
         kitchen?: number;
         bathroom?: number;
-        sharing?: string; // For PG
+        sharing?: string;
     };
     tags: string[];
-
     images: string[];
     verified: boolean;
     premium: boolean;
 }
 
-const properties: Property[] = [
-    {
-        id: 1,
-        title: "Premium 4BHK Apartment for Rent",
-        category: "Apartment",
-        type: "Apartment",
-        price: "₹ 11,000",
-        location: "Kundeshwari Rd, Kundeshwari, Kashipur, Uttarakhand",
-        specs: { bedroom: 4, kitchen: 1, bathroom: 2 },
-        tags: ["Spacious Plot", "Unfurnished", "Ready to Shift"],
-        images: [
-            "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
-            "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80",
-            "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80"
-        ],
-        verified: true,
-        premium: true
-    },
-    {
-        id: 2,
-        title: "Premium 2BHK Apartment for Rent",
-        category: "House",
-        type: "House",
-        price: "₹ 11,000",
-        location: "Kundeshwari Rd, Kundeshwari, Kashipur, Uttarakhand",
-        specs: { bedroom: 2, kitchen: 1, bathroom: 1 },
-        tags: ["Room with Partition", "Fullfurnished", "Ready to Shift"],
-        images: [
-            "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80",
-            "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
-            "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80"
-        ],
-        verified: true,
-        premium: true
-    },
-    {
-        id: 3,
-        title: "High-End Executive Female Bed Space |",
-        category: "Girls PG",
-        type: "Girls PG",
-        price: "₹ 5,500",
-        location: "Kundeshwari Rd, Kundeshwari, Kashipur, Uttarakhand",
-        specs: { sharing: "4 Bed Sharing" },
-        tags: ["Spacious Plot", "Unfurnished", "Ready to Shift"],
-        images: [
-            "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
-            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=60"
-        ],
-        verified: true,
-        premium: true
-    },
-    {
-        id: 4,
-        title: "Premium 3BHK Apartment for Rent",
-        category: "Apartment",
-        type: "Apartment",
-        price: "₹ 9,000",
-        location: "Kundeshwari Rd, Kundeshwari, Kashipur, Uttarakhand",
-        specs: { bedroom: 3, kitchen: 1, bathroom: 2 },
-        tags: ["Spacious Plot", "Semi-furnished", "Ready to Shift"],
-        images: [
-            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=60",
-            "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80"
-        ],
-        verified: true,
-        premium: true
-    },
-    {
-        id: 5,
-        title: "Premium 5BHK Apartment for Rent",
-        category: "Apartment",
-        type: "Apartment",
-        price: "₹ 11,000",
-        location: "Kundeshwari Rd, Kundeshwari, Kashipur, Uttarakhand",
-        specs: { bedroom: 5, kitchen: 2, bathroom: 3 },
-        tags: ["Spacious Plot", "Fully-furnished", "Ready to Shift"],
-        images: [
-            "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80",
-            "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"
-        ],
-        verified: true,
-        premium: true
-    }
-];
+interface PropertyListingsProps {
+    propertiesPromise: Promise<Product[]>;
+    locationsPromise: Promise<{ name: string; active: boolean }[]>;
+}
 
-const initialLocations = [
-    { name: "Sarjoni Nagar", active: true },
-    { name: "Greater Kailash", active: false },
-    { name: "Vasant Kunj", active: false },
-    { name: "Defence Colony", active: false },
-    { name: "Hauz Khas", active: false },
-    { name: "Shanti Niketan", active: false },
-    { name: "Gurugram", active: false },
-    { name: "Old Delhi", active: false },
-    { name: "Chanakyapuri", active: false },
-];
-
-function PropertyListingsContent() {
+export default function PropertyListings({ propertiesPromise, locationsPromise }: PropertyListingsProps) {
     const searchParams = useSearchParams();
     const categoryParam = searchParams.get('category');
     const typeParam = searchParams.get('type');
+
+    const products = use(propertiesPromise);
+    const initialLocations = use(locationsPromise);
+
+    // Map API products to Property format
+    const properties: Property[] = products.map(p => {
+        let attributes: any = {};
+        if (typeof p.product_attributes === 'string') {
+            try {
+                attributes = JSON.parse(p.product_attributes);
+            } catch (e) {
+                console.error('Failed to parse product_attributes', e);
+            }
+        } else if (typeof p.product_attributes === 'object') {
+            attributes = p.product_attributes;
+        }
+
+        const specs = attributes.specs || {};
+        const productImages = p.images?.map((img: any) =>
+            img.image ? `data:image/jpeg;base64,${img.image}` : ''
+        ) || [];
+
+        return {
+            id: p.id,
+            title: p.title,
+            category: attributes.category || 'Real Estate',
+            type: attributes.type || 'Property',
+            price: `₹ ${p.price.toLocaleString()}`,
+            location: p.city ? `${p.city}, ${p.location?.state || ''}` : 'Unknown Location',
+            specs: {
+                bedroom: specs.bedroom,
+                kitchen: specs.kitchen,
+                bathroom: specs.bathroom,
+                sharing: specs.sharing
+            },
+            tags: attributes.tags || [],
+            images: productImages,
+            verified: !!(p.seller?.is_verified),
+            premium: !!p.is_boosted
+        };
+    });
+
+    // Use locations from database
     const [locations, setLocations] = useState(initialLocations);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
     const toggleLocation = (index: number) => {
         setLocations(prev => prev.map((loc, i) =>
@@ -135,8 +88,8 @@ function PropertyListingsContent() {
         ));
     };
 
-    // Filter properties based on query params
-    const filteredProperties = properties.filter(property => {
+    // Filter by URL params
+    const urlFilteredProperties = properties.filter(property => {
         const matchesCategory = categoryParam
             ? property.category.toLowerCase().includes(categoryParam.toLowerCase())
             : true;
@@ -146,6 +99,23 @@ function PropertyListingsContent() {
 
         return matchesCategory && matchesType;
     });
+
+    // Filter by locations
+    const activeLocationNames = locations.filter(loc => loc.active).map(loc => loc.name);
+    const filteredProperties = activeLocationNames.length > 0
+        ? urlFilteredProperties.filter(property => activeLocationNames.some(locName => property.location.includes(locName)))
+        : urlFilteredProperties;
+
+    // Pagination
+    const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentProperties = filteredProperties.slice(startIndex, endIndex);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     return (
         <section className="container mx-auto px-4 py-8 font-jost">
@@ -215,8 +185,8 @@ function PropertyListingsContent() {
                 {/* Left Column: Listings */}
                 <div className="lg:col-span-3 flex flex-col gap-6">
 
-                    {filteredProperties.length > 0 ? (
-                        filteredProperties.map((property, index) => (
+                    {currentProperties.length > 0 ? (
+                        currentProperties.map((property, index) => (
                             <Fragment key={property.id}>
                                 <PropertyCard property={property} />
 
@@ -235,25 +205,47 @@ function PropertyListingsContent() {
                     )}
 
                     {/* Pagination */}
-                    <div className="flex items-center justify-center gap-2 mt-8">
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:border-brand-orange hover:text-brand-orange bg-white">
-                            <i className="ri-arrow-left-double-line"></i>
-                        </button>
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((page) => (
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2 mt-8">
+                            {/* Previous button */}
                             <button
-                                key={page}
-                                className={`w-8 h-8 flex items-center justify-center border rounded text-xs font-semibold ${page === 1
-                                    ? "border-brand-orange bg-brand-orange text-white"
-                                    : "border-gray-200 bg-white text-gray-500 hover:border-brand-orange hover:text-brand-orange"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded bg-white ${currentPage === 1
+                                        ? 'text-gray-300 cursor-not-allowed'
+                                        : 'text-gray-500 hover:border-brand-orange hover:text-brand-orange'
                                     }`}
                             >
-                                {page}
+                                <i className="ri-arrow-left-double-line"></i>
                             </button>
-                        ))}
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:border-brand-orange hover:text-brand-orange bg-white">
-                            <i className="ri-arrow-right-double-line"></i>
-                        </button>
-                    </div>
+
+                            {/* Page numbers */}
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    onClick={() => handlePageChange(page)}
+                                    className={`w-8 h-8 flex items-center justify-center border rounded text-xs font-semibold ${currentPage === page
+                                            ? 'border-brand-orange bg-brand-orange text-white'
+                                            : 'border-gray-200 bg-white text-gray-500 hover:border-brand-orange hover:text-brand-orange'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+
+                            {/* Next button */}
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded bg-white ${currentPage === totalPages
+                                        ? 'text-gray-300 cursor-not-allowed'
+                                        : 'text-gray-500 hover:border-brand-orange hover:text-brand-orange'
+                                    }`}
+                            >
+                                <i className="ri-arrow-right-double-line"></i>
+                            </button>
+                        </div>
+                    )}
 
                 </div>
 
@@ -271,12 +263,3 @@ function PropertyListingsContent() {
     );
 }
 
-
-
-export default function PropertyListings() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <PropertyListingsContent />
-        </Suspense>
-    );
-}

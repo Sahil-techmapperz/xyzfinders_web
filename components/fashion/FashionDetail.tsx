@@ -18,6 +18,11 @@ interface Product {
     postedTime?: string;
     verified?: boolean;
     premium?: boolean;
+    seller_id?: number;
+    seller_name?: string;
+    seller_created_at?: string;
+    seller_is_verified?: boolean;
+    seller_avatar?: string | null;
 }
 
 export default function FashionDetail({ id }: { id?: string }) {
@@ -71,6 +76,11 @@ export default function FashionDetail({ id }: { id?: string }) {
                         postedTime: `Posted ${new Date(item.created_at).toLocaleDateString()}`,
                         verified: attributes.verified || false,
                         premium: attributes.premium || item.is_featured,
+                        seller_id: item.user_id,
+                        seller_name: item.seller_name,
+                        seller_created_at: item.seller_created_at,
+                        seller_is_verified: item.seller_is_verified,
+                        seller_avatar: item.seller_avatar
                     });
                 }
             } catch (error) {
@@ -134,6 +144,7 @@ export default function FashionDetail({ id }: { id?: string }) {
                                     postedTime: `Posted ${new Date(item.created_at).toLocaleDateString()}`,
                                     verified: attributes.verified || false,
                                     premium: attributes.premium || item.is_featured,
+                                    seller_id: item.user_id,
                                 };
                             });
 
@@ -339,22 +350,32 @@ export default function FashionDetail({ id }: { id?: string }) {
 
                             <div className="flex items-center gap-3 md:gap-4 mb-2">
                                 <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-full flex items-center justify-center overflow-hidden">
-                                    <div className="text-lg md:text-xl font-bold text-purple-600">
-                                        {/* @ts-ignore */}
-                                        {product.seller_name ? product.seller_name.charAt(0).toUpperCase() : 'S'}
-                                    </div>
+                                    {product.seller_avatar ? (
+                                        <img
+                                            src={`data:image/jpeg;base64,${product.seller_avatar}`}
+                                            alt={product.seller_name || 'Seller'}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="text-lg md:text-xl font-bold text-purple-600">
+                                            {product.seller_name ? product.seller_name.charAt(0).toUpperCase() : 'S'}
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <h3 className="text-gray-900 font-bold text-sm md:text-base flex items-center gap-1">
-                                        {/* @ts-ignore */}
                                         {product.seller_name || 'Seller'}
-                                        <i className="ri-verified-badge-fill text-blue-500 text-base md:text-lg"></i>
+                                        {!!product.seller_is_verified && (
+                                            <i className="ri-verified-badge-fill text-blue-500 text-base md:text-lg"></i>
+                                        )}
                                     </h3>
                                     <p className="text-[10px] md:text-xs text-gray-500">Fashion Seller</p>
                                 </div>
                             </div>
 
-                            <p className="text-[10px] text-gray-400 mb-4 md:mb-6">Member Since 2024</p>
+                            <p className="text-[10px] text-gray-400 mb-4 md:mb-6">
+                                Member Since {product.seller_created_at ? new Date(product.seller_created_at).getFullYear() : '2024'}
+                            </p>
 
                             <div className="space-y-2 md:space-y-3">
                                 <button className="w-full bg-[#D53F3F] hover:bg-[#c43232] text-white font-bold py-2.5 md:py-3 rounded-lg mb-2 md:mb-3 flex items-center justify-center gap-2 transition-colors cursor-pointer text-sm md:text-base">
@@ -364,7 +385,6 @@ export default function FashionDetail({ id }: { id?: string }) {
 
                                 <ContactSellerButton
                                     productId={id || "1"}
-                                    /* @ts-ignore */
                                     sellerId={product.seller_id || 1}
                                     className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer text-sm md:text-base"
                                 />

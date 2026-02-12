@@ -121,7 +121,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
                 <div>
                     <div className="mb-2">
                         <h3 className="font-bold text-base md:text-lg text-gray-900 leading-tight mb-0.5 line-clamp-1">
-                            {property.title}
+                          <Link href={`/real-estate/${property.id}-${property.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}>{property.title}</Link>
                         </h3>
                         <p className="text-gray-500 text-xs font-medium">{property.category}</p>
                     </div>

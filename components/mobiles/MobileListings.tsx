@@ -1,107 +1,88 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import MobileCard, { MobileData } from './MobileCard';
 import MobileFilterPopup from './MobileFilterPopup';
+import { Product } from '@/types';
+import { formatDate } from '@/lib/utils';
 
-const MOBILE_DATA: MobileData[] = [
-    {
-        id: 1,
-        title: "iPhone 15 Pro Max 256 GB Storage Desert Titanium",
-        category: "iOS",
-        brand: "APPLE",
-        image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=2070&auto=format&fit=crop",
-        images: [
-            "https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1696446701796-da61225697cc?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1621330396173-e41b11d17718?q=80&w=2070&auto=format&fit=crop"
-        ],
-        description: "EXCELLENT CONDITION 256GB STORAGE WITH ALL ACCESSORIES...",
-        specs: {
-            age: "6 MONTHS",
-            model: "iPhone 15 Pro Max",
-            storage: "256 GB",
-            colour: "Desert Titanium"
-        },
-        price: "₹ 95,000/-",
-        location: "Connaught Place, New Delhi, Delhi",
-        postedTime: "Posted 2 hr ago",
-        verified: true,
-        premium: true
-    },
-    {
-        id: 2,
-        title: "Samsung Galaxy S24 Ultra 12GB RAM, 512GB Storage",
-        category: "Android",
-        brand: "SAMSUNG",
-        image: "https://images.unsplash.com/photo-1610945264803-c22b62d2a7b3?q=80&w=2070&auto=format&fit=crop",
-        description: "FLAGSHIP SMARTPHONE WITH AI FEATURES AND S-PEN INCLUDED...",
-        specs: {
-            age: "3 MONTHS",
-            model: "Galaxy S24 Ultra",
-            storage: "512 GB",
-            colour: "Titanium Black"
-        },
-        price: "₹ 89,000/-",
-        location: "Saket, New Delhi, Delhi",
-        postedTime: "Posted 5 hr ago",
-        verified: true,
-        premium: true
-    },
-    {
-        id: 3,
-        title: "OnePlus 12 Pro 16GB RAM 256GB Storage",
-        category: "Android",
-        brand: "ONEPLUS",
-        image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=2080&auto=format&fit=crop",
-        description: "HASSELBLAD CAMERA SYSTEM WITH FAST CHARGING SUPPORT...",
-        specs: {
-            age: "1 YEAR",
-            model: "OnePlus 12 Pro",
-            storage: "256 GB",
-            colour: "Midnight Black"
-        },
-        price: "₹ 52,000/-",
-        location: "Rohini, New Delhi, Delhi",
-        postedTime: "Posted 8 hr ago",
-        verified: true,
-        premium: false
-    },
-    {
-        id: 4,
-        title: "Google Pixel 8 Pro 12GB RAM 256GB Storage",
-        category: "Android",
-        brand: "GOOGLE",
-        image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=2127&auto=format&fit=crop",
-        description: "PURE ANDROID EXPERIENCE WITH GOOGLE TENSOR G3 CHIP...",
-        specs: {
-            age: "BRAND NEW",
-            model: "Pixel 8 Pro",
-            storage: "256 GB",
-            colour: "Obsidian"
-        },
-        price: "₹ 74,000/-",
-        location: "Greater Kailash, New Delhi, Delhi",
-        postedTime: "Posted 1 day ago",
-        verified: false,
-        premium: false
-    }
-];
 
-export default function MobileListings() {
-    const [locations, setLocations] = useState([
-        { name: "Sarjoni Nagar", active: true },
-        { name: "Greater Kailash", active: false },
-        { name: "Vasant Kunj", active: false },
-        { name: "Defence Colony", active: false },
-        { name: "Hauz Khas", active: false },
-        { name: "Shanti Niketan", active: false },
-        { name: "Gurugram", active: false },
-        { name: "Old Delhi", active: false },
-        { name: "Chanakyapuri", active: false },
-    ]);
+interface MobileListingsProps {
+    mobilesPromise: Promise<Product[]>;
+    locationsPromise: Promise<{ name: string; active: boolean }[]>;
+}
+
+export default function MobileListings({ mobilesPromise, locationsPromise }: MobileListingsProps) {
+    const products = use(mobilesPromise);
+    const initialLocations = use(locationsPromise);
+
+    // Map API products to MobileData
+    const mobiles: MobileData[] = products.map(p => {
+        // Parse attributes safely
+        let attributes: any = {};
+        if (typeof p.product_attributes === 'string') {
+            try {
+                attributes = JSON.parse(p.product_attributes);
+            } catch (e) {
+                console.error('Failed to parse product_attributes', e);
+            }
+        } else if (typeof p.product_attributes === 'object') {
+            attributes = p.product_attributes;
+        }
+
+        const specs = attributes.specs || {};
+
+        // Convert images to URLs
+        const productImages = p.images?.map((img: any) =>
+            img.image ? `data:image/jpeg;base64,${img.image}` : ''
+        ) || [];
+
+        return {
+            id: p.id,
+            title: p.title,
+            category: attributes.category || 'Mobiles',
+            brand: attributes.brand || '',
+            image: productImages.length > 0 ? productImages[0] : '',
+            images: productImages,
+            description: p.description,
+            specs: {
+                age: specs.age || '',
+                model: specs.model || p.title,
+                storage: specs.storage || '',
+                colour: specs.colour || ''
+            },
+            price: `₹ ${p.price.toLocaleString()}/-`,
+            location: p.city ? `${p.city}, ${p.location?.state || ''}` : 'Unknown Location',
+            postedTime: `Posted ${formatDate(p.created_at)}`,
+            verified: !!(p.seller?.is_verified),
+            premium: !!p.is_boosted
+        };
+    });
+
+    // Use locations from database
+    const [locations, setLocations] = useState(initialLocations);
 
     const [showFilters, setShowFilters] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+    // Filter mobiles based on selected locations
+    const activeLocationNames = locations.filter(loc => loc.active).map(loc => loc.name);
+    const filteredMobiles = activeLocationNames.length > 0
+        ? mobiles.filter(mobile => activeLocationNames.some(locName => mobile.location.includes(locName)))
+        : mobiles;
+
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredMobiles.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentMobiles = filteredMobiles.slice(startIndex, endIndex);
+
+    // Reset to page 1 when filters change
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     const toggleLocation = (name: string) => {
         setLocations(prev => prev.map(loc =>
@@ -121,7 +102,7 @@ export default function MobileListings() {
 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
-                        Mobile Phones for Sale in New Delhi <span className="text-gray-500 font-normal text-base">- 8465(Available)</span>
+                        Mobile Phones for Sale in New Delhi <span className="text-gray-500 font-normal text-base">- {mobiles.length} (Available)</span>
                     </h1>
 
                     {/* Sort By - Hidden on Mobile to match reference which focuses on pills, or keep small if needed. Keeping hidden for strict mobile match if requested, but let's keep it visible for desktop flexibility */}
@@ -168,22 +149,52 @@ export default function MobileListings() {
 
                 {/* Left: Listings */}
                 <div className="xl:col-span-2 grid grid-cols-1 gap-6">
-                    {MOBILE_DATA.map(mobile => (
+                    {currentMobiles.map(mobile => (
                         <MobileCard key={mobile.id} item={mobile} />
                     ))}
 
                     {/* Pagination */}
-                    <div className="flex items-center justify-center gap-2 pt-8">
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors"><i className="ri-arrow-left-double-line"></i></button>
-                        <button className="w-8 h-8 flex items-center justify-center bg-[#FF8A65] text-white font-bold rounded-lg shadow-sm">1</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">2</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">3</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">4</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">5</button>
-                        <span className="text-gray-300">...</span>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-500 font-medium rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors">10</button>
-                        <button className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 rounded-lg hover:border-[#FF8A65] hover:text-[#FF8A65] transition-colors"><i className="ri-arrow-right-double-line"></i></button>
-                    </div>
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2 pt-8">
+                            {/* Previous button */}
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg transition-colors ${currentPage === 1
+                                        ? 'text-gray-300 cursor-not-allowed'
+                                        : 'text-gray-400 hover:border-[#FF8A65] hover:text-[#FF8A65]'
+                                    }`}
+                            >
+                                <i className="ri-arrow-left-double-line"></i>
+                            </button>
+
+                            {/* Page numbers */}
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    onClick={() => handlePageChange(page)}
+                                    className={`w-8 h-8 flex items-center justify-center rounded-lg font-medium transition-colors ${currentPage === page
+                                            ? 'bg-[#FF8A65] text-white font-bold shadow-sm'
+                                            : 'border border-gray-200 text-gray-500 hover:border-[#FF8A65] hover:text-[#FF8A65]'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+
+                            {/* Next button */}
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg transition-colors ${currentPage === totalPages
+                                        ? 'text-gray-300 cursor-not-allowed'
+                                        : 'text-gray-400 hover:border-[#FF8A65] hover:text-[#FF8A65]'
+                                    }`}
+                            >
+                                <i className="ri-arrow-right-double-line"></i>
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right: Ad Banner */}

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         p.id as product_id,
         p.title as product_title,
         p.price as product_price,
-        (SELECT id FROM product_images WHERE product_id = p.id LIMIT 1) as product_image,
+        (SELECT image_data FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, display_order ASC LIMIT 1) as product_image_data,
         sender.id as sender_id,
         sender.name as sender_name,
         receiver.id as receiver_id,
@@ -45,7 +45,14 @@ export async function GET(request: NextRequest) {
             [authUser.userId, authUser.userId, authUser.userId, authUser.userId]
         );
 
-        return successResponse(conversations);
+        // Process conversations to handle image buffer
+        const processedConversations = conversations.map((c: any) => ({
+            ...c,
+            product_image: c.product_image_data ? c.product_image_data.toString('base64') : null,
+            product_image_data: undefined // Remove buffer from response
+        }));
+
+        return successResponse(processedConversations);
     } catch (error) {
         console.error('Get conversations error:', error);
         return errorResponse('Failed to fetch conversations', 500);

@@ -21,7 +21,6 @@ export async function GET(
         const messages = await query(
             `SELECT m.*,
         sender.name as sender_name,
-        sender.avatar as sender_avatar,
         receiver.name as receiver_name
        FROM messages m
        LEFT JOIN users sender ON m.sender_id = sender.id

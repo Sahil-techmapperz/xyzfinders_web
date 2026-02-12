@@ -7,19 +7,19 @@ export interface FurnitureData {
     category: string;
     image: string;
     images?: string[];
-    brand?: string; // Brand name to show on image
+    brand?: string;
     specs: {
         material: string;
         condition: string;
         dimensions?: string;
         age?: string;
     };
-    description?: string; // Short description
+    description?: string;
     price: string;
     location: string;
     postedTime: string;
     verified: boolean;
-    premium?: boolean; // Premium listing badge
+    premium?: boolean;
 }
 
 interface FurnitureCardProps {
@@ -29,168 +29,142 @@ interface FurnitureCardProps {
 export default function FurnitureCard({ item }: FurnitureCardProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-    // Extract brand from category or title
-    const brand = item.brand || item.category;
-
     const createSlug = (title: string) => {
         return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     };
     const seoUrl = `/furniture/${item.id}-${createSlug(item.title)}`;
 
-    // Ensure we have an array of images
     const images = (item.images && item.images.length > 0) ? item.images : [item.image];
 
-    const handleDotClick = (e: React.MouseEvent, index: number) => {
+    const nextImage = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        setCurrentImageIndex(index);
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    };
+
+    const prevImage = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col h-full">
+        <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden group">
+            <div className="flex flex-col md:flex-row">
+                {/* Image Section - Left */}
+                <div className="relative w-full md:w-80 h-56 md:h-64 bg-gray-100 overflow-hidden group/slider flex-shrink-0">
+                    <Link href={seoUrl} className="block w-full h-full">
+                        <img
+                            src={images[currentImageIndex]}
+                            alt={item.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                    </Link>
 
-            {/* Image Slider Section */}
-            <div className="relative w-full h-64 bg-gray-100 overflow-hidden group/slider">
-                <Link href={seoUrl}>
-                    <div
-                        className="flex h-full transition-transform duration-500 ease-out"
-                        style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
-                    >
-                        {images.map((img, idx) => (
-                            <img
-                                key={idx}
-                                src={img}
-                                alt={`${item.title} - ${idx + 1}`}
-                                className="w-full h-full object-cover shrink-0"
-                            />
-                        ))}
-                    </div>
-                </Link>
+                    {/* Slider Controls */}
+                    {images.length > 1 && (
+                        <>
+                            <button
+                                onClick={prevImage}
+                                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity hover:bg-black/50"
+                            >
+                                <i className="ri-arrow-left-s-line"></i>
+                            </button>
+                            <button
+                                onClick={nextImage}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity hover:bg-black/50"
+                            >
+                                <i className="ri-arrow-right-s-line"></i>
+                            </button>
 
-                {/* Navigation Arrows (Visible on hover) */}
-                {images.length > 1 && (
-                    <>
-                        <button
-                            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center hover:bg-black/50 backdrop-blur-sm opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-                            }}
-                        >
-                            <i className="ri-arrow-left-s-line"></i>
-                        </button>
-                        <button
-                            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center hover:bg-black/50 backdrop-blur-sm opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-                            }}
-                        >
-                            <i className="ri-arrow-right-s-line"></i>
-                        </button>
-                    </>
-                )}
+                            {/* Image Counter Badge */}
+                            <div className="absolute bottom-4 left-4 bg-black/80 text-white text-xs font-bold px-2.5 py-1 rounded backdrop-blur-sm flex items-center gap-1">
+                                <i className="ri-image-line"></i> {currentImageIndex + 1}/{images.length}
+                            </div>
+                        </>
+                    )}
 
-                {/* 1/X Badge */}
-                <div className="absolute bottom-3 left-3 z-10 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm backdrop-blur-sm">
-                    <i className="ri-image-line mr-1"></i>
-                    {currentImageIndex + 1}/{images.length}
+                    {/* Premium Badge */}
+                    {item.premium && (
+                        <div className="absolute top-4 right-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                            Premium
+                        </div>
+                    )}
+
+                    {/* Verified Badge */}
+                    {item.verified && (
+                        <div className="absolute top-4 left-4 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-md text-white border-2 border-white">
+                            <i className="ri-check-fill text-lg font-bold"></i>
+                        </div>
+                    )}
                 </div>
 
-                {/* Pagination Dots */}
-                {images.length > 1 && (
-                    <div className="absolute bottom-3 left-0 right-0 z-10 flex justify-center gap-1.5 pointer-events-none">
-                        {images.map((_, idx) => (
-                            <button
-                                key={idx}
-                                onClick={(e) => handleDotClick(e, idx)}
-                                className={`w-1.5 h-1.5 rounded-full transition-all shadow-sm pointer-events-auto ${currentImageIndex === idx ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}`}
-                            />
-                        ))}
-                    </div>
-                )}
-
-                {/* Verified Badge */}
-                {item.verified && (
-                    <div className="absolute top-4 left-4 z-10 w-6 h-6 bg-[#4CAF50] rounded-full flex items-center justify-center shadow-sm text-white" title="Verified Seller">
-                        <i className="ri-check-line text-sm font-bold"></i>
-                    </div>
-                )}
-
-                {/* Premium Badge */}
-                {item.premium && (
-                    <div className="absolute top-4 right-0 z-10 bg-[#FFF8E1] text-[#FFB300] text-[10px] font-bold px-3 py-1 shadow-sm border-l border-b border-[#FFE082] uppercase tracking-wide">
-                        Premium
-                    </div>
-                )}
-            </div>
-
-            {/* Content Section */}
-            <div className="flex-1 p-5 flex flex-col justify-between">
-                <div>
+                {/* Content Section - Right */}
+                <div className="flex-1 p-5 flex flex-col">
+                    {/* Title */}
                     <Link href={seoUrl}>
-                        <h3 className="font-bold text-lg text-gray-800 leading-tight mb-2 line-clamp-2 group-hover:text-brand-orange transition-colors">
+                        <h3 className="text-xl font-bold text-gray-900 mb-1 hover:text-[#8D6E63] transition-colors line-clamp-1">
                             {item.title}
                         </h3>
                     </Link>
 
-                    {/* Specs Grid */}
-                    <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs text-gray-500 mb-4 mt-3">
+                    {/* Category */}
+                    <p className="text-sm text-gray-500 font-medium mb-4">{item.category}</p>
+
+                    {/* Specs Row with Icons */}
+                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63] shrink-0">
-                                <i className="ri-paint-brush-line"></i>
-                            </div>
-                            <span className="font-medium truncate">{item.specs.material}</span>
+                            <i className="ri-paint-brush-line text-lg text-gray-400"></i>
+                            <span>{item.specs.material}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63] shrink-0">
-                                <i className="ri-checkbox-circle-line"></i>
-                            </div>
-                            <span className="font-medium truncate">{item.specs.condition}</span>
+                            <i className="ri-checkbox-circle-line text-lg text-gray-400"></i>
+                            <span>{item.specs.condition}</span>
                         </div>
-                        {item.specs.dimensions && (
-                            <div className="flex items-center gap-2 col-span-2 md:col-span-1">
-                                <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63] shrink-0">
-                                    <i className="ri-ruler-line"></i>
-                                </div>
-                                <span className="font-medium truncate">{item.specs.dimensions}</span>
+                        {item.specs.age && (
+                            <div className="flex items-center gap-2">
+                                <i className="ri-calendar-line text-lg text-gray-400"></i>
+                                <span>{item.specs.age}</span>
                             </div>
                         )}
-                        {item.specs.age && (
-                            <div className="flex items-center gap-2 col-span-2 md:col-span-1">
-                                <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-[#8D6E63] shrink-0">
-                                    <i className="ri-calendar-line"></i>
-                                </div>
-                                <span className="font-medium truncate">{item.specs.age}</span>
-                            </div>
+                    </div>
+
+                    {/* Feature Tags */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
+                            {item.specs.material}
+                        </span>
+                        <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
+                            {item.specs.condition}
+                        </span>
+                        {item.specs.dimensions && (
+                            <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
+                                {item.specs.dimensions}
+                            </span>
                         )}
                     </div>
 
                     {/* Location */}
-                    <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-4 pb-4 border-b border-gray-50">
-                        <i className="ri-map-pin-line"></i>
-                        <span className="truncate">{item.location}</span>
-                    </div>
-                </div>
-
-                {/* Footer: Price & Actions */}
-                <div className="flex flex-col gap-3">
-                    <div>
-                        <span className="text-[#D32F2F] text-xl font-bold font-rubik tracking-tight">
-                            {item.price}
-                        </span>
-                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider ml-2">Fixed Price</span>
+                    <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-4">
+                        <i className="ri-map-pin-line text-gray-400"></i>
+                        <span className="line-clamp-1">{item.location}</span>
                     </div>
 
-                    <div className="flex gap-2">
-                        <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#FFF0F0] text-[#D32F2F] hover:bg-[#D32F2F] hover:text-white transition-all shadow-sm border border-[#FFCDD2]/50 text-sm font-bold" title="Call Seller">
-                            <i className="ri-phone-fill"></i> Call
-                        </button>
-                        <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#E3F2FD] text-[#1976D2] hover:bg-[#1976D2] hover:text-white transition-all shadow-sm border border-[#BBDEFB]/50 text-sm font-bold" title="Chat with Seller">
-                            <i className="ri-chat-3-fill"></i> Chat
-                        </button>
+                    {/* Footer: Price & Buttons */}
+                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-100">
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-3xl font-bold text-[#D32F2F]">{item.price}</span>
+                            <span className="text-xs text-gray-400 font-medium">/Fixed</span>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button className="px-5 py-2.5 bg-[#FFF0F0] text-[#D32F2F] text-sm font-bold rounded-lg hover:bg-[#D32F2F] hover:text-white transition-all shadow-sm flex items-center gap-2">
+                                <i className="ri-phone-fill"></i> Call
+                            </button>
+                            <button className="px-5 py-2.5 bg-[#E3F2FD] text-[#1976D2] text-sm font-bold rounded-lg hover:bg-[#1976D2] hover:text-white transition-all shadow-sm flex items-center gap-2">
+                                <i className="ri-chat-3-fill"></i> Chat
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

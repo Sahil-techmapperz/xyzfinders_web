@@ -267,20 +267,32 @@ export default function AutomobileDetail({ id }: { id?: string }) {
 
                             <div className="flex items-center gap-3 md:gap-4 mb-2">
                                 <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
-                                    <div className="text-lg md:text-xl font-bold text-blue-600">
-                                        {product.seller_name ? product.seller_name.charAt(0).toUpperCase() : 'U'}
-                                    </div>
+                                    {product.seller_avatar ? (
+                                        <img
+                                            src={`data:image/jpeg;base64,${product.seller_avatar}`}
+                                            alt={product.seller_name || 'Seller'}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="text-lg md:text-xl font-bold text-blue-600">
+                                            {product.seller_name ? product.seller_name.charAt(0).toUpperCase() : 'U'}
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <h3 className="text-gray-900 font-bold text-sm md:text-base flex items-center gap-1">
-                                        {product.seller_name || 'Unknown User'}
-                                        <i className="ri-verified-badge-fill text-blue-500 text-base md:text-lg"></i>
+                                        {product.seller_name || 'Seller'}
+                                        {!!product.seller_is_verified && (
+                                            <i className="ri-verified-badge-fill text-blue-500 text-base md:text-lg"></i>
+                                        )}
                                     </h3>
                                     <p className="text-[10px] md:text-xs text-gray-500">Seller</p>
                                 </div>
                             </div>
 
-                            <p className="text-[10px] text-gray-400 mb-4 md:mb-6">Member Since 2025</p>
+                            <p className="text-[10px] text-gray-400 mb-4 md:mb-6">
+                                Member Since {product.seller_created_at ? new Date(product.seller_created_at).getFullYear() : '2025'}
+                            </p>
 
                             <div className="space-y-2 md:space-y-3">
                                 <button className="w-full bg-[#D53F3F] hover:bg-[#c43232] text-white font-bold py-2.5 md:py-3 rounded-lg mb-2 md:mb-3 flex items-center justify-center gap-2 transition-colors cursor-pointer text-sm md:text-base">
@@ -290,7 +302,7 @@ export default function AutomobileDetail({ id }: { id?: string }) {
 
                                 <ContactSellerButton
                                     productId={id || "1"}
-                                    sellerId={product.seller_id || 1}
+                                    sellerId={product.user_id || 1}
                                     className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer text-sm md:text-base"
                                 />
                             </div>

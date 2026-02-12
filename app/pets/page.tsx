@@ -1,18 +1,49 @@
-
 import type { Metadata } from 'next';
 import PetsHero from '@/components/pets/PetsHero';
 import PetsListings from '@/components/pets/PetsListings';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
-    title: 'Pets & Animals Accessories | XYZ Finders',
-    description: 'Find pets for adoption, accessories, and pet care services in New Delhi.',
+    title: 'Pets & Animals | XYZ Finders',
+    description: 'Find pets for adoption, pet accessories, and pet care services in New Delhi.',
 };
 
+async function getPets() {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/products?category_id=8&status=active`, {
+        cache: 'no-store'
+    });
+
+    if (!res.ok) {
+        throw new Error('Failed to fetch pets');
+    }
+
+    return res.json().then(data => data.data);
+}
+
+async function getLocations() {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/products?category_id=8&status=active`, {
+        cache: 'no-store'
+    });
+
+    if (!res.ok) {
+        return [];
+    }
+
+    const data = await res.json();
+    const uniqueCities = [...new Set(data.data?.map((p: any) => p.city).filter(Boolean))];
+    return uniqueCities.map((city) => ({ name: city as string, active: false }));
+}
+
 export default function PetsPage() {
+    const petsPromise = getPets();
+    const locationsPromise = getLocations();
+
     return (
-        <main className="min-h-screen bg-[#FFFBF7]">
+        <main className="min-h-screen">
             <PetsHero />
-            <PetsListings />
+            <Suspense fallback={<div className="container mx-auto px-4 py-8">Loading pets listings...</div>}>
+                <PetsListings petsPromise={petsPromise} locationsPromise={locationsPromise} />
+            </Suspense>
         </main>
     );
 }

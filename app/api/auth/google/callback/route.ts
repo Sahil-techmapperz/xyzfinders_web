@@ -125,9 +125,9 @@ export async function GET(request: NextRequest) {
             // Create new user (DEFAULT TO BUYER)
             // Use locale as location
             const result: any = await query(
-                `INSERT INTO users (name, email, google_id, avatar, email_verified, location, user_type, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, 1, ?, 'buyer', NOW(), NOW())`,
-                [googleUser.name, googleUser.email, googleUser.id, googleUser.picture || null, googleUser.locale || null]
+                `INSERT INTO users (name, email, google_id, email_verified, location, user_type, created_at, updated_at)
+                 VALUES (?, ?, ?, 1, ?, 'buyer', NOW(), NOW())`,
+                [googleUser.name, googleUser.email, googleUser.id, googleUser.locale || null]
             );
             userId = result.insertId;
 

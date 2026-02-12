@@ -242,48 +242,64 @@ export default function MobileDetail({ id }: { id?: string }) {
 
                     </div>
 
-                    {/* Right Column: Seller & Banner */}
-                    <div className="xl:col-span-1 space-y-6">
+                    {/* Right Column: Seller & Banner (span-1) */}
+                    <div className="xl:col-span-1 space-y-8">
 
                         {/* Seller Card */}
-                        <div className="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100">
-                            <div className="flex justify-between items-start mb-3 md:mb-4">
-                                <div>
-                                    <p className="text-[10px] text-gray-400 mb-1">Posted By:</p>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-base md:text-lg">
+                        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+                            <p className="text-[10px] md:text-xs text-gray-400 font-medium mb-3 md:mb-4">Posted By</p>
+
+                            <div className="flex items-center gap-3 md:gap-4 mb-2">
+                                <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                                    {product.seller_avatar ? (
+                                        <img
+                                            src={`data:image/jpeg;base64,${product.seller_avatar}`}
+                                            alt={product.seller_name || 'Seller'}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="text-lg md:text-xl font-bold text-blue-600">
                                             {product.seller_name ? product.seller_name.charAt(0).toUpperCase() : 'U'}
                                         </div>
-                                        <div>
-                                            <h3 className="text-xs md:text-sm font-bold text-gray-900 leading-tight">{product.seller_name || 'Unknown User'}</h3>
-                                            <span className="text-[10px] text-blue-500 flex items-center gap-1">
-                                                <i className="ri-checkbox-circle-fill"></i> Verified User
-                                            </span>
-                                        </div>
-                                    </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <h3 className="text-gray-900 font-bold text-sm md:text-base flex items-center gap-1">
+                                        {product.seller_name || 'Seller'}
+                                        {!!product.seller_is_verified && (
+                                            <i className="ri-verified-badge-fill text-blue-500 text-base md:text-lg"></i>
+                                        )}
+                                    </h3>
+                                    <p className="text-[10px] md:text-xs text-gray-500">Seller</p>
                                 </div>
                             </div>
 
-                            <p className="text-[10px] text-gray-400 mb-3 md:mb-4">Member Since 2023</p>
+                            <p className="text-[10px] text-gray-400 mb-4 md:mb-6">
+                                Member Since {product.seller_created_at ? new Date(product.seller_created_at).getFullYear() : '2025'}
+                            </p>
 
-                            <div className="space-y-2 md:text-base">
-                                <button className="w-full bg-[#D50000] hover:bg-[#b50000] text-white text-xs font-bold py-2.5 rounded-lg mb-2 flex items-center justify-center gap-2 transition-colors cursor-pointer">
-                                    <i className="ri-phone-fill"></i> Call
+                            <div className="space-y-2 md:space-y-3">
+                                <button className="w-full bg-[#D53F3F] hover:bg-[#c43232] text-white font-bold py-2.5 md:py-3 rounded-lg mb-2 md:mb-3 flex items-center justify-center gap-2 transition-colors cursor-pointer text-sm md:text-base">
+                                    <i className="ri-phone-fill"></i>
+                                    Call
                                 </button>
+
                                 <ContactSellerButton
                                     productId={id || "1"}
-                                    sellerId={product.seller_id || 1}
-                                    className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold text-xs md:text-sm py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                                    sellerId={product.user_id || 1}
+                                    className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer text-sm md:text-base"
                                 />
                             </div>
                         </div>
 
-                        {/* Google Ads Vertical Banner */}
-                        <div className="bg-gray-200 rounded-2xl flex items-center justify-center text-gray-400 font-bold text-xl border border-gray-300 min-h-[500px] relative overflow-hidden">
-                            <span className="transform -rotate-90 whitespace-nowrap">Google Ads</span>
+                        {/* Google Ads Banner Slot */}
+                        <div className="bg-gray-200 rounded-none md:rounded-2xl flex items-center justify-center text-gray-400 font-bold text-xl border border-gray-300 min-h-[500px]">
+                            Google Ads
                         </div>
 
                     </div>
+
+
                 </div>
 
                 {/* 4. Similar Properties (Carousel) */}
@@ -332,8 +348,6 @@ export default function MobileDetail({ id }: { id?: string }) {
                 </div>
 
             </div>
-
-
         </div>
     );
 }
