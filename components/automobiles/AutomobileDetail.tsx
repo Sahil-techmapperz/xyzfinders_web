@@ -67,12 +67,18 @@ export default function AutomobileDetail({ id }: { id?: string }) {
     // Map DB attributes to UI fields
     const specs = [
         { label: "Model", value: attrs.model || product.model || 'N/A' },
+        { label: "Fuel Type", value: attrs.fuelType || attrs.fuel || attrs.fuel_type || product.fuel || 'N/A' },
+        { label: "Transmission", value: product.transmission || attrs.transmission || 'N/A' },
+        { label: "Condition", value: product.condition || 'N/A' },
+        { label: "Mileage", value: attrs.mileage || 'N/A' },
+        { label: "Warranty", value: attrs.warranty || 'N/A' },
+        { label: "Insurance", value: attrs.insurance || 'N/A' },
+        { label: "No. of Owners", value: attrs.owners || 'N/A' },
         { label: "Interior Color", value: attrs.interiorColor || attrs.interior_color || product.interior_color || 'N/A' },
         { label: "Horsepower", value: attrs.horsepower || product.horsepower || 'N/A' },
         { label: "Exterior Color", value: attrs.exteriorColor || attrs.exterior_color || product.exterior_color || 'N/A' },
         { label: "Doors", value: attrs.doors || product.doors || 'N/A' },
         { label: "Body Type", value: attrs.bodyType || attrs.body_type || product.body_type || 'N/A' },
-        { label: "Fuel Type", value: attrs.fuel || attrs.fuel_type || product.fuel || 'N/A' },
         { label: "Seater Capacity", value: attrs.seaterCapacity || attrs.seater_capacity || product.seater_capacity || 'N/A' },
         { label: "Engine Capacity", value: attrs.engineCapacity || attrs.engine_capacity || product.engine_capacity || 'N/A' },
         { label: "Seller Type", value: product.seller_type || 'Dealer' },
@@ -184,7 +190,7 @@ export default function AutomobileDetail({ id }: { id?: string }) {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <i className="ri-dashboard-3-line text-lg text-gray-400"></i>
-                                    <span>{attrs.kms || attrs.km || 'N/A'}</span>
+                                    <span>{attrs.kmDriven || attrs.kms || attrs.km || 'N/A'}</span>
                                 </div>
                             </div>
 
@@ -246,7 +252,7 @@ export default function AutomobileDetail({ id }: { id?: string }) {
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2 text-gray-500 text-sm">
                                         <i className="ri-map-pin-line text-lg"></i>
-                                        <span>{product.city || product.location?.name || 'Unknown Location'}</span>
+                                        <span>{product.location_name || product.city_name || product.location?.name || product.city || 'Unknown Location'}</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-green-500 text-xs font-bold">
                                         <span className="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -321,13 +327,13 @@ export default function AutomobileDetail({ id }: { id?: string }) {
                 {/* Map Section */}
                 <div className="mb-12">
                     <div className="w-full h-[300px] bg-gray-100 rounded-xl overflow-hidden relative border border-gray-200 mb-6">
-                        {(attrs.location || product.location?.name || product.city) ? (
+                        {(product.location_name || product.city_name || attrs.location || product.location?.name || product.city) ? (
                             <iframe
                                 width="100%"
                                 height="100%"
                                 title="map"
                                 scrolling="no"
-                                src={`https://maps.google.com/maps?q=${encodeURIComponent(attrs.location || product.location?.name || product.city)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                                src={`https://maps.google.com/maps?q=${encodeURIComponent(product.location_name || product.city_name || attrs.location || product.location?.name || product.city)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
                                 className="w-full h-full border-0 filter grayscale-[0.2] contrast-[1.1] hover:grayscale-0 transition-all duration-500"
                             ></iframe>
                         ) : (
@@ -342,7 +348,7 @@ export default function AutomobileDetail({ id }: { id?: string }) {
 
                     <div className="mb-8">
                         <h2 className="text-lg font-bold text-gray-900 mb-1">Location</h2>
-                        <p className="text-xs text-gray-500">{attrs.location || product.location?.name || product.city || 'Location N/A'}</p>
+                        <p className="text-xs text-gray-500">{product.location_name || product.city_name || attrs.location || product.location?.name || product.city || 'Location N/A'}</p>
                     </div>
                 </div>
 

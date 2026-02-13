@@ -60,27 +60,29 @@ export default function MobileDetail({ id }: { id?: string }) {
 
     // Map attributes to UI
     const topSpecs = [
-        { label: "AGE", value: attrs.specs?.age || 'N/A' },
-        { label: "MODEL", value: attrs.specs?.model || 'N/A' },
-        { label: "STORAGE", value: attrs.specs?.storage || 'N/A' },
-        { label: "COLOUR", value: attrs.specs?.colour || 'N/A' },
+        { label: "BRAND", value: attrs.brand || attrs.specs?.brand || 'N/A' },
+        { label: "AGE", value: attrs.specs?.age || attrs.age || 'N/A' },
+        { label: "MODEL", value: attrs.specs?.model || attrs.model || 'N/A' },
+        { label: "STORAGE", value: attrs.specs?.storage || attrs.storage || 'N/A' },
+        { label: "COLOUR", value: attrs.specs?.colour || attrs.colour || 'N/A' },
     ];
 
     const details = [
-        { label: "Warranty", value: attrs.details?.warranty || 'N/A' },
-        { label: "Memory (RAM)", value: attrs.details?.ram || 'N/A' },
+        { label: "Warranty", value: attrs.details?.warranty || attrs.warranty || 'N/A' },
+        { label: "Memory (RAM)", value: attrs.details?.ram || attrs.ram || 'N/A' },
         { label: "Condition", value: product.condition || 'Used' },
-        { label: "Version", value: attrs.details?.version || 'N/A' },
-        { label: "Battery Health", value: attrs.details?.battery || 'N/A' },
-        { label: "Damage", value: attrs.details?.damage || 'None' },
+        { label: "Version", value: attrs.details?.version || attrs.version || 'N/A' },
+        { label: "Battery Health", value: attrs.details?.battery || attrs.battery || 'N/A' },
+        { label: "Damage", value: attrs.details?.damage || attrs.damage || 'None' },
     ];
 
     const productSpecsList = [
-        `- Model : ${attrs.specs?.model || 'N/A'}`,
-        `- Color : ${attrs.specs?.colour || 'N/A'}`,
-        `- Storage Capacity : ${attrs.specs?.storage || 'N/A'}`,
-        `- Memory RAM : ${attrs.details?.ram || 'N/A'}`,
-        `- Warranty : ${attrs.details?.warranty || 'N/A'}`,
+        `- Brand : ${attrs.brand || attrs.specs?.brand || 'N/A'}`,
+        `- Model : ${attrs.specs?.model || attrs.model || 'N/A'}`,
+        `- Color : ${attrs.specs?.colour || attrs.colour || 'N/A'}`,
+        `- Storage Capacity : ${attrs.specs?.storage || attrs.storage || 'N/A'}`,
+        `- Memory RAM : ${attrs.details?.ram || attrs.ram || 'N/A'}`,
+        `- Warranty : ${attrs.details?.warranty || attrs.warranty || 'N/A'}`,
     ];
 
     return (
@@ -300,6 +302,34 @@ export default function MobileDetail({ id }: { id?: string }) {
                     </div>
 
 
+                </div>
+
+                {/* Map Section */}
+                <div className="mb-12 mt-8">
+                    <div className="w-full h-[300px] bg-gray-100 rounded-xl overflow-hidden relative border border-gray-200 mb-6">
+                        {(attrs.location || product.location_name || product.city_name || product.city) ? (
+                            <iframe
+                                width="100%"
+                                height="100%"
+                                title="map"
+                                scrolling="no"
+                                src={`https://maps.google.com/maps?q=${encodeURIComponent(product.location_name || attrs.location || product.city_name || product.city)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                                className="w-full h-full border-0 filter grayscale-[0.2] contrast-[1.1] hover:grayscale-0 transition-all duration-500"
+                            ></iframe>
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                <div className="text-center">
+                                    <i className="ri-map-pin-2-line text-4xl mb-2"></i>
+                                    <p>Map View Unavailable</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mb-8">
+                        <h2 className="text-lg font-bold text-gray-900 mb-1">Location</h2>
+                        <p className="text-xs text-gray-500">{product.location_name || attrs.location || product.city_name || product.city || 'Location N/A'}</p>
+                    </div>
                 </div>
 
                 {/* 4. Similar Properties (Carousel) */}

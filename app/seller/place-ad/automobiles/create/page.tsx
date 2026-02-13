@@ -29,6 +29,10 @@ function AutomobilesCreateForm() {
         fuelType: '',
         transmission: '',
         owners: '',
+        mileage: '', // New field
+        warranty: '', // New field
+        condition: '', // New field
+        insurance: '', // New field
         // Missing fields from detail page
         interiorColor: '', // attrs.interiorColor
         horsepower: '', // attrs.horsepower
@@ -82,11 +86,15 @@ function AutomobilesCreateForm() {
                     category: product.category || '',
                     brand: product.brand || '',
                     model: product.model || '',
-                    year: attrs.year || '', // attrs.year
-                    kmDriven: attrs.kms || attrs.km || '', // attrs.kms
+                    year: attrs.year || '',
+                    kmDriven: attrs.kmDriven || attrs.kms || attrs.km || '',
                     fuelType: product.fuel_type || attrs.fuel || '',
                     transmission: product.transmission || '',
                     owners: attrs.owners || '',
+                    mileage: attrs.mileage || '',
+                    insurance: attrs.insurance || '',
+                    warranty: attrs.warranty || '',
+                    condition: product.condition ? product.condition.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '',
                     interiorColor: attrs.interiorColor || attrs.interior_color || product.interior_color || '',
                     horsepower: attrs.horsepower || product.horsepower || '',
                     exteriorColor: attrs.exteriorColor || attrs.exterior_color || product.exterior_color || '',
@@ -123,7 +131,7 @@ function AutomobilesCreateForm() {
         }
     };
 
-    const handlePillSelect = (field: 'fuelType' | 'transmission', value: string) => {
+    const handlePillSelect = (field: 'fuelType' | 'transmission' | 'condition' | 'warranty', value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
@@ -132,7 +140,7 @@ function AutomobilesCreateForm() {
     };
 
     const handleSubmit = async () => {
-        const requiredFields = ['title', 'phone', 'price', 'description', 'category', 'brand', 'model', 'year', 'kmDriven', 'fuelType', 'transmission', 'city', 'state'];
+        const requiredFields = ['title', 'phone', 'price', 'description', 'category', 'brand', 'model', 'year', 'kmDriven', 'fuelType', 'transmission', 'city', 'state', 'condition'];
         const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
 
         if (missingFields.length > 0) {
@@ -187,6 +195,8 @@ function AutomobilesCreateForm() {
 
     const fuelTypeOptions = ['Petrol', 'Diesel', 'Electric', 'CNG', 'Hybrid'];
     const transmissionOptions = ['Manual', 'Automatic'];
+    const conditionOptions = ['New', 'Used', 'Refurbished'];
+    const warrantyOptions = ['Under Warranty', 'Expired', 'N/A'];
 
     const steps = [
         { number: 1, title: 'Basic Info', icon: 'ri-information-line' },
@@ -423,6 +433,70 @@ function AutomobilesCreateForm() {
                                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
                                             placeholder="e.g., 1st Owner, 2nd Owner"
                                         />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-semibold mb-3">Condition*</label>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {conditionOptions.map(option => (
+                                                <button
+                                                    key={option}
+                                                    type="button"
+                                                    onClick={() => handlePillSelect('condition', option)}
+                                                    className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.condition === option
+                                                        ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
+                                                        }`}
+                                                >
+                                                    {option}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Mileage (Optional)</label>
+                                            <input
+                                                type="text"
+                                                name="mileage"
+                                                value={formData.mileage}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., 18 kmpl"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Insurance (Optional)</label>
+                                            <input
+                                                type="text"
+                                                name="insurance"
+                                                value={formData.insurance}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition"
+                                                placeholder="e.g., Valid until Dec 2025"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-semibold mb-3">Warranty*</label>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {warrantyOptions.map(option => (
+                                                <button
+                                                    key={option}
+                                                    type="button"
+                                                    onClick={() => handlePillSelect('warranty', option)}
+                                                    className={`px-4 py-3 rounded-xl border-2 font-semibold transition-all ${formData.warranty === option
+                                                        ? 'bg-linear-to-r from-brand-orange to-orange-600 text-white border-brand-orange shadow-md'
+                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-brand-orange hover:shadow'
+                                                        }`}
+                                                >
+                                                    {option}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
 
                                     <div>

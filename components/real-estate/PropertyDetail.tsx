@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import ContactSellerButton from '../shared/ContactSellerButton';
 
 export default function PropertyDetail({ id }: { id: string }) {
     const [product, setProduct] = useState<any>(null);
@@ -45,12 +46,14 @@ export default function PropertyDetail({ id }: { id: string }) {
     }
 
     // Parse attributes safely
-    const attrs = typeof product.product_attributes === 'string'
+    const rawAttrs = typeof product.product_attributes === 'string'
         ? JSON.parse(product.product_attributes)
         : product.product_attributes || {};
 
-    const specs = attrs.specs || {};
-    const amenities = attrs.amenities || [];
+    // Handle legacy (nested) vs new (flat) structure
+    const specs = rawAttrs.specs || rawAttrs;
+    // Amenities might be at top level or inside specs
+    const amenities = Array.isArray(rawAttrs.amenities) ? rawAttrs.amenities : (specs.amenities || []);
 
     // Process images
     const images = product.images && product.images.length > 0
@@ -102,9 +105,9 @@ export default function PropertyDetail({ id }: { id: string }) {
                 </div>
 
                 {/* Desktop Grid (Hidden on mobile) */}
-                <div className="hidden md:grid grid-cols-3 gap-4 h-[500px]">
+                <div className="hidden md:grid grid-cols-3 gap-4 h-[500px] ">
                     {/* Large Main Image */}
-                    <div className="col-span-2 relative h-full rounded-2xl overflow-hidden group cursor-pointer bg-gray-100">
+                    <div className="col-span-2 relative h-[500px]  rounded-2xl overflow-hidden group cursor-pointer bg-gray-100 ">
                         <img
                             src={images[0]}
                             alt={product.title}
@@ -113,15 +116,15 @@ export default function PropertyDetail({ id }: { id: string }) {
                     </div>
 
                     {/* Right Column Images */}
-                    <div className="flex flex-col gap-4 h-full">
-                        <div className="relative h-1/2 overflow-hidden rounded-2xl group cursor-pointer bg-gray-100">
+                    <div className="flex flex-col gap-2 h-full">
+                        <div className="relative h-[250px] overflow-hidden rounded-2xl group cursor-pointer bg-gray-100">
                             <img
                                 src={images[1] || images[0]}
                                 alt={`${product.title} view 2`}
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
                         </div>
-                        <div className="relative h-1/2 overflow-hidden rounded-2xl group cursor-pointer bg-gray-100">
+                        <div className="relative h-[250px] overflow-hidden rounded-2xl group cursor-pointer bg-gray-100">
                             <img
                                 src={images[2] || images[0]}
                                 alt={`${product.title} view 3`}
@@ -166,11 +169,11 @@ export default function PropertyDetail({ id }: { id: string }) {
                     {/* Key Attributes Row */}
                     <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mb-6 pb-6 border-b border-gray-100">
                         <div className="font-bold text-xs">
-                            {specs.roomType || attrs.type || 'Property'}
+                            {specs.roomType || specs.type || specs.propertyType || 'Property'}
                         </div>
                         <div className="flex items-center gap-1.5 text-gray-500 text-xs">
                             <i className="ri-map-pin-line"></i>
-                            <span className="line-clamp-1">{product.location?.name || product.city || 'Location N/A'}</span>
+                            <span className="line-clamp-1">{product.location_name || product.location?.name || product.city_name || product.city || 'Location N/A'}</span>
                         </div>
                     </div>
 
@@ -192,7 +195,7 @@ export default function PropertyDetail({ id }: { id: string }) {
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
                                         <span className="text-sm text-gray-500">Type</span>
-                                        <span className="text-sm font-bold text-gray-900">{attrs.type || 'N/A'}</span>
+                                        <span className="text-sm font-bold text-gray-900">{specs.type || specs.propertyType || 'N/A'}</span>
                                     </div>
                                     {specs.roomType && (
                                         <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
@@ -230,10 +233,34 @@ export default function PropertyDetail({ id }: { id: string }) {
                                             <span className="text-sm font-bold text-gray-900">{specs.tenants}</span>
                                         </div>
                                     )}
-                                    {specs.furnishing && (
+                                    {(specs.area) && (
+                                        <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                            <span className="text-sm text-gray-500">Area</span>
+                                            <span className="text-sm font-bold text-gray-900">{specs.area} sq ft</span>
+                                        </div>
+                                    )}
+                                    {(specs.bedrooms || specs.bedroom) && (
+                                        <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                            <span className="text-sm text-gray-500">Bedrooms</span>
+                                            <span className="text-sm font-bold text-gray-900">{specs.bedrooms || specs.bedroom}</span>
+                                        </div>
+                                    )}
+                                    {(specs.bathrooms || specs.bathroom) && (
+                                        <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                            <span className="text-sm text-gray-500">Bathrooms</span>
+                                            <span className="text-sm font-bold text-gray-900">{specs.bathrooms || specs.bathroom}</span>
+                                        </div>
+                                    )}
+                                    {(specs.kitchen) && (
+                                        <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                                            <span className="text-sm text-gray-500">Kitchen</span>
+                                            <span className="text-sm font-bold text-gray-900">{specs.kitchen}</span>
+                                        </div>
+                                    )}
+                                    {(specs.furnishing || specs.furnished) && (
                                         <div className="flex justify-between items-center py-2">
                                             <span className="text-sm text-gray-500">Furnishing</span>
-                                            <span className="text-sm font-bold text-gray-900">{specs.furnishing}</span>
+                                            <span className="text-sm font-bold text-gray-900">{specs.furnishing || specs.furnished}</span>
                                         </div>
                                     )}
                                 </div>
@@ -244,29 +271,48 @@ export default function PropertyDetail({ id }: { id: string }) {
                         <div className="xl:col-span-1">
                             <div className="sticky top-24">
                                 <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-                                    <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-3 md:mb-4">Property Owner</h3>
+                                    <p className="text-[10px] md:text-xs text-gray-400 font-medium mb-3 md:mb-4">Posted By</p>
 
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-linear-to-br from-[#FF8A65] to-[#FF7043] flex items-center justify-center text-white text-lg md:text-xl font-bold shrink-0">
-                                            {product.seller_name ? product.seller_name.charAt(0) : 'U'}
+                                    <div className="flex items-center gap-3 md:gap-4 mb-2">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                                            {product.seller_avatar ? (
+                                                <img
+                                                    src={`data:image/jpeg;base64,${product.seller_avatar}`}
+                                                    alt={product.seller_name || 'Seller'}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="text-lg md:text-xl font-bold text-blue-600">
+                                                    {product.seller_name ? product.seller_name.charAt(0).toUpperCase() : 'U'}
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="font-bold text-gray-900 truncate text-sm md:text-base">{product.seller_name || 'Unknown User'}</div>
-                                            <div className="text-[10px] md:text-xs text-gray-500">Member since Dec 2025</div>
+                                        <div>
+                                            <h3 className="text-gray-900 font-bold text-sm md:text-base flex items-center gap-1">
+                                                {product.seller_name || 'Seller'}
+                                                {!!product.seller_is_verified && (
+                                                    <i className="ri-verified-badge-fill text-blue-500 text-base md:text-lg"></i>
+                                                )}
+                                            </h3>
+                                            <p className="text-[10px] md:text-xs text-gray-500">Seller</p>
                                         </div>
-                                        <i className="ri-verified-badge-fill text-green-500 text-lg md:text-xl shrink-0"></i>
                                     </div>
 
+                                    <p className="text-[10px] text-gray-400 mb-4 md:mb-6">
+                                        Member Since {product.seller_created_at ? new Date(product.seller_created_at).getFullYear() : '2025'}
+                                    </p>
+
                                     <div className="space-y-2 md:space-y-3">
-                                        <button className="w-full bg-[#2196F3] text-white font-bold py-2.5 md:py-3 rounded-xl hover:bg-[#1976D2] transition-colors mb-2 md:mb-3 flex items-center justify-center gap-2 cursor-pointer text-sm md:text-base">
-                                            <i className="ri-chat-3-line"></i>
-                                            Chat with Owner
+                                        <button className="w-full bg-[#D53F3F] hover:bg-[#c43232] text-white font-bold py-2.5 md:py-3 rounded-lg mb-2 md:mb-3 flex items-center justify-center gap-2 transition-colors cursor-pointer text-sm md:text-base">
+                                            <i className="ri-phone-fill"></i>
+                                            Call
                                         </button>
 
-                                        <button className="w-full bg-[#4CAF50] text-white font-bold py-2.5 md:py-3 rounded-xl hover:bg-[#45a049] transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm md:text-base">
-                                            <i className="ri-phone-line"></i>
-                                            Call Owner
-                                        </button>
+                                        <ContactSellerButton
+                                            productId={id || "1"}
+                                            sellerId={product.user_id || 1}
+                                            className="w-full bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer text-sm md:text-base"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -301,13 +347,13 @@ export default function PropertyDetail({ id }: { id: string }) {
             {/* Using a static map or placeholder for now as mock data had specific coords */}
             <div className="mb-12">
                 <div className="w-full h-[300px] bg-gray-100 rounded-xl overflow-hidden relative border border-gray-200 mb-6">
-                    {(attrs.location || product.location || product.city) ? (
+                    {(product.location_name || specs.location || product.city_name || product.city) ? (
                         <iframe
                             width="100%"
                             height="100%"
                             title="map"
                             scrolling="no"
-                            src={`https://maps.google.com/maps?q=${encodeURIComponent(attrs.location || product.location || product.city)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                            src={`https://maps.google.com/maps?q=${encodeURIComponent(product.location_name || specs.location || product.city_name || product.city)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
                             className="w-full h-full border-0 filter grayscale-[0.2] contrast-[1.1] hover:grayscale-0 transition-all duration-500"
                         ></iframe>
                     ) : (
@@ -322,7 +368,7 @@ export default function PropertyDetail({ id }: { id: string }) {
 
                 <div className="mb-8">
                     <h2 className="text-lg font-bold text-gray-900 mb-1">Location</h2>
-                    <p className="text-xs text-gray-500">{attrs.location || product.location?.name || product.city || 'Location N/A'}</p>
+                    <p className="text-xs text-gray-500">{product.location_name || specs.location || product.city_name || product.city || 'Location N/A'}</p>
                 </div>
             </div>
 

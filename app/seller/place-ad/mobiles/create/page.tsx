@@ -101,9 +101,9 @@ function MobilesCreateForm() {
                     price: product.price?.toString() || '',
                     description: product.description || '',
                     category: product.category || '',
-                    brand: product.brand || '',
+                    brand: product.brand || attrs.brand || specs.brand || '',
                     model: specs.model || product.model || '',
-                    condition: product.condition || '',
+                    condition: product.condition ? product.condition.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '',
                     warranty: details.warranty || '',
                     storage: specs.storage || '',
                     ram: details.ram || '',
@@ -159,7 +159,8 @@ function MobilesCreateForm() {
                     model: formData.model,
                     storage: formData.storage,
                     age: formData.age,
-                    colour: formData.colour
+                    colour: formData.colour,
+                    brand: formData.brand // Add brand to specs
                 },
                 details: {
                     warranty: formData.warranty,
@@ -167,8 +168,12 @@ function MobilesCreateForm() {
                     version: formData.version,
                     battery: formData.battery,
                     damage: formData.damage
-                }
+                },
+                brand: formData.brand, // Add brand to root of attributes as well for backward compatibility logic
             };
+
+            // Map condition to DB enum
+            const dbCondition = formData.condition.toLowerCase().replace(' ', '_');
 
             const response = await fetch(url, {
                 method: method,
@@ -178,6 +183,7 @@ function MobilesCreateForm() {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    condition: dbCondition, // Send mapped condition
                     product_attributes: JSON.stringify(product_attributes),
                     images
                 })
